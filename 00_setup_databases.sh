@@ -41,7 +41,7 @@ THREADS=32
 DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
 
 # Scratch for large intermediate files (auto-cleared every 30 days — fine here)
-SCRATCH_DIR="/users/9/falb0011/FAB2/Summer2022/HMSC/bacteria"
+SCRATCH_DIR="/scratch.global/falb0011"
 
 # BLAST+ module name for blastdbcmd (used to extract NR sequences from MSI copy)
 # Run: module avail blast    — find the correct module name, then update below
