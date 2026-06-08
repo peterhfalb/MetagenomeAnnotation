@@ -23,6 +23,7 @@ ANNOTATION_DIR=""
 TEST_N=""
 SAMPLES_FILTER=""
 TIME_OVERRIDE=""
+AFTER_JOB=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -31,9 +32,10 @@ while [[ $# -gt 0 ]]; do
         --samples)        SAMPLES_FILTER="$2";  shift 2 ;;
         --test)           TEST_N="${2:-2}";      shift 2 ;;
         --time)           TIME_OVERRIDE="$2";   shift 2 ;;
+        --after)          AFTER_JOB="$2";       shift 2 ;;
         *)
             echo "ERROR: Unknown argument: $1" >&2
-            echo "Usage: bash submit_classify_contigs.sh --assembly-dir <path> --annotation-dir <path> [--samples \"S1,S2\"] [--test N] [--time HH:MM:SS]" >&2
+            echo "Usage: bash submit_classify_contigs.sh --assembly-dir <path> --annotation-dir <path> [--samples \"S1,S2\"] [--test N] [--time HH:MM:SS] [--after JOB_ID]" >&2
             exit 1 ;;
     esac
 done
@@ -108,6 +110,7 @@ SBATCH_ARGS=(
 )
 
 [[ -n "${TIME_OVERRIDE}" ]] && SBATCH_ARGS+=(--time="${TIME_OVERRIDE}")
+[[ -n "${AFTER_JOB}"    ]] && SBATCH_ARGS+=(--dependency="afterok:${AFTER_JOB}")
 
 JOB_ID=$(sbatch "${SBATCH_ARGS[@]}" "${SCRIPT_DIR}/01_classify_contigs.sh" | awk '{print $NF}')
 
