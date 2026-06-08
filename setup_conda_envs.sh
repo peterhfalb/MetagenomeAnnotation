@@ -10,16 +10,20 @@
 # Usage:
 #   bash setup_conda_envs.sh
 #
-# Creates two environments:
+# Creates three environments:
 #   metaG_tiara      — contig-level taxonomic classification (PyTorch dependency
 #                      isolated to avoid conflicts with bioconda tools)
 #   metaG_annotation — all other annotation tools: KOfamScan, dbCAN3,
-#                      featureCounts (subread), MMseqs2, HMMER
+#                      featureCounts (subread), MMseqs2 (CPU, for DB builds), HMMER
+#   metaG_mmseqs     — GPU-enabled MMseqs2 for taxonomy (CUDA-compiled; isolated
+#                      because CUDA runtime dependencies can conflict with other
+#                      bioconda packages). At runtime, load cuda/12.1.1 alongside.
 #
 # Tools loaded as MSI modules (NOT installed via conda):
 #   MetaEuk  — metaeuk/6-a5d39d9-gcc-8.2.0-ji6jath
 #   DIAMOND  — diamond/2.0.15-gcc-8.2.0-gkldzx7
 #   samtools — samtools/1.21
+#   CUDA     — cuda/12.1.1  (loaded at runtime for metaG_mmseqs jobs)
 # =============================================================================
 
 set -euo pipefail
@@ -62,11 +66,28 @@ else
     echo "metaG_annotation done"
 fi
 
+# ── MMseqs2 GPU environment ───────────────────────────────────────────────────
+# GPU-accelerated MMseqs2 for the taxonomy step. The conda package includes
+# CUDA-compiled binaries; load cuda/12.1.1 at runtime so the dynamic linker
+# finds the CUDA libraries. Isolated from metaG_annotation to avoid conflicts.
+
+if conda env list | grep -qx "metaG_mmseqs .*"; then
+    echo "[SKIP] metaG_mmseqs already exists"
+else
+    echo "--- Creating metaG_mmseqs environment ---"
+    mamba create -y -n metaG_mmseqs \
+        -c conda-forge -c bioconda \
+        mmseqs2
+    echo "metaG_mmseqs done"
+fi
+
 echo ""
 echo "============================================================"
 echo "Environments ready."
 echo "  Activate Tiara  : conda activate metaG_tiara"
 echo "  Activate main   : conda activate metaG_annotation"
+echo "  Activate MMseqs2: conda activate metaG_mmseqs"
+echo "  (load cuda/12.1.1 alongside metaG_mmseqs for GPU jobs)"
 echo "============================================================"
 echo ""
 echo "Next: submit database setup job with:"

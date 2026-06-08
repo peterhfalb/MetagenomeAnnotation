@@ -193,24 +193,26 @@ read_phibase <- function(file) {
         parsed)
 }
 
-# Read DIAMOND NR output for LCA computation.
-# Returns data.table: gene_id, sseqid, pident, evalue, bitscore, staxids,
-#                     sscinames, sskingdoms, stitle
-read_diamond_nr <- function(file) {
-  empty <- data.table(gene_id = character(), sseqid = character(),
-                      pident = numeric(), evalue = numeric(), bitscore = numeric(),
-                      staxids = character(), sscinames = character(),
-                      sskingdoms = character(), stitle = character())
+# Read MMseqs2 easy-taxonomy _lca.tsv output.
+# Returns data.table: gene_id, lca_taxid, lca_rank, lca_name, lineage
+# MMseqs2 computes LCA internally — one row per gene, already resolved.
+# lca_taxid 0 = unclassified (no hits above threshold), stored as NA.
+read_mmseqs_taxonomy <- function(file) {
+  empty <- data.table(gene_id = character(), lca_taxid = integer(),
+                      lca_rank = character(), lca_name = character(),
+                      lineage = character())
   if (!file.exists(file) || file.info(file)$size == 0) return(empty)
-  dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE,
-    col.names = c("gene_id","sseqid","pident","length","evalue","bitscore",
-                  "staxids","sscinames","sskingdoms","stitle"))
+  dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE)
   if (nrow(dt) == 0) return(empty)
-  dt[, .(gene_id, sseqid, pident, evalue, bitscore,
-         staxids    = as.character(staxids),
-         sscinames  = as.character(sscinames),
-         sskingdoms = as.character(sskingdoms),
-         stitle     = as.character(stitle))]
+  result <- data.table(
+    gene_id   = as.character(dt[[1]]),
+    lca_taxid = as.integer(dt[[2]]),
+    lca_rank  = if (ncol(dt) >= 3) as.character(dt[[3]]) else NA_character_,
+    lca_name  = if (ncol(dt) >= 4) as.character(dt[[4]]) else NA_character_,
+    lineage   = if (ncol(dt) >= 5) as.character(dt[[5]]) else NA_character_
+  )
+  result[lca_taxid == 0L, lca_taxid := NA_integer_]
+  result
 }
 
 # =============================================================================
@@ -233,43 +235,41 @@ counts_list  <- list()  # featureCounts per sample
 kofam_list   <- list()  # KOfamScan per sample
 dbcan_list   <- list()  # dbCAN3 per sample
 phi_list     <- list()  # PHI-base per sample
-diamond_list <- list()  # DIAMOND NR per sample
+mmseqs_list  <- list()  # MMseqs2 taxonomy per sample
 
 for (s in samples) {
   cat("  Reading:", s, "\n")
 
   # featureCounts
-  fc_file <- file.path(ann_dir, "featurecounts", paste0(s, "_counts.txt"))
-  counts_list[[s]] <- read_featurecounts(fc_file, s)
+  counts_list[[s]] <- read_featurecounts(
+    file.path(ann_dir, "featurecounts", paste0(s, "_counts.txt")), s)
 
   # KOfamScan (reads the full detail-tsv; mapper is derived from it in read_kofam)
   kofam_list[[s]] <- read_kofam(file.path(ann_dir, "kofam", paste0(s, "_kofam.tsv")))
 
   # dbCAN3
-  dbc_file <- file.path(ann_dir, "dbcan", s, "overview.txt")
-  dbcan_list[[s]] <- read_dbcan(dbc_file)
+  dbcan_list[[s]] <- read_dbcan(file.path(ann_dir, "dbcan", s, "overview.txt"))
 
   # PHI-base
-  phi_file <- file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv"))
-  phi_list[[s]] <- read_phibase(phi_file)
+  phi_list[[s]] <- read_phibase(file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv")))
 
-  # DIAMOND NR
-  dnr_file <- file.path(ann_dir, "diamond_nr", paste0(s, "_diamond_nr.tsv"))
-  diamond_list[[s]] <- read_diamond_nr(dnr_file)
+  # MMseqs2 taxonomy (_lca.tsv — LCA already computed by MMseqs2)
+  mmseqs_list[[s]] <- read_mmseqs_taxonomy(
+    file.path(ann_dir, "mmseqs_taxonomy", paste0(s, "_lca.tsv")))
 }
 
 # Combine across samples
-counts_all  <- rbindlist(counts_list,  use.names = TRUE, fill = TRUE)
-kofam_all   <- rbindlist(kofam_list,   use.names = TRUE, fill = TRUE)
-dbcan_all   <- rbindlist(dbcan_list,   use.names = TRUE, fill = TRUE)
-phi_all     <- rbindlist(phi_list,     use.names = TRUE, fill = TRUE)
-diamond_all <- rbindlist(diamond_list, use.names = TRUE, fill = TRUE)
+counts_all <- rbindlist(counts_list,  use.names = TRUE, fill = TRUE)
+kofam_all  <- rbindlist(kofam_list,   use.names = TRUE, fill = TRUE)
+dbcan_all  <- rbindlist(dbcan_list,   use.names = TRUE, fill = TRUE)
+phi_all    <- rbindlist(phi_list,     use.names = TRUE, fill = TRUE)
+mmseqs_all <- rbindlist(mmseqs_list,  use.names = TRUE, fill = TRUE)
 
 cat("\n  Genes with featureCounts data :", nrow(counts_all), "\n")
 cat("  KOfam significant hits        :", nrow(kofam_all), "\n")
 cat("  dbCAN gene calls              :", nrow(dbcan_all), "\n")
 cat("  PHI-base hits                 :", nrow(phi_all), "\n")
-cat("  DIAMOND NR hits (total rows)  :", nrow(diamond_all), "\n\n")
+cat("  MMseqs2 taxonomy assignments  :", sum(!is.na(mmseqs_all$lca_taxid)), "\n\n")
 
 # =============================================================================
 # SECTION 3: Build raw count matrix (gene × sample)
@@ -296,103 +296,62 @@ if (nrow(counts_all) > 0) {
 }
 
 # =============================================================================
-# SECTION 4: LCA Taxonomy from DIAMOND NR hits
+# SECTION 4: Expand MMseqs2 LCA taxon IDs to standard ranks
 # =============================================================================
-# Strategy:
-#   1. Prepare a taxonomizr SQLite database (once — cached for reuse).
-#   2. For each gene, retain hits within bs_frac of the top bitscore.
-#   3. Expand semicolon-separated staxids into individual taxid rows.
-#   4. Batch-look up taxonomy for all unique taxids.
-#   5. LCA = most specific rank where all top-hit taxids agree.
+# MMseqs2 already computed the LCA internally — one taxid per gene, resolved.
+# This section only needs to expand each unique LCA taxid to standard ranks
+# (superkingdom, phylum, class, order, family, genus, species) using taxonomizr.
+# This is far simpler than the previous approach: one lookup per unique taxid
+# rather than processing top-N hits per gene and computing LCA in R.
 
-cat("--- Section 4: LCA taxonomy from DIAMOND NR hits ---\n")
+cat("--- Section 4: Expanding MMseqs2 LCA taxon IDs to standard ranks ---\n")
 
-tax_sql <- file.path(db_dir, "taxonomy", "taxonomy.sql")
+tax_sql   <- file.path(db_dir, "taxonomy", "taxonomy.sql")
 names_dmp <- file.path(db_dir, "taxonomy", "names.dmp")
 nodes_dmp <- file.path(db_dir, "taxonomy", "nodes.dmp")
+tax_ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
 
-lca_table <- NULL   # populated below if taxonomy DB is available
+lca_table <- NULL
 
 if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
-  warning("NCBI taxonomy files not found — skipping LCA computation.\n",
-          "  Expected: ", names_dmp, "\n         ", nodes_dmp)
-} else if (nrow(diamond_all) == 0) {
-  warning("No DIAMOND NR hits — skipping LCA computation.")
+  warning("NCBI taxonomy files not found — skipping rank expansion.\n",
+          "  Expected: ", names_dmp)
+} else if (nrow(mmseqs_all) == 0 || all(is.na(mmseqs_all$lca_taxid))) {
+  warning("No classified MMseqs2 hits — skipping rank expansion.")
 } else {
 
-  # 4a: Prepare SQLite taxonomy database (skip if already built).
-  # prepareDatabase() downloads from NCBI and does not accept local file paths.
-  # For local names.dmp / nodes.dmp, use read.names.sql() + read.nodes.sql().
+  # Build SQLite taxonomy DB from local names.dmp/nodes.dmp (once, ~5-10 min)
   if (!file.exists(tax_sql)) {
-    cat("  Building taxonomizr SQLite database from local files (one-time, ~5-10 min)...\n")
+    cat("  Building taxonomizr SQLite database (one-time, ~5-10 min)...\n")
     read.names.sql(names = names_dmp, sqlFile = tax_sql)
     read.nodes.sql(nodes = nodes_dmp, sqlFile = tax_sql)
-    cat("  Taxonomy database ready:", tax_sql, "\n")
+    cat("  Done:", tax_sql, "\n")
   } else {
     cat("  Using existing taxonomy database:", tax_sql, "\n")
   }
 
-  # 4b: Filter hits within bitscore fraction of the per-gene top hit
-  setDT(diamond_all)
-  diamond_filt <- diamond_all[
-    !is.na(bitscore) & staxids != "" & staxids != "N/A"
-  ][
-    , max_bs := max(bitscore, na.rm = TRUE), by = gene_id
-  ][
-    bitscore >= bs_frac * max_bs
-  ]
+  unique_taxids <- unique(na.omit(mmseqs_all$lca_taxid))
+  cat("  Unique LCA taxids to expand:", length(unique_taxids), "\n")
 
-  # Keep only top_hits rows per gene
-  diamond_filt <- diamond_filt[
-    , .SD[seq_len(min(.N, top_hits))], by = gene_id
-  ]
-
-  # 4c: Expand semicolon-separated taxids into one row per taxid
-  taxid_dt <- diamond_filt[
-    , .(taxid = unlist(str_split(staxids, ";"))), by = gene_id
-  ][
-    taxid != "" & taxid != "N/A"
-  ]
-  taxid_dt[, taxid := trimws(taxid)]
-
-  unique_taxids <- unique(taxid_dt$taxid)
-  cat("  Unique taxids to look up:", length(unique_taxids), "\n")
-
-  # 4d: Batch taxonomy lookup
-  tax_ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
-
-  cat("  Looking up taxonomy (may take a few minutes)...\n")
   tax_lookup <- tryCatch(
-    getTaxonomy(unique_taxids, tax_sql),
-    error = function(e) {
-      warning("taxonomizr lookup failed: ", conditionMessage(e))
-      NULL
-    }
+    getTaxonomy(as.character(unique_taxids), tax_sql),
+    error = function(e) { warning("taxonomizr lookup failed: ", conditionMessage(e)); NULL }
   )
 
   if (!is.null(tax_lookup)) {
-    tax_lookup_dt <- as.data.table(tax_lookup, keep.rownames = "taxid")
+    tax_lookup_dt <- as.data.table(tax_lookup, keep.rownames = "lca_taxid")
+    tax_lookup_dt[, lca_taxid := as.integer(lca_taxid)]
+    setnames(tax_lookup_dt, tax_ranks, paste0("tax_", tax_ranks))
 
-    # 4e: LCA per gene — for each rank, keep value only if all top hits agree
-    merged <- taxid_dt[tax_lookup_dt, on = "taxid", nomatch = 0]
+    lca_table <- mmseqs_all[
+      !is.na(lca_taxid)
+    ][tax_lookup_dt, on = "lca_taxid", nomatch = NA]
 
-    lca_table <- merged[, {
-      lca <- sapply(tax_ranks, function(r) {
-        vals <- unique(na.omit(.SD[[r]]))
-        if (length(vals) == 1L) vals else NA_character_
-      })
-      as.list(lca)
-    }, by = gene_id, .SDcols = tax_ranks]
+    cat("  Rank expansion complete for", nrow(lca_table), "genes.\n")
 
-    setnames(lca_table, tax_ranks, paste0("tax_", tax_ranks))
-    cat("  LCA taxonomy computed for", nrow(lca_table), "genes.\n")
-
-    # Quick kingdom summary
-    if ("tax_superkingdom" %in% names(lca_table)) {
-      kingdom_tbl <- lca_table[, .N, by = tax_superkingdom][order(-N)]
-      cat("  Kingdom breakdown (LCA):\n")
-      print(kingdom_tbl)
-    }
+    kingdom_tbl <- lca_table[, .N, by = tax_superkingdom][order(-N)]
+    cat("  Kingdom breakdown:\n")
+    print(kingdom_tbl)
   }
 }
 cat("\n")
@@ -411,7 +370,7 @@ all_genes <- unique(c(
   kofam_all$gene_id,
   dbcan_all$gene_id,
   phi_all$gene_id,
-  diamond_all$gene_id
+  mmseqs_all$gene_id
 ))
 base_dt <- data.table(gene_id = all_genes)
 
@@ -446,28 +405,11 @@ base_dt <- dbcan_hicof[base_dt, on = "gene_id"]
 phi_best <- phi_all[!is.na(phi_bitscore)][order(-phi_bitscore)][, .SD[1], by = gene_id]
 base_dt <- phi_best[base_dt, on = "gene_id"]
 
-# Taxonomy from LCA
+# MMseqs2 LCA taxonomy (gene_id, lca_taxid, lca_rank, lca_name, lineage,
+# tax_superkingdom … tax_species). Genes with no hit or unclassified get NAs.
 if (!is.null(lca_table)) {
   base_dt <- lca_table[base_dt, on = "gene_id"]
 }
-
-# Also add best-hit kingdom from DIAMOND (complement to LCA — faster fallback).
-# Filter NA bitscores before ordering so they cannot float to top.
-best_hit_tax <- diamond_all[
-  !is.na(bitscore)
-][
-  order(-bitscore)
-][
-  , .SD[1], by = gene_id
-][
-  , .(gene_id,
-      besthit_kingdom  = sskingdoms,
-      besthit_sciname  = sscinames,
-      besthit_pident   = pident,
-      besthit_evalue   = evalue,
-      besthit_title    = stitle)
-]
-base_dt <- best_hit_tax[base_dt, on = "gene_id"]
 
 cat("  Master annotation table:", nrow(base_dt), "genes,",
     ncol(base_dt), "columns\n\n")
@@ -549,21 +491,21 @@ summary_rows <- lapply(samples, function(s) {
                   sum(dbcan_list[[s]]$CAZy_n_tools >= min_tools, na.rm = TRUE)
                 } else 0L
   n_phi      <- if (!is.null(phi_list[[s]]))    nrow(phi_list[[s]])        else 0L
-  n_tax      <- if (!is.null(diamond_list[[s]])) n_distinct(diamond_list[[s]]$gene_id) else 0L
+  n_tax <- if (!is.null(mmseqs_list[[s]])) sum(!is.na(mmseqs_list[[s]]$lca_taxid)) else 0L
   total_reads <- if (!is.null(counts_list[[s]])) sum(counts_list[[s]]$count) else 0L
 
   data.table(
-    sample              = s,
-    genes_predicted     = n_genes,
-    total_read_count    = total_reads,
-    genes_with_KO       = n_ko,
-    pct_KO              = round(100 * n_ko / max(n_genes, 1), 1),
-    genes_with_CAZy     = n_cazy,
-    pct_CAZy            = round(100 * n_cazy / max(n_genes, 1), 1),
-    genes_with_PHI_hit  = n_phi,
-    pct_PHI             = round(100 * n_phi / max(n_genes, 1), 1),
-    genes_with_NR_hit   = n_tax,
-    pct_NR              = round(100 * n_tax / max(n_genes, 1), 1)
+    sample                  = s,
+    genes_predicted         = n_genes,
+    total_read_count        = total_reads,
+    genes_with_KO           = n_ko,
+    pct_KO                  = round(100 * n_ko  / max(n_genes, 1), 1),
+    genes_with_CAZy         = n_cazy,
+    pct_CAZy                = round(100 * n_cazy / max(n_genes, 1), 1),
+    genes_with_PHI_hit      = n_phi,
+    pct_PHI                 = round(100 * n_phi  / max(n_genes, 1), 1),
+    genes_with_taxonomy     = n_tax,
+    pct_taxonomy            = round(100 * n_tax  / max(n_genes, 1), 1)
   )
 })
 

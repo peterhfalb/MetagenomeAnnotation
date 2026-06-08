@@ -81,7 +81,7 @@ check_databases() {
     local all_present=true
     echo "  Database status:"
     local -A checks=(
-        ["DIAMOND NR"]="${DB_DIR}/diamond/nr.dmnd"
+        ["MMseqs2 UniRef90"]="${DB_DIR}/mmseqs_taxonomy/uniref90"
         ["NCBI taxonomy"]="${DB_DIR}/taxonomy/nodes.dmp"
         ["KOfam profiles"]="${DB_DIR}/kofam/profiles"
         ["dbCAN3"]="${DB_DIR}/dbcan/dbCAN.hmm.h3i"
@@ -180,7 +180,7 @@ PARALLEL_ARGS=( --annotation-dir "${ANN_DIR}" --after "${STEP2_ID}" )
 STEP3_ID=$(bash "${SCRIPT_DIR}/submit_kofam.sh"      "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
 STEP4_ID=$(bash "${SCRIPT_DIR}/submit_dbcan.sh"      "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
 STEP5_ID=$(bash "${SCRIPT_DIR}/submit_phibase.sh"    "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
-STEP6_ID=$(bash "${SCRIPT_DIR}/submit_diamond_nr.sh" "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
+STEP6_ID=$(bash "${SCRIPT_DIR}/submit_mmseqs_taxonomy.sh" "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
 
 FC_ARGS=( --assembly-dir "${ASM_DIR}" --annotation-dir "${ANN_DIR}" --after "${STEP2_ID}" )
 [[ -n "${TEST_FLAG}" ]] && FC_ARGS+=( ${TEST_FLAG} )
@@ -189,7 +189,7 @@ STEP7_ID=$(bash "${SCRIPT_DIR}/submit_featurecounts.sh" "${FC_ARGS[@]}" | grep -
 echo "  Step 3 KOfamScan    : ${STEP3_ID}"
 echo "  Step 4 dbCAN3       : ${STEP4_ID}"
 echo "  Step 5 PHI-base     : ${STEP5_ID}"
-echo "  Step 6 DIAMOND NR   : ${STEP6_ID}  (slowest — ~8-16 hr/sample)"
+echo "  Step 6 MMseqs2 tax  : ${STEP6_ID}  (GPU, ~15-60 min/sample)"
 echo "  Step 7 featureCounts: ${STEP7_ID}"
 echo ""
 
@@ -249,5 +249,5 @@ echo ""
 #        --samples "FAILED_SAMPLE_01,FAILED_SAMPLE_02" --after <RERUN_JOB_ID>
 #      # repeat for dbcan, phibase, diamond_nr, featurecounts
 #
-# Note: steps 3-7 are independent of each other. If only step 6 (DIAMOND NR)
+# Note: steps 3-7 are independent of each other. If only step 6 (MMseqs2 taxonomy)
 # fails, steps 3-5 and 7 are unaffected and you only need to rerun step 6.

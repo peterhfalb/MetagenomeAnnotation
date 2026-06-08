@@ -43,20 +43,17 @@ DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
 # Scratch for large intermediate files (auto-cleared every 30 days — fine here)
 SCRATCH_DIR="/scratch.global/falb0011"
 
-# BLAST+ module name for blastdbcmd (used to extract NR sequences from MSI copy)
-# Run: module avail blast    — find the correct module name, then update below
-BLAST_MODULE="blast-plus/2.13.0-gcc-8.2.0-vo4mr4d"
-
 # ── Environment ───────────────────────────────────────────────────────────────
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
 conda activate metaG_annotation
 
+# DIAMOND is still needed for the PHI-base and fungi DIAMOND database builds.
+# BLAST+ module no longer required (replaced by mmseqs databases for taxonomy).
 module load diamond/2.0.15-gcc-8.2.0-gkldzx7
-module load "${BLAST_MODULE}"
 
 # ── Create directories ────────────────────────────────────────────────────────
-mkdir -p "${DB_DIR}"/{taxonomy,diamond,kofam,dbcan,phibase,metaeuk}
-mkdir -p "${SCRATCH_DIR}"/{fungi_refseq}
+mkdir -p "${DB_DIR}"/{taxonomy,mmseqs_taxonomy,diamond,kofam,dbcan,phibase,metaeuk}
+mkdir -p "${SCRATCH_DIR}"/{fungi_refseq,mmseqs_dl_tmp}
 
 echo "============================================================"
 echo "Database setup started : $(date)"
@@ -66,14 +63,13 @@ echo "============================================================"
 
 # =============================================================================
 # SECTION 1: NCBI Taxonomy
-# Provides the species/lineage lookup tables used by DIAMOND (--taxonnodes,
-# --taxonnames) and downstream R analysis for interpreting taxon IDs.
-# prot.accession2taxid maps every NR protein accession to an NCBI taxon ID —
-# required at DIAMOND database build time so per-protein taxonomy is embedded.
+# names.dmp and nodes.dmp are used by the R integration script (taxonomizr)
+# to expand MMseqs2 LCA taxon IDs to standard ranks (phylum, class, order...).
+# prot.accession2taxid is NOT needed — that was only required for DIAMOND NR.
 # =============================================================================
 
 if [[ ! -f "${DB_DIR}/taxonomy/nodes.dmp" ]]; then
-    echo "--- [1a] Downloading NCBI taxdump ---"
+    echo "--- [1] Downloading NCBI taxdump ---"
     wget -q -O "${SCRATCH_DIR}/taxdump.tar.gz" \
         https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
     tar -xzf "${SCRATCH_DIR}/taxdump.tar.gz" -C "${DB_DIR}/taxonomy/"
@@ -83,45 +79,28 @@ else
     echo "[SKIP] taxonomy/nodes.dmp already exists"
 fi
 
-if [[ ! -f "${DB_DIR}/taxonomy/prot.accession2taxid.gz" ]]; then
-    echo "--- [1b] Downloading prot.accession2taxid (~5 GB compressed) ---"
-    wget -q -O "${DB_DIR}/taxonomy/prot.accession2taxid.gz" \
-        https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz
-    echo "prot.accession2taxid done: $(date)"
-else
-    echo "[SKIP] prot.accession2taxid already exists"
-fi
-
 # =============================================================================
-# SECTION 2: DIAMOND NR database
-# Built from MSI's existing quarterly-updated BLAST NR at
-# /common/bioref/blast/latest/nr — avoids downloading ~400 GB of FASTA.
-# blastdbcmd streams all sequences to stdout; diamond makedb reads from stdin.
-# Taxonomy is embedded at build time using files from Section 1.
-# Final .dmnd is ~80 GB and stored permanently.
-# Runtime: ~10-14 hours on 32 threads.
+# SECTION 2: MMseqs2 UniRef90 taxonomy database
+# Used by mmseqs easy-taxonomy (step 06) for protein-level LCA classification.
+# mmseqs databases handles download + indexing automatically — no BLAST module
+# or blastdbcmd required. UniRef90 (~30 GB indexed) provides comprehensive
+# coverage of fungi, bacteria, archaea, plants, and animals at 90% identity
+# clustering. MMseqs2 computes LCA internally; the R script (step 08) only
+# needs to expand the single LCA taxon ID per gene to standard ranks.
+# Runtime: ~2-4 hr download + indexing.
 # =============================================================================
 
-NR_DMND="${DB_DIR}/diamond/nr.dmnd"
+MMSEQS_TAX_DB="${DB_DIR}/mmseqs_taxonomy/uniref90"
 
-if [[ ! -f "${NR_DMND}" ]]; then
-    echo "--- [2] Building DIAMOND NR database from MSI BLAST NR (~10-14 hr) ---"
-
-    blastdbcmd \
-        -db /common/bioref/blast/latest/nr \
-        -entry all \
-        -out /dev/stdout \
-    | diamond makedb \
-        --in /dev/stdin \
-        --db "${NR_DMND}" \
-        --taxonmap "${DB_DIR}/taxonomy/prot.accession2taxid.gz" \
-        --taxonnodes "${DB_DIR}/taxonomy/nodes.dmp" \
-        --taxonnames "${DB_DIR}/taxonomy/names.dmp" \
+if [[ ! -f "${MMSEQS_TAX_DB}" ]]; then
+    echo "--- [2] Downloading and indexing MMseqs2 UniRef90 (~30 GB, 2-4 hr) ---"
+    mmseqs databases UniRef90 \
+        "${MMSEQS_TAX_DB}" \
+        "${SCRATCH_DIR}/mmseqs_dl_tmp" \
         --threads ${THREADS}
-
-    echo "DIAMOND NR done: $(date)"
+    echo "MMseqs2 UniRef90 done: $(date)"
 else
-    echo "[SKIP] DIAMOND NR already exists (${NR_DMND})"
+    echo "[SKIP] MMseqs2 UniRef90 database already exists"
 fi
 
 # =============================================================================
