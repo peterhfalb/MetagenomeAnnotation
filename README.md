@@ -67,7 +67,26 @@ Databases installed to `/projects/standard/kennedyp/shared/databases/metaG_annot
 
 ---
 
-### Step 1 — Classify contigs by domain (Tiara)
+### Steps 1–7 — Submit the pipeline
+
+Edit the two paths at the top of `run_annotation_pipeline.sh`, then run it once from the login node. It submits all steps with the correct dependency chain automatically.
+
+```bash
+# Edit ASM_DIR and ANN_DIR at the top of the file, then:
+bash run_annotation_pipeline.sh
+
+# Test on 2 samples first (recommended before a full run):
+bash run_annotation_pipeline.sh --test 2
+
+# If databases are already built from a previous run, skip step 0:
+bash run_annotation_pipeline.sh --skip-step0
+```
+
+The individual `submit_*.sh` scripts still work as before if you need to rerun a single step.
+
+---
+
+### Step 1 — Classify contigs by domain (Tiara) — detail
 
 ```bash
 bash submit_classify_contigs.sh \

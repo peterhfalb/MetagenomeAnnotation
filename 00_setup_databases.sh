@@ -41,11 +41,11 @@ THREADS=32
 DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
 
 # Scratch for large intermediate files (auto-cleared every 30 days — fine here)
-SCRATCH_DIR="/scratch.global/${USER}/metaG_db_setup"
+SCRATCH_DIR="/users/9/falb0011/FAB2/Summer2022/HMSC/bacteria"
 
 # BLAST+ module name for blastdbcmd (used to extract NR sequences from MSI copy)
-# Run: module spider blast    — find the correct module name, then update below
-BLAST_MODULE="blast/FILL_IN_VERSION"
+# Run: module avail blast    — find the correct module name, then update below
+BLAST_MODULE="blast-plus/2.13.0-gcc-8.2.0-vo4mr4d"
 
 # ── Environment ───────────────────────────────────────────────────────────────
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
