@@ -80,29 +80,41 @@ STEP0_ID=""
 check_databases() {
     local all_present=true
     echo "  Database status:"
-    local -A checks=(
-        ["MMseqs2 UniRef90"]="${DB_DIR}/mmseqs_taxonomy/uniref90"
-        ["NCBI taxonomy"]="${DB_DIR}/taxonomy/nodes.dmp"
-        ["KOfam profiles"]="${DB_DIR}/kofam/profiles"
-        ["dbCAN3"]="${DB_DIR}/dbcan/dbCAN.hmm.h3i"
-        ["MetaEuk target DB"]="${DB_DIR}/metaeuk/fungi_refseq_db"
+
+    # Parallel indexed arrays avoid the associative-array + set -u interaction
+    # that causes "unbound variable" errors in bash 4.x.
+    local -a labels=(
+        "MMseqs2 UniRef90"
+        "NCBI taxonomy"
+        "KOfam profiles"
+        "dbCAN3"
+        "MetaEuk target DB"
     )
-    # Preserve insertion order via explicit list
-    for label in "DIAMOND NR" "NCBI taxonomy" "KOfam profiles" "dbCAN3" "MetaEuk target DB"; do
-        local path="${checks[$label]}"
-        if [[ -e "${path}" ]]; then
-            echo "    [OK]     ${label}"
+    local -a paths=(
+        "${DB_DIR}/mmseqs_taxonomy/uniref90"
+        "${DB_DIR}/taxonomy/nodes.dmp"
+        "${DB_DIR}/kofam/profiles"
+        "${DB_DIR}/dbcan/dbCAN.hmm.h3i"
+        "${DB_DIR}/metaeuk/fungi_refseq_db"
+    )
+
+    local i
+    for i in "${!labels[@]}"; do
+        if [[ -e "${paths[$i]}" ]]; then
+            echo "    [OK]      ${labels[$i]}"
         else
-            echo "    [MISSING] ${label}"
+            echo "    [MISSING] ${labels[$i]}"
             all_present=false
         fi
     done
-    # PHI-base checked separately (manual download)
+
+    # PHI-base checked separately (requires manual download)
     if [[ -f "${DB_DIR}/phibase/phi-base.dmnd" ]]; then
-        echo "    [OK]     PHI-base"
+        echo "    [OK]      PHI-base"
     else
         echo "    [MISSING] PHI-base  (manual download required — see 00_setup_databases.sh Section 5)"
     fi
+
     ${all_present}
 }
 
