@@ -23,26 +23,26 @@
 # =============================================================================
 
 #SBATCH --job-name=metaG_mmseqs_tax
-#SBATCH --partition=a100
+#SBATCH --partition=msismall
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=32
 #SBATCH --mem=64gb
-#SBATCH --gres=gpu:a100:1
-#SBATCH --time=4:00:00
+#SBATCH --time=8:00:00
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=falb0011@umn.edu
+
+# NOTE on GPU: MMseqs2 v18 uses a gpuserver client-server architecture rather
+# than a --gpu flag on individual commands. Running a persistent GPU server per
+# SLURM array task is non-trivial. CPU MMseqs2 is already 10-20x faster than
+# DIAMOND for taxonomy — this step should complete in 30-90 min/sample on 32
+# CPUs. GPU acceleration can be revisited later if throughput is a bottleneck.
 
 set -euo pipefail
 
 # ── Environment ───────────────────────────────────────────────────────────────
-# metaG_mmseqs contains a CUDA-compiled MMseqs2 build.
-# Loading cuda/12.1.1 allows the dynamic linker to find CUDA runtime libraries
-# even though they are also present in the conda environment.
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
 conda activate metaG_mmseqs
-
-module load cuda/12.1.1
 
 # ── Parameters ────────────────────────────────────────────────────────────────
 THREADS=16
@@ -70,11 +70,8 @@ echo "============================================================"
 echo "Sample     : ${SAMPLE}"
 echo "Job ID     : ${SLURM_JOB_ID}  Array task: ${SLURM_ARRAY_TASK_ID}"
 echo "Start      : $(date)"
+echo "MMseqs2    : $(mmseqs version)"
 echo "============================================================"
-
-# Print GPU info for the log (useful for confirming GPU is being used)
-nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null \
-    && echo "" || echo "  NOTE: nvidia-smi not available — GPU may not be active"
 
 # ── Validate inputs ───────────────────────────────────────────────────────────
 if [[ ! -f "${PROTEINS_FAA}" ]]; then
@@ -101,7 +98,6 @@ mkdir -p "${OUT_DIR}" "${TMP_DIR}"
 # --lca-mode 2    : 2bLCA — combines top-hit and LCA for a balanced assignment
 # --tax-lineage 1 : adds full semicolon-separated lineage names to output
 # -s              : sensitivity (6 = sensitive, good for metagenomes)
-# --gpu 1         : enable GPU acceleration (requires CUDA-compiled binary)
 #
 # Output ${SAMPLE}_lca.tsv columns:
 #   query_id  lca_taxid  lca_rank  lca_name  lineage
@@ -120,8 +116,7 @@ else
         --threads ${THREADS} \
         --lca-mode ${LCA_MODE} \
         --tax-lineage 1 \
-        -s ${SENSITIVITY} \
-        --gpu 1
+        -s ${SENSITIVITY}
     echo "Step 1 done: $(date)"
 fi
 
