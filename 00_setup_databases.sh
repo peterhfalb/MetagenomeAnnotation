@@ -143,8 +143,8 @@ fi
 
 if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
     echo "--- [4] Downloading dbCAN3 databases ---"
-    cd "${DB_DIR}/dbcan"
-    run_dbcan download_db "${DB_DIR}/dbcan"
+    # dbCAN 4.x renamed the subcommand from 'download_db' to 'database'
+    run_dbcan database --db-dir "${DB_DIR}/dbcan"
     echo "dbCAN3 done: $(date)"
 else
     echo "[SKIP] dbCAN3 databases already exist"
@@ -238,7 +238,7 @@ echo "============================================================"
 echo "Database setup COMPLETE : $(date)"
 echo ""
 echo "Summary of database locations:"
-echo "  DIAMOND NR       : ${DB_DIR}/diamond/nr.dmnd"
+echo "  MMseqs2 UniRef90 : ${DB_DIR}/mmseqs_taxonomy/uniref90"
 echo "  NCBI taxonomy    : ${DB_DIR}/taxonomy/"
 echo "  KOfam            : ${DB_DIR}/kofam/"
 echo "  dbCAN3           : ${DB_DIR}/dbcan/"
