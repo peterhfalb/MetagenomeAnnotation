@@ -103,7 +103,7 @@ read_featurecounts <- function(file, sample_name) {
   # Column names: Geneid Chr Start End Strand Length <bam_path>
   count_col <- ncol(dt)
   result <- dt[, .(
-    gene_id = Geneid,
+    gene_id = sub("_mRNA$", "", Geneid),
     contig  = Chr,
     start   = Start,
     end     = End,
@@ -130,7 +130,7 @@ read_kofam <- function(file) {
 # Returns data.table: gene_id, CAZy_HMMER, CAZy_DIAMOND, n_tools
 # Strips position suffixes from HMMER calls (e.g. "GH3(1-200)" → "GH3").
 read_dbcan <- function(file) {
-  if (!file.exists(file) || file.info(file)$size == 0) return(data.table(gene_id = character()))
+  if (is.null(file) || !file.exists(file) || file.info(file)$size == 0) return(data.table(gene_id = character()))
   dt <- fread(file, header = TRUE, sep = "\t", quote = "")
   if (nrow(dt) == 0) return(data.table(gene_id = character()))
   # Column names vary slightly by version; normalise
@@ -215,6 +215,17 @@ read_mmseqs_taxonomy <- function(file) {
   result
 }
 
+# Find dbCAN overview file — filename changed across dbCAN v4 sub-versions.
+# Searches the sample's output directory for any known candidate name.
+find_dbcan_overview <- function(dbcan_dir) {
+  candidates <- file.path(dbcan_dir,
+    c("overview.txt", "overview.tsv", "CAZyme_annotation.tsv"))
+  for (f in candidates) {
+    if (file.exists(f) && file.info(f)$size > 0) return(f)
+  }
+  NULL
+}
+
 # =============================================================================
 # SECTION 1: Load sample list
 # =============================================================================
@@ -247,8 +258,8 @@ for (s in samples) {
   # KOfamScan (reads the full detail-tsv; mapper is derived from it in read_kofam)
   kofam_list[[s]] <- read_kofam(file.path(ann_dir, "kofam", paste0(s, "_kofam.tsv")))
 
-  # dbCAN3
-  dbcan_list[[s]] <- read_dbcan(file.path(ann_dir, "dbcan", s, "overview.txt"))
+  # dbCAN3 — find actual overview file (name varies across v4 sub-versions)
+  dbcan_list[[s]] <- read_dbcan(find_dbcan_overview(file.path(ann_dir, "dbcan", s)))
 
   # PHI-base
   phi_list[[s]] <- read_phibase(file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv")))

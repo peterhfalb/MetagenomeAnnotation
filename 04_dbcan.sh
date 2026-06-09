@@ -53,7 +53,17 @@ SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "${ACTIVE_LIST:-${ANNOTATION_DIR}/samp
 
 PROTEINS_FAA="${ANNOTATION_DIR}/metaeuk/${SAMPLE}/${SAMPLE}.fas"
 OUT_DIR="${ANNOTATION_DIR}/dbcan/${SAMPLE}"
-OVERVIEW="${OUT_DIR}/overview.txt"
+
+# dbCAN v4 changed the overview filename across sub-versions; detect it.
+# Searches up to two directory levels deep for any known candidate.
+find_overview() {
+    find "${OUT_DIR}" -maxdepth 2 \
+        \( -name "overview.txt" -o -name "overview.tsv" -o -name "CAZyme_annotation.tsv" \) \
+        -size +0c 2>/dev/null | head -1
+}
+
+OVERVIEW=""
+OVERVIEW=$(find_overview) || true
 
 echo "============================================================"
 echo "Sample     : ${SAMPLE}"
@@ -89,8 +99,8 @@ mkdir -p "${OUT_DIR}"
 #   a separate license and is less critical for fungal CAZyme calling).
 # ─────────────────────────────────────────────────────────────────────────────
 
-if [[ -f "${OVERVIEW}" && -s "${OVERVIEW}" ]]; then
-    echo "[SKIP] dbCAN3 output already exists"
+if [[ -n "${OVERVIEW}" ]]; then
+    echo "[SKIP] dbCAN3 output already exists: $(basename "${OVERVIEW}")"
 else
     echo "--- Step 1: run_dbcan ---"
     # dbCAN v4 replaced the old positional-argument syntax with subcommands.
@@ -104,6 +114,15 @@ else
         --methods hmm,diamond \
         --threads ${THREADS}
     echo "Step 1 done: $(date)"
+
+    OVERVIEW=$(find_overview) || true
+    if [[ -z "${OVERVIEW}" ]]; then
+        echo "ERROR: run_dbcan completed but no overview file found in ${OUT_DIR}" >&2
+        echo "  Files present:" >&2
+        ls -la "${OUT_DIR}" >&2
+        exit 1
+    fi
+    echo "  Overview file: $(basename "${OVERVIEW}")"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────

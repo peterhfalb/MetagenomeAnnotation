@@ -190,7 +190,8 @@ step_complete() {
     while IFS= read -r s; do
         [[ -z "${s}" ]] && continue
         local out="${pattern//SAMPLE/${s}}"
-        if [[ -f "${out}" ]]; then
+        # compgen -G handles both exact paths and glob patterns (e.g. overview.*)
+        if compgen -G "${out}" > /dev/null 2>&1; then
             n_done=$(( n_done + 1 ))
         else
             n_missing=$(( n_missing + 1 ))
@@ -279,7 +280,7 @@ echo ""
 
 STEP4_ID=""
 echo "Step 4: dbCAN3"
-if ! step_complete "dbCAN3" "${ANN_DIR}/dbcan/SAMPLE/overview.txt"; then
+if ! step_complete "dbCAN3" "${ANN_DIR}/dbcan/SAMPLE/overview.*"; then
     STEP4_ID=$(bash "${SCRIPT_DIR}/submit_dbcan.sh" "${PARALLEL_ARGS[@]}" \
         | grep -oP '(?<=job: )\d+')
     echo "  Job ID: ${STEP4_ID}"
