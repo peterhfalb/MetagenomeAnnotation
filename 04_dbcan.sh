@@ -93,12 +93,16 @@ if [[ -f "${OVERVIEW}" && -s "${OVERVIEW}" ]]; then
     echo "[SKIP] dbCAN3 output already exists"
 else
     echo "--- Step 1: run_dbcan ---"
-    run_dbcan \
-        "${PROTEINS_FAA}" protein \
+    # dbCAN v4 replaced the old positional-argument syntax with subcommands.
+    # Old (v3): run_dbcan <input> protein --db_dir ...
+    # New (v4): run_dbcan CAZyme_annotation --input_raw_data <input> --mode protein ...
+    run_dbcan CAZyme_annotation \
+        --input_raw_data "${PROTEINS_FAA}" \
+        --mode protein \
         --db_dir "${DB_DIR}/dbcan" \
-        --out_dir "${OUT_DIR}" \
-        --tools hmmer diamond \
-        --cpu ${THREADS}
+        --output_dir "${OUT_DIR}" \
+        --methods hmm,diamond \
+        --threads ${THREADS}
     echo "Step 1 done: $(date)"
 fi
 

@@ -27,7 +27,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
-#SBATCH --mem=64gb
+#SBATCH --mem=128gb
 #SBATCH --time=8:00:00
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=falb0011@umn.edu
@@ -47,7 +47,7 @@ conda activate metaG_mmseqs
 set -u
 
 # ── Parameters ────────────────────────────────────────────────────────────────
-THREADS=16
+THREADS=32
 DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
 
 # Sensitivity: 1 (fast) to 7.5 (max). 6 is a good metagenomics default.
@@ -110,6 +110,10 @@ if [[ -f "${OUT_LCA}" && -s "${OUT_LCA}" ]]; then
     echo "[SKIP] MMseqs2 taxonomy output already exists"
 else
     echo "--- Step 1: mmseqs easy-taxonomy ---"
+    # UniRef90 prefilter index needs ~306 GB if loaded entirely into RAM.
+    # --split-memory-limit tells MMseqs2 to split the target DB into chunks
+    # that each fit within the limit, running multiple passes instead of OOM.
+    # With 128 GB allocated and a 100 G limit, expect ~3 passes per sample.
     mmseqs easy-taxonomy \
         "${PROTEINS_FAA}" \
         "${DB_DIR}/mmseqs_taxonomy/uniref90" \
@@ -118,7 +122,8 @@ else
         --threads ${THREADS} \
         --lca-mode ${LCA_MODE} \
         --tax-lineage 1 \
-        -s ${SENSITIVITY}
+        -s ${SENSITIVITY} \
+        --split-memory-limit 100G
     echo "Step 1 done: $(date)"
 fi
 

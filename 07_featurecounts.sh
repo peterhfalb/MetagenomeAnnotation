@@ -108,21 +108,28 @@ if [[ -f "${OUT_COUNTS}" && -s "${OUT_COUNTS}" ]]; then
 else
     echo "--- Step 1: Detecting MetaEuk GFF structure ---"
 
-    # MetaEuk v6 uses feature type "CDS" but older builds used "MetaEuk_CDS".
-    # Auto-detect the most common non-comment feature type in the GFF.
-    FEATURE_TYPE=$(grep -v '^#' "${GFF}" | cut -f3 | sort | uniq -c | sort -rn | awk 'NR==1{print $2}')
-    echo "  GFF feature type detected  : ${FEATURE_TYPE}"
+    # Capture counts to variables rather than using grep pipelines inside if
+    # conditions — pipefail can cause the else branch to fire even when the
+    # pattern is present when using multi-stage pipes in conditionals.
+    # MetaEuk v6 produces 'exon' features with a Parent= attribute linking each
+    # exon to its parent mRNA.  Older MetaEuk produced 'CDS' features.
+    N_EXON_PARENT=$(grep -v '^#' "${GFF}" | awk '$3=="exon" && /Parent=/' | wc -l)
+    N_CDS_PARENT=$(grep -v '^#' "${GFF}" | awk '$3=="CDS"  && /Parent=/' | wc -l)
 
-    # For multi-exon gene aggregation, prefer the Parent= attribute (links each
-    # CDS/exon to its parent gene model). Fall back to ID= if Parent= is absent
-    # (single-exon predictions where each CDS IS the gene model).
-    if grep -v '^#' "${GFF}" | cut -f9 | grep -q 'Parent='; then
+    if [[ "${N_EXON_PARENT}" -gt 0 ]]; then
+        FEATURE_TYPE="exon"
         GROUP_ATTR="Parent"
-        echo "  Grouping attribute         : Parent (multi-exon hierarchy present)"
+        echo "  GFF structure: exon + Parent (MetaEuk v6)"
+    elif [[ "${N_CDS_PARENT}" -gt 0 ]]; then
+        FEATURE_TYPE="CDS"
+        GROUP_ATTR="Parent"
+        echo "  GFF structure: CDS + Parent"
     else
+        FEATURE_TYPE=$(grep -v '^#' "${GFF}" | cut -f3 | sort | uniq -c | sort -rn | awk 'NR==1{print $2}')
         GROUP_ATTR="ID"
-        echo "  Grouping attribute         : ID (no Parent attribute found)"
+        echo "  GFF structure: ${FEATURE_TYPE} + ID (fallback)"
     fi
+    echo "  -t ${FEATURE_TYPE}  -g ${GROUP_ATTR}"
 
     echo "--- Step 1: featureCounts ---"
     featureCounts \
