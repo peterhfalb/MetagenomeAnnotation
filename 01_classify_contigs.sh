@@ -102,22 +102,24 @@ fi
 
 echo "--- Step 2: Extracting contig name lists ---"
 
-awk '$2 == "eukaryota"  {print $1}' "${TIARA_OUT}" > "${EUK_LIST}"
-awk '$2 == "prokarya"   {print $1}' "${TIARA_OUT}" > "${PROK_LIST}"
+awk '$2 == "eukarya"   {print $1}' "${TIARA_OUT}" > "${EUK_LIST}"
+awk '$2 == "prokarya"  {print $1}' "${TIARA_OUT}" > "${PROK_LIST}"
 
 # Summary counts (written to file and stdout for logs)
 N_TOTAL=$(grep -c '>' "${CONTIGS_FNA}")
 N_EUK=$(wc -l < "${EUK_LIST}")
 N_PROK=$(wc -l < "${PROK_LIST}")
-N_MITO=$(awk '$2 == "mitochondria" {c++} END {print c+0}' "${TIARA_OUT}")
-N_PLASTID=$(awk '$2 == "plastid"   {c++} END {print c+0}' "${TIARA_OUT}")
-N_UNKNOWN=$(awk '$2 == "unknown"   {c++} END {print c+0}' "${TIARA_OUT}")
+# Mito/plastid are in second_classifier (col 3); first_classifier (col 2) shows "organelle"
+N_MITO=$(awk '$3 == "mitochondrion" {c++} END {print c+0}' "${TIARA_OUT}")
+N_PLASTID=$(awk '$3 == "plastid"    {c++} END {print c+0}' "${TIARA_OUT}")
+N_UNKNOWN=$(awk '$2 == "unknown"    {c++} END {print c+0}' "${TIARA_OUT}")
 
-pct() { awk "BEGIN{printf \"%.1f\", ${N_TOTAL}>0 ? ${1}/${N_TOTAL}*100 : 0}"; }
+# Use awk -v to avoid shell interpreting '>' as redirection inside double quotes
+pct() { awk -v total="${N_TOTAL}" -v n="$1" 'BEGIN{printf "%.1f", total>0 ? n/total*100 : 0}'; }
 {
     echo "Sample          : ${SAMPLE}"
     echo "Total contigs   : ${N_TOTAL}"
-    echo "  Eukaryota     : ${N_EUK}  ($(pct "${N_EUK}")%)"
+    echo "  Eukarya       : ${N_EUK}  ($(pct "${N_EUK}")%)"
     echo "  Prokarya      : ${N_PROK}  ($(pct "${N_PROK}")%)"
     echo "  Mitochondria  : ${N_MITO}"
     echo "  Plastid       : ${N_PLASTID}"
@@ -134,32 +136,24 @@ echo "--- Step 3: Extracting FASTA subsets ---"
 # Create faidx index if not already present
 [[ ! -f "${CONTIGS_FNA}.fai" ]] && samtools faidx "${CONTIGS_FNA}"
 
-if [[ -f "${EUK_CONTIGS}" ]]; then
-    echo "[SKIP] Eukaryotic contigs FASTA already exists"
+if [[ "${N_EUK}" -gt 0 ]]; then
+    samtools faidx "${CONTIGS_FNA}" \
+        -r "${EUK_LIST}" \
+        -o "${EUK_CONTIGS}"
+    echo "  Extracted ${N_EUK} eukaryotic contigs"
 else
-    if [[ "${N_EUK}" -gt 0 ]]; then
-        samtools faidx "${CONTIGS_FNA}" \
-            -r "${EUK_LIST}" \
-            -o "${EUK_CONTIGS}"
-        echo "  Extracted ${N_EUK} eukaryotic contigs"
-    else
-        echo "WARNING: No eukaryotic contigs found for ${SAMPLE} — creating empty file"
-        touch "${EUK_CONTIGS}"
-    fi
+    echo "WARNING: No eukaryotic contigs found for ${SAMPLE} — creating empty file"
+    touch "${EUK_CONTIGS}"
 fi
 
-if [[ -f "${PROK_CONTIGS}" ]]; then
-    echo "[SKIP] Prokaryotic contigs FASTA already exists"
+if [[ "${N_PROK}" -gt 0 ]]; then
+    samtools faidx "${CONTIGS_FNA}" \
+        -r "${PROK_LIST}" \
+        -o "${PROK_CONTIGS}"
+    echo "  Extracted ${N_PROK} prokaryotic contigs"
 else
-    if [[ "${N_PROK}" -gt 0 ]]; then
-        samtools faidx "${CONTIGS_FNA}" \
-            -r "${PROK_LIST}" \
-            -o "${PROK_CONTIGS}"
-        echo "  Extracted ${N_PROK} prokaryotic contigs"
-    else
-        echo "WARNING: No prokaryotic contigs found for ${SAMPLE} — creating empty file"
-        touch "${PROK_CONTIGS}"
-    fi
+    echo "WARNING: No prokaryotic contigs found for ${SAMPLE} — creating empty file"
+    touch "${PROK_CONTIGS}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
