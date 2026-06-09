@@ -143,8 +143,28 @@ fi
 
 if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
     echo "--- [4] Downloading dbCAN3 databases ---"
-    # dbCAN 4.x renamed the subcommand from 'download_db' to 'database'
-    run_dbcan database --db_dir "${DB_DIR}/dbcan"
+    # run_dbcan database may fail with 403 on TF.hmm and dbCAN-PUL.xlsx from some
+    # HPC compute nodes. Those files are only needed for --tools tf/stp substrate
+    # prediction; we use --tools hmmer diamond so we suppress the error and stub them.
+    run_dbcan database --db_dir "${DB_DIR}/dbcan" || true
+
+    # Verify the two files we actually need downloaded successfully
+    if [[ ! -f "${DB_DIR}/dbcan/CAZy.dmnd" ]]; then
+        echo "ERROR: CAZy.dmnd not found after dbCAN download — check network access." >&2
+        exit 1
+    fi
+    if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm" ]]; then
+        echo "ERROR: dbCAN.hmm not found after dbCAN download — check network access." >&2
+        exit 1
+    fi
+
+    # Press the HMM database (may not have run if download errored after file transfer)
+    hmmpress "${DB_DIR}/dbcan/dbCAN.hmm"
+
+    # Stub optional files that 403'd so run_dbcan doesn't error at analysis time
+    touch "${DB_DIR}/dbcan/TF.hmm"
+    touch "${DB_DIR}/dbcan/dbCAN-PUL.xlsx"
+
     echo "dbCAN3 done: $(date)"
 else
     echo "[SKIP] dbCAN3 databases already exist"
