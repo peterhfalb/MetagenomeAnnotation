@@ -7,6 +7,11 @@
 # MetaEuk (step 2) completes. Database setup (step 0) is skipped automatically
 # if databases are already built.
 #
+# Completion detection: before each step is submitted, all samples are checked
+# for existing output files. If every sample already has output, that step is
+# skipped entirely (no SLURM job submitted). This makes re-running after a
+# partial failure cheap — only the steps with missing output are resubmitted.
+#
 # Usage:
 #   bash run_annotation_pipeline.sh              # normal run
 #   bash run_annotation_pipeline.sh --test 2     # test on first 2 samples
@@ -153,83 +158,212 @@ else
 fi
 
 # =============================================================================
+# Completion detection
+# =============================================================================
+# Before each step, check whether every sample already has its output file.
+# If so, skip submission entirely (no SLURM job queued for that step).
+# The check uses ${ASM_DIR}/sample_list.txt, which is always present after
+# the assembly pipeline runs. For --test N, only the first N samples are checked.
+
+CHECK_LIST=""
+if [[ -f "${ASM_DIR}/sample_list.txt" ]]; then
+    if [[ -n "${TEST_N}" ]]; then
+        CHECK_LIST="$(mktemp)"
+        head -n "${TEST_N}" "${ASM_DIR}/sample_list.txt" > "${CHECK_LIST}"
+        trap 'rm -f "${CHECK_LIST}"' EXIT
+    else
+        CHECK_LIST="${ASM_DIR}/sample_list.txt"
+    fi
+fi
+
+# step_complete STEP_NAME OUTPUT_PATTERN
+# Returns 0 if all samples in CHECK_LIST have an existing output file.
+# OUTPUT_PATTERN should contain the literal word SAMPLE (replaced per sample).
+# Patterns with SAMPLE appearing more than once (e.g. metaeuk/SAMPLE/SAMPLE.fas)
+# are handled correctly — all occurrences are substituted.
+step_complete() {
+    local step_name="$1"
+    local pattern="$2"
+    [[ -z "${CHECK_LIST}" ]] && return 1
+
+    local n_done=0 n_missing=0
+    while IFS= read -r s; do
+        [[ -z "${s}" ]] && continue
+        local out="${pattern//SAMPLE/${s}}"
+        if [[ -f "${out}" ]]; then
+            n_done=$(( n_done + 1 ))
+        else
+            n_missing=$(( n_missing + 1 ))
+        fi
+    done < "${CHECK_LIST}"
+
+    if [[ "${n_missing}" -eq 0 ]]; then
+        echo "  [ALL DONE] ${step_name} — all ${n_done} sample(s) complete, skipping submission"
+        return 0
+    else
+        echo "  [SUBMIT]   ${step_name} — ${n_missing}/$(( n_done + n_missing )) sample(s) need processing"
+        return 1
+    fi
+}
+
+# =============================================================================
 # STEP 1: Tiara contig classification
 # =============================================================================
 
-echo "Submitting Step 1: Tiara contig classification..."
-STEP1_ARGS=(
-    --assembly-dir   "${ASM_DIR}"
-    --annotation-dir "${ANN_DIR}"
-)
-[[ -n "${TEST_FLAG}" ]] && STEP1_ARGS+=( ${TEST_FLAG} )
-[[ -n "${STEP0_ID}"  ]] && STEP1_ARGS+=( --after "${STEP0_ID}" )
+echo "Step 1: Tiara contig classification"
+STEP1_ID=""
+if ! step_complete "Tiara" "${ANN_DIR}/tiara/SAMPLE_tiara.txt"; then
+    STEP1_ARGS=(
+        --assembly-dir   "${ASM_DIR}"
+        --annotation-dir "${ANN_DIR}"
+    )
+    [[ -n "${TEST_FLAG}" ]] && STEP1_ARGS+=( ${TEST_FLAG} )
+    [[ -n "${STEP0_ID}"  ]] && STEP1_ARGS+=( --after "${STEP0_ID}" )
 
-STEP1_ID=$(bash "${SCRIPT_DIR}/submit_classify_contigs.sh" "${STEP1_ARGS[@]}" \
-    | grep -oP '(?<=job: )\d+')
-echo "  Job ID: ${STEP1_ID}"
+    STEP1_ID=$(bash "${SCRIPT_DIR}/submit_classify_contigs.sh" "${STEP1_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP1_ID}"
+fi
 echo ""
 
 # =============================================================================
 # STEP 2: MetaEuk gene prediction
 # =============================================================================
 
-echo "Submitting Step 2: MetaEuk gene prediction..."
-STEP2_ARGS=(
-    --assembly-dir   "${ASM_DIR}"
-    --annotation-dir "${ANN_DIR}"
-    --after          "${STEP1_ID}"
-)
-[[ -n "${TEST_FLAG}" ]] && STEP2_ARGS+=( ${TEST_FLAG} )
+echo "Step 2: MetaEuk gene prediction"
+STEP2_ID=""
+if ! step_complete "MetaEuk" "${ANN_DIR}/metaeuk/SAMPLE/SAMPLE.fas"; then
+    STEP2_ARGS=(
+        --assembly-dir   "${ASM_DIR}"
+        --annotation-dir "${ANN_DIR}"
+    )
+    [[ -n "${TEST_FLAG}" ]] && STEP2_ARGS+=( ${TEST_FLAG} )
+    [[ -n "${STEP1_ID}"  ]] && STEP2_ARGS+=( --after "${STEP1_ID}" )
 
-STEP2_ID=$(bash "${SCRIPT_DIR}/submit_metaeuk.sh" "${STEP2_ARGS[@]}" \
-    | grep -oP '(?<=job: )\d+')
-echo "  Job ID: ${STEP2_ID}"
+    STEP2_ID=$(bash "${SCRIPT_DIR}/submit_metaeuk.sh" "${STEP2_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP2_ID}"
+fi
 echo ""
 
 # =============================================================================
 # STEPS 3-7: Functional annotation + quantification (all parallel after step 2)
 # =============================================================================
 
-echo "Submitting Steps 3-7 (parallel, all depend on Step 2: ${STEP2_ID})..."
+# Determine which upstream job the parallel steps should wait on.
+# If step 2 was submitted, wait for it. If step 2 was skipped but step 1 was
+# submitted, wait for step 1. If both were skipped, no dependency needed.
+PARALLEL_DEP=""
+if [[ -n "${STEP2_ID}" ]]; then
+    PARALLEL_DEP="${STEP2_ID}"
+elif [[ -n "${STEP1_ID}" ]]; then
+    PARALLEL_DEP="${STEP1_ID}"
+fi
 
-PARALLEL_ARGS=( --annotation-dir "${ANN_DIR}" --after "${STEP2_ID}" )
-[[ -n "${TEST_FLAG}" ]] && PARALLEL_ARGS+=( ${TEST_FLAG} )
+echo "Steps 3-7: functional annotation + quantification (parallel)"
+[[ -n "${PARALLEL_DEP}" ]] && echo "  Dependency: afterok:${PARALLEL_DEP}"
+echo ""
 
-STEP3_ID=$(bash "${SCRIPT_DIR}/submit_kofam.sh"      "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
-STEP4_ID=$(bash "${SCRIPT_DIR}/submit_dbcan.sh"      "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
-STEP5_ID=$(bash "${SCRIPT_DIR}/submit_phibase.sh"    "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
-STEP6_ID=$(bash "${SCRIPT_DIR}/submit_mmseqs_taxonomy.sh" "${PARALLEL_ARGS[@]}" | grep -oP '(?<=job: )\d+')
+PARALLEL_ARGS=( --annotation-dir "${ANN_DIR}" )
+[[ -n "${TEST_FLAG}"    ]] && PARALLEL_ARGS+=( ${TEST_FLAG} )
+[[ -n "${PARALLEL_DEP}" ]] && PARALLEL_ARGS+=( --after "${PARALLEL_DEP}" )
 
-FC_ARGS=( --assembly-dir "${ASM_DIR}" --annotation-dir "${ANN_DIR}" --after "${STEP2_ID}" )
-[[ -n "${TEST_FLAG}" ]] && FC_ARGS+=( ${TEST_FLAG} )
-STEP7_ID=$(bash "${SCRIPT_DIR}/submit_featurecounts.sh" "${FC_ARGS[@]}" | grep -oP '(?<=job: )\d+')
+STEP3_ID=""
+echo "Step 3: KOfamScan"
+if ! step_complete "KOfamScan" "${ANN_DIR}/kofam/SAMPLE_kofam.tsv"; then
+    STEP3_ID=$(bash "${SCRIPT_DIR}/submit_kofam.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP3_ID}"
+fi
+echo ""
 
-echo "  Step 3 KOfamScan    : ${STEP3_ID}"
-echo "  Step 4 dbCAN3       : ${STEP4_ID}"
-echo "  Step 5 PHI-base     : ${STEP5_ID}"
-echo "  Step 6 MMseqs2 tax  : ${STEP6_ID}  (GPU, ~15-60 min/sample)"
-echo "  Step 7 featureCounts: ${STEP7_ID}"
+STEP4_ID=""
+echo "Step 4: dbCAN3"
+if ! step_complete "dbCAN3" "${ANN_DIR}/dbcan/SAMPLE/overview.txt"; then
+    STEP4_ID=$(bash "${SCRIPT_DIR}/submit_dbcan.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP4_ID}"
+fi
+echo ""
+
+STEP5_ID=""
+echo "Step 5: PHI-base"
+if ! step_complete "PHI-base" "${ANN_DIR}/phibase/SAMPLE_phibase.tsv"; then
+    STEP5_ID=$(bash "${SCRIPT_DIR}/submit_phibase.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP5_ID}"
+fi
+echo ""
+
+STEP6_ID=""
+echo "Step 6: MMseqs2 taxonomy"
+if ! step_complete "MMseqs2 taxonomy" "${ANN_DIR}/mmseqs_taxonomy/SAMPLE_lca.tsv"; then
+    STEP6_ID=$(bash "${SCRIPT_DIR}/submit_mmseqs_taxonomy.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP6_ID}"
+fi
+echo ""
+
+STEP7_ID=""
+echo "Step 7: featureCounts"
+FC_ARGS=( --assembly-dir "${ASM_DIR}" --annotation-dir "${ANN_DIR}" )
+[[ -n "${TEST_FLAG}"    ]] && FC_ARGS+=( ${TEST_FLAG} )
+[[ -n "${PARALLEL_DEP}" ]] && FC_ARGS+=( --after "${PARALLEL_DEP}" )
+if ! step_complete "featureCounts" "${ANN_DIR}/featurecounts/SAMPLE_counts.txt"; then
+    STEP7_ID=$(bash "${SCRIPT_DIR}/submit_featurecounts.sh" "${FC_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP7_ID}"
+fi
 echo ""
 
 # =============================================================================
 # Summary
 # =============================================================================
 
-ALL_IDS="${STEP1_ID},${STEP2_ID},${STEP3_ID},${STEP4_ID},${STEP5_ID},${STEP6_ID},${STEP7_ID}"
-[[ -n "${STEP0_ID}" ]] && ALL_IDS="${STEP0_ID},${ALL_IDS}"
+# Collect only the IDs of steps that were actually submitted.
+SUBMITTED_IDS=()
+[[ -n "${STEP0_ID}" ]] && SUBMITTED_IDS+=("${STEP0_ID}")
+[[ -n "${STEP1_ID}" ]] && SUBMITTED_IDS+=("${STEP1_ID}")
+[[ -n "${STEP2_ID}" ]] && SUBMITTED_IDS+=("${STEP2_ID}")
+[[ -n "${STEP3_ID}" ]] && SUBMITTED_IDS+=("${STEP3_ID}")
+[[ -n "${STEP4_ID}" ]] && SUBMITTED_IDS+=("${STEP4_ID}")
+[[ -n "${STEP5_ID}" ]] && SUBMITTED_IDS+=("${STEP5_ID}")
+[[ -n "${STEP6_ID}" ]] && SUBMITTED_IDS+=("${STEP6_ID}")
+[[ -n "${STEP7_ID}" ]] && SUBMITTED_IDS+=("${STEP7_ID}")
+
+if [[ "${#SUBMITTED_IDS[@]}" -eq 0 ]]; then
+    echo "============================================================"
+    echo "All steps already complete — no jobs submitted."
+    echo ""
+    echo "To force a step to re-run, delete its output files for the"
+    echo "relevant sample(s) and rerun this script."
+    echo ""
+    echo "Step 8 — run now:"
+    echo "  Rscript ${SCRIPT_DIR}/08_integrate.R \\"
+    echo "    --annotation-dir ${ANN_DIR} \\"
+    echo "    --assembly-dir   ${ASM_DIR} \\"
+    echo "    --db-dir         ${DB_DIR}"
+    echo "============================================================"
+    exit 0
+fi
+
+ALL_IDS=$(IFS=','; echo "${SUBMITTED_IDS[*]}")
 
 echo "============================================================"
-echo "All jobs submitted."
+echo "Jobs submitted:"
 echo ""
-echo "Dependency chain:"
-[[ -n "${STEP0_ID}" ]] && echo "  Step 0 databases    : ${STEP0_ID}"
-echo "  Step 1 Tiara        : ${STEP1_ID}"
-echo "  Step 2 MetaEuk      : ${STEP2_ID}  → waits on step 1"
-echo "  Steps 3-7           : parallel   → all wait on step 2"
+echo "  Step 0 databases    : ${STEP0_ID:-skipped}"
+echo "  Step 1 Tiara        : ${STEP1_ID:-skipped}"
+echo "  Step 2 MetaEuk      : ${STEP2_ID:-skipped}"
+echo "  Step 3 KOfamScan    : ${STEP3_ID:-skipped}"
+echo "  Step 4 dbCAN3       : ${STEP4_ID:-skipped}"
+echo "  Step 5 PHI-base     : ${STEP5_ID:-skipped}"
+echo "  Step 6 MMseqs2 tax  : ${STEP6_ID:-skipped}"
+echo "  Step 7 featureCounts: ${STEP7_ID:-skipped}"
 echo ""
 echo "Monitor:"
 echo "  squeue -j ${ALL_IDS}"
-echo "  tail -f ${ANN_DIR}/logs/metaeuk/metaeuk_${STEP2_ID}_*.out"
+echo "  tail -f ${ANN_DIR}/logs/..."
 echo ""
 echo "Logs: ${ANN_DIR}/logs/"
 echo ""
@@ -245,8 +379,9 @@ echo ""
 # =============================================================================
 # SLURM dependency type is 'afterok', meaning: if any task in an array job
 # exits non-zero, all downstream dependent jobs are cancelled with status
-# 'DependencyNeverSatisfied'. The idempotency checks in each job script mean
-# completed samples are skipped on resubmission, so recovery is safe.
+# 'DependencyNeverSatisfied'. The completion checks in this script mean that
+# re-running after a partial failure is safe — completed samples are detected
+# and skipped, so only the failed samples are resubmitted.
 #
 # To recover after a failure:
 #
@@ -257,15 +392,13 @@ echo ""
 #          [[ ! -f ${ANN_DIR}/metaeuk/${s}/${s}.fas ]] && echo "MISSING: ${s}"
 #      done
 #
-# 2. Rerun only the failed samples (all other steps are still intact):
+# 2. Simply rerun this script — it will detect completed samples and only
+#    submit jobs for the steps/samples that are still missing output.
+#
+# 3. Alternatively, rerun only specific samples for a specific step:
 #      bash submit_metaeuk.sh \
 #        --assembly-dir ${ASM_DIR} --annotation-dir ${ANN_DIR} \
 #        --samples "FAILED_SAMPLE_01,FAILED_SAMPLE_02"
-#
-# 3. Once the rerun completes, resubmit the downstream steps for those samples:
-#      bash submit_kofam.sh --annotation-dir ${ANN_DIR} \
-#        --samples "FAILED_SAMPLE_01,FAILED_SAMPLE_02" --after <RERUN_JOB_ID>
-#      # repeat for dbcan, phibase, diamond_nr, featurecounts
 #
 # Note: steps 3-7 are independent of each other. If only step 6 (MMseqs2 taxonomy)
 # fails, steps 3-5 and 7 are unaffected and you only need to rerun step 6.
