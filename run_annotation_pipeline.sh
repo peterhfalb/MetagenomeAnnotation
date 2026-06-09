@@ -109,9 +109,11 @@ check_databases() {
     done
 
     # PHI-base: FASTA requires manual download; DIAMOND DB is built by setup job.
+    local phibase_fasta
+    phibase_fasta=$(find "${DB_DIR}/phibase" -maxdepth 1 -name "*.fas" 2>/dev/null | head -1)
     if [[ -f "${DB_DIR}/phibase/phi-base.dmnd" ]]; then
         echo "    [OK]      PHI-base"
-    elif [[ -f "${DB_DIR}/phibase/phi-base_current.fas" ]]; then
+    elif [[ -n "${phibase_fasta}" ]]; then
         echo "    [OK]      PHI-base  (FASTA present — DIAMOND DB will be built by setup job)"
     else
         echo "    [MISSING] PHI-base  (FASTA not found — manual download required before setup job runs)"

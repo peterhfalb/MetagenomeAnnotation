@@ -164,14 +164,16 @@ fi
 # This script will then build the DIAMOND database automatically.
 # =============================================================================
 
-PHIBASE_FASTA="${DB_DIR}/phibase/phi-base_current.fas"
 PHIBASE_DMND="${DB_DIR}/phibase/phi-base.dmnd"
 
-if [[ ! -f "${PHIBASE_FASTA}" ]]; then
+# Accept any .fas file in the phibase directory (filename varies by release)
+PHIBASE_FASTA=$(find "${DB_DIR}/phibase" -maxdepth 1 -name "*.fas" | head -1)
+
+if [[ -z "${PHIBASE_FASTA}" ]]; then
     echo ""
     echo "WARNING: PHI-base FASTA not found — skipping PHI-base DIAMOND build."
-    echo "  Download the current FASTA from https://www.phi-base.org/ and place at:"
-    echo "  ${PHIBASE_FASTA}"
+    echo "  Download the current FASTA from https://www.phi-base.org/ and place in:"
+    echo "  ${DB_DIR}/phibase/"
     echo "  Then re-run this script; the DIAMOND build will run automatically."
     echo ""
 elif [[ ! -f "${PHIBASE_DMND}" ]]; then
