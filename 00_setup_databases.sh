@@ -161,9 +161,11 @@ if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
     # Press the HMM database (may not have run if download errored after file transfer)
     hmmpress "${DB_DIR}/dbcan/dbCAN.hmm"
 
-    # Stub optional files that 403'd so run_dbcan doesn't error at analysis time
-    touch "${DB_DIR}/dbcan/TF.hmm"
-    touch "${DB_DIR}/dbcan/dbCAN-PUL.xlsx"
+    # Stub optional files that 403 on MSI compute nodes (substrate prediction modes
+    # only; we use --tools hmmer diamond so these are not needed at analysis time)
+    for opt_file in TF.hmm STP.hmm dbCAN-PUL.xlsx fam-substrate-mapping.tsv; do
+        [[ -f "${DB_DIR}/dbcan/${opt_file}" ]] || touch "${DB_DIR}/dbcan/${opt_file}"
+    done
 
     echo "dbCAN3 done: $(date)"
 else
@@ -225,13 +227,20 @@ METAEUK_FASTA="${DB_DIR}/metaeuk/fungi_refseq_proteins.faa"
 METAEUK_DB="${DB_DIR}/metaeuk/fungi_refseq_db"
 
 if [[ ! -f "${METAEUK_FASTA}" ]]; then
-    echo "--- [6a] Downloading NCBI RefSeq fungi proteins via rsync (~3-8 GB compressed) ---"
-    # NCBI rsync host is rsync.ncbi.nlm.nih.gov (:: notation), NOT ftp.ncbi.nlm.nih.gov
-    rsync -av --no-motd \
-        --include="*.protein.faa.gz" \
-        --exclude="*" \
-        rsync.ncbi.nlm.nih.gov::refseq/release/fungi/ \
-        "${SCRATCH_DIR}/fungi_refseq/"
+    echo "--- [6a] Downloading NCBI RefSeq fungi proteins via HTTPS (~3-8 GB compressed) ---"
+    # rsync.ncbi.nlm.nih.gov is not reachable from MSI compute nodes (DNS blocked).
+    # Use wget recursive download from HTTPS FTP mirror instead.
+    mkdir -p "${SCRATCH_DIR}/fungi_refseq"
+    wget -q -r -nd --no-parent -A "*.protein.faa.gz" \
+        "https://ftp.ncbi.nlm.nih.gov/refseq/release/fungi/" \
+        -P "${SCRATCH_DIR}/fungi_refseq/"
+
+    N_FILES=$(ls "${SCRATCH_DIR}/fungi_refseq/"*.protein.faa.gz 2>/dev/null | wc -l)
+    echo "  Downloaded ${N_FILES} fungi protein FASTA files"
+    if [[ "${N_FILES}" -eq 0 ]]; then
+        echo "ERROR: No fungi protein files downloaded — check network access." >&2
+        exit 1
+    fi
 
     echo "--- [6b] Concatenating and decompressing fungi protein FASTAs ---"
     zcat "${SCRATCH_DIR}/fungi_refseq/"*.protein.faa.gz > "${METAEUK_FASTA}"
