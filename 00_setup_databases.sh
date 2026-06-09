@@ -144,7 +144,7 @@ fi
 if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
     echo "--- [4] Downloading dbCAN3 databases ---"
     # dbCAN 4.x renamed the subcommand from 'download_db' to 'database'
-    run_dbcan database --db-dir "${DB_DIR}/dbcan"
+    run_dbcan database --db_dir "${DB_DIR}/dbcan"
     echo "dbCAN3 done: $(date)"
 else
     echo "[SKIP] dbCAN3 databases already exist"
