@@ -44,8 +44,10 @@ DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
 SCRATCH_DIR="/scratch.global/falb0011"
 
 # ── Environment ───────────────────────────────────────────────────────────────
+set +u
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
 conda activate metaG_annotation
+set -u
 
 # DIAMOND is still needed for the PHI-base and fungi DIAMOND database builds.
 # BLAST+ module no longer required (replaced by mmseqs databases for taxonomy).

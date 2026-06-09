@@ -41,8 +41,10 @@
 set -euo pipefail
 
 # ── Environment ───────────────────────────────────────────────────────────────
+set +u
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
 conda activate metaG_mmseqs
+set -u
 
 # ── Parameters ────────────────────────────────────────────────────────────────
 THREADS=16

@@ -46,8 +46,10 @@
 set -euo pipefail
 
 # ── Conda (featureCounts / subread is in metaG_annotation environment) ────────
+set +u
 source /common/software/install/migrated/anaconda/python3-2020.07-mamba/etc/profile.d/conda.sh
 conda activate metaG_annotation
+set -u
 
 # ── Parameters ────────────────────────────────────────────────────────────────
 THREADS=8
