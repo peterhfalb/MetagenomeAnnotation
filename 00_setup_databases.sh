@@ -228,17 +228,40 @@ METAEUK_DB="${DB_DIR}/metaeuk/fungi_refseq_db"
 
 if [[ ! -f "${METAEUK_FASTA}" ]]; then
     echo "--- [6a] Downloading NCBI RefSeq fungi proteins via HTTPS (~3-8 GB compressed) ---"
-    # rsync.ncbi.nlm.nih.gov is not reachable from MSI compute nodes (DNS blocked).
-    # Use wget recursive download from HTTPS FTP mirror instead.
+    # rsync port 873 is blocked on MSI compute nodes; wget -r is also unreliable because
+    # set -e kills the script if wget returns non-zero on any link error. Instead:
+    # step 1 — fetch directory listing; step 2 — download each file individually.
     mkdir -p "${SCRATCH_DIR}/fungi_refseq"
-    wget -q -r -nd --no-parent -A "*.protein.faa.gz" \
-        "https://ftp.ncbi.nlm.nih.gov/refseq/release/fungi/" \
-        -P "${SCRATCH_DIR}/fungi_refseq/"
+
+    echo "  Fetching NCBI fungi RefSeq directory listing..."
+    wget -O "${SCRATCH_DIR}/fungi_index.html" \
+        "https://ftp.ncbi.nlm.nih.gov/refseq/release/fungi/"
+
+    grep -oP 'fungi\.\d+\.protein\.faa\.gz' "${SCRATCH_DIR}/fungi_index.html" \
+        | sort -u > "${SCRATCH_DIR}/fungi_files.txt"
+
+    N_EXPECTED=$(wc -l < "${SCRATCH_DIR}/fungi_files.txt")
+    echo "  Found ${N_EXPECTED} protein FASTA files to download"
+    if [[ "${N_EXPECTED}" -eq 0 ]]; then
+        echo "ERROR: Could not parse fungi file list from NCBI — check network access." >&2
+        exit 1
+    fi
+
+    while IFS= read -r fname; do
+        dest="${SCRATCH_DIR}/fungi_refseq/${fname}"
+        if [[ -f "${dest}" ]]; then
+            echo "  [skip] ${fname}"
+        else
+            echo "  Downloading ${fname}..."
+            wget -c -q "https://ftp.ncbi.nlm.nih.gov/refseq/release/fungi/${fname}" \
+                -O "${dest}"
+        fi
+    done < "${SCRATCH_DIR}/fungi_files.txt"
 
     N_FILES=$(ls "${SCRATCH_DIR}/fungi_refseq/"*.protein.faa.gz 2>/dev/null | wc -l)
-    echo "  Downloaded ${N_FILES} fungi protein FASTA files"
+    echo "  ${N_FILES} / ${N_EXPECTED} files present after download"
     if [[ "${N_FILES}" -eq 0 ]]; then
-        echo "ERROR: No fungi protein files downloaded — check network access." >&2
+        echo "ERROR: No fungi protein files downloaded." >&2
         exit 1
     fi
 
