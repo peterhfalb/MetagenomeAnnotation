@@ -71,10 +71,13 @@ samples <- samples[nzchar(trimws(samples))]
 ```
 
 ```{r load-metadata}
+stand_levels <- c("ash or elm", "oak", "pine", "mixed", "unknown")
+
 meta_df <- NULL
 sample_meta <- data.frame(
   sample     = samples,
-  stake_id   = sub("^GEO-(.+)_S[0-9]+$", "\\1", samples),
+  # Strip GEO- prefix and _Cleaned_SN / _SN suffix to get stake number (e.g. "12-18")
+  stake_id   = sub("^GEO-([0-9]+-[0-9]+).*_S[0-9]+$", "\\1", samples),
   stand_type = "unknown",
   stringsAsFactors = FALSE
 )
@@ -87,6 +90,12 @@ if (!is.null(params$metadata) && file.exists(params$metadata)) {
     mutate(stand_type = coalesce(stand_type.y, "unknown")) %>%
     select(sample, stake_id, stand_type)
 }
+
+# Order samples by stand_type then stake_id; use stake_id as the display label
+sample_meta <- sample_meta %>%
+  mutate(stand_type = factor(stand_type, levels = stand_levels)) %>%
+  arrange(stand_type, stake_id) %>%
+  mutate(label = factor(stake_id, levels = stake_id))
 
 add_stand_facet <- function() {
   if (!is.null(meta_df)) facet_wrap(~stand_type, scales = "free_x", nrow = 1) else NULL
@@ -325,7 +334,7 @@ metaeuk_df <- left_join(metaeuk_df, sample_meta, by = "sample")
 
 ```{r missing-data-check}
 check_missing <- function(df, step) {
-  sub_df <- df[, !names(df) %in% c("sample", "stand_type", "stake_id"), drop = FALSE]
+  sub_df <- df[, !names(df) %in% c("sample", "stand_type", "stake_id", "label"), drop = FALSE]
   missing <- df$sample[apply(sub_df, 1, function(r) all(is.na(r)))]
   data.frame(step = step, n_missing = length(missing),
              samples = if (length(missing) > 0) paste(missing, collapse = ", ") else "—",
@@ -361,44 +370,56 @@ kable(avail, col.names = c("Step", "Missing samples", "Sample IDs"),
 ## Fig 1: Tiara Contig Classification {.tabset}
 
 ```{r fig1, fig.height=5}
+tiara_class_levels <- c("Eukarya", "Prokarya", "Mitochondria",
+                         "Plastid", "Unknown", "< 500 bp")
+
 tiara_long <- tiara_df %>%
   filter(!is.na(n_total)) %>%
   mutate(
-    pct_euk     = n_euk     / n_total * 100,
-    pct_prok    = n_prok    / n_total * 100,
-    pct_mito    = n_mito    / n_total * 100,
-    pct_plastid = n_plastid / n_total * 100,
-    pct_unknown = n_unknown / n_total * 100
+    n_classified  = rowSums(cbind(n_euk, n_prok, n_mito, n_plastid, n_unknown), na.rm = TRUE),
+    n_tooshort    = pmax(0L, n_total - n_classified),
+    pct_euk       = n_euk      / n_total * 100,
+    pct_prok      = n_prok     / n_total * 100,
+    pct_mito      = n_mito     / n_total * 100,
+    pct_plastid   = n_plastid  / n_total * 100,
+    pct_unknown   = n_unknown  / n_total * 100,
+    pct_tooshort  = n_tooshort / n_total * 100
   ) %>%
   pivot_longer(starts_with("pct_"), names_to = "class", values_to = "pct") %>%
   mutate(class = factor(recode(class,
-    pct_euk     = "Eukarya",
-    pct_prok    = "Prokarya",
-    pct_mito    = "Mitochondria",
-    pct_plastid = "Plastid",
-    pct_unknown = "Unknown"
-  ), levels = c("Eukarya", "Prokarya", "Mitochondria", "Plastid", "Unknown")))
+    pct_euk      = "Eukarya",
+    pct_prok     = "Prokarya",
+    pct_mito     = "Mitochondria",
+    pct_plastid  = "Plastid",
+    pct_unknown  = "Unknown",
+    pct_tooshort = "< 500 bp"
+  ), levels = tiara_class_levels))
 
 tiara_totals <- tiara_df %>%
   filter(!is.na(n_total)) %>%
-  mutate(label = paste0(round(n_total / 1000, 1), "k"))
+  left_join(sample_meta %>% select(sample, label), by = "sample") %>%
+  mutate(count_label = paste0(round(n_total / 1000, 1), "k"))
 
-p1 <- ggplot(tiara_long, aes(x = sample, y = pct, fill = class)) +
+tiara_long <- tiara_long %>%
+  left_join(sample_meta %>% select(sample, label), by = "sample")
+
+p1 <- ggplot(tiara_long, aes(x = label, y = pct, fill = class)) +
   geom_col(position = "stack", width = 0.8) +
   geom_text(data = tiara_totals,
-            aes(x = sample, y = 101, label = label, fill = NULL),
+            aes(x = label, y = 101, label = count_label, fill = NULL),
             size = 2.5, vjust = 0, inherit.aes = FALSE) +
   scale_fill_manual(values = c(
     "Eukarya"     = "#4DAF4A",
     "Prokarya"    = "#377EB8",
     "Mitochondria"= "#FF7F00",
     "Plastid"     = "#984EA3",
-    "Unknown"     = "#AAAAAA"
+    "Unknown"     = "#AAAAAA",
+    "< 500 bp"   = "#E8E8E8"
   )) +
   add_stand_facet() +
-  labs(title = "Tiara Contig Classification",
-       subtitle = "Text labels = total contigs (thousands)",
-       x = NULL, y = "% of contigs", fill = "Class") +
+  labs(title    = "Tiara Contig Classification",
+       subtitle = "Text labels = total contigs (k). '< 500 bp' contigs are too short for Tiara classification.",
+       x = NULL, y = "% of all assembly contigs", fill = "Class") +
   coord_cartesian(ylim = c(0, 110))
 
 save_fig(p1, "fig1_tiara")
@@ -413,7 +434,7 @@ med_p <- median(metaeuk_df$n_proteins, na.rm = TRUE)
 q25_p <- quantile(metaeuk_df$n_proteins, 0.25, na.rm = TRUE)
 
 p2 <- ggplot(metaeuk_df %>% filter(!is.na(n_proteins)),
-             aes(x = sample, y = n_proteins, fill = stand_type)) +
+             aes(x = label, y = n_proteins, fill = stand_type)) +
   geom_col(width = 0.8) +
   geom_hline(yintercept = med_p, linetype = "dashed", linewidth = 0.6, color = "black") +
   geom_hline(yintercept = q25_p, linetype = "dotted", linewidth = 0.6, color = "#D7191C") +
@@ -462,7 +483,7 @@ heatmap_df <- prot_total %>%
   left_join(dbcan_sum,  by = "sample") %>%
   left_join(phi_sum,    by = "sample") %>%
   left_join(mmseqs_sum, by = "sample") %>%
-  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
+  left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
   mutate(
     pct_kofam    = n_ko_genes   / n_proteins * 100,
     pct_cazy     = n_cazy       / n_proteins * 100,
@@ -471,14 +492,14 @@ heatmap_df <- prot_total %>%
     pct_fungi    = n_fungi      / n_proteins * 100
   )
 
-# Sort samples by stand_type then by name
+# Sort samples by stand_type then stake_id; use label (stake_id factor) on y-axis
 heatmap_df <- heatmap_df %>%
-  arrange(stand_type, sample) %>%
-  mutate(sample = factor(sample, levels = sample))
+  arrange(stand_type, label) %>%
+  mutate(label = factor(as.character(label), levels = as.character(label)))
 
 heatmap_long <- heatmap_df %>%
-  select(sample, pct_kofam, pct_cazy, pct_phi, pct_mmseqs, pct_fungi) %>%
-  pivot_longer(-sample, names_to = "tool", values_to = "pct") %>%
+  select(label, pct_kofam, pct_cazy, pct_phi, pct_mmseqs, pct_fungi) %>%
+  pivot_longer(-label, names_to = "tool", values_to = "pct") %>%
   mutate(tool = recode(tool,
     pct_kofam  = "KOfamScan",
     pct_cazy   = paste0("dbCAN\n(≥", params$min_tools, " tools)"),
@@ -487,7 +508,7 @@ heatmap_long <- heatmap_df %>%
     pct_fungi  = "MMseqs2\nFungi"
   ))
 
-p3 <- ggplot(heatmap_long, aes(x = tool, y = sample, fill = pct)) +
+p3 <- ggplot(heatmap_long, aes(x = tool, y = label, fill = pct)) +
   geom_tile(color = "white", linewidth = 0.4) +
   geom_text(aes(label = ifelse(is.na(pct), "—", sprintf("%.1f%%", pct))),
             size = 2.8, color = "black") +
@@ -519,7 +540,8 @@ cazy_colors <- c(
 
 dbcan_plot <- dbcan_df %>%
   filter(!is.na(cazy_class), cazy_class != "none") %>%
-  left_join(sample_meta %>% select(sample, stand_type), by = "sample")
+  left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+  mutate(label = factor(as.character(label), levels = levels(sample_meta$label)))
 
 total_range <- dbcan_df %>%
   filter(!is.na(n_hicof)) %>%
@@ -527,7 +549,7 @@ total_range <- dbcan_df %>%
   summarise(total = sum(n_hicof)) %>%
   summarise(rng = paste0(min(total), "–", max(total)))
 
-p4 <- ggplot(dbcan_plot, aes(x = sample, y = n_hicof,
+p4 <- ggplot(dbcan_plot, aes(x = label, y = n_hicof,
              fill = factor(cazy_class, levels = names(cazy_colors)))) +
   geom_col(position = "stack", width = 0.8) +
   scale_fill_manual(values = cazy_colors, drop = FALSE) +
@@ -555,10 +577,13 @@ phi_colors <- c(
 
 phi_plot <- phi_df %>%
   filter(!is.na(phi_phenotype), phi_phenotype != "none") %>%
-  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
-  mutate(phi_phenotype = factor(phi_phenotype, levels = names(phi_colors)))
+  left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+  mutate(
+    phi_phenotype = factor(phi_phenotype, levels = names(phi_colors)),
+    label = factor(as.character(label), levels = levels(sample_meta$label))
+  )
 
-p5 <- ggplot(phi_plot, aes(x = sample, y = n_hits, fill = phi_phenotype)) +
+p5 <- ggplot(phi_plot, aes(x = label, y = n_hits, fill = phi_phenotype)) +
   geom_col(position = "stack", width = 0.8) +
   scale_fill_manual(values = phi_colors, drop = FALSE) +
   add_stand_facet() +
@@ -590,16 +615,19 @@ kingdom_colors <- c(
 
 mmseqs_plot <- mmseqs_df %>%
   filter(!is.na(kingdom_label)) %>%
-  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
-  group_by(sample, stand_type, kingdom_label) %>%
+  left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+  group_by(sample, stand_type, label, kingdom_label) %>%
   summarise(n = sum(.data$n, na.rm = TRUE), .groups = "drop") %>%
   group_by(sample) %>%
   mutate(pct = n / sum(n) * 100) %>%
   ungroup() %>%
-  mutate(kingdom_label = factor(kingdom_label, levels = kingdom_levels))
+  mutate(
+    kingdom_label = factor(kingdom_label, levels = kingdom_levels),
+    label = factor(as.character(label), levels = levels(sample_meta$label))
+  )
 
 p6 <- ggplot(mmseqs_plot,
-             aes(x = sample, y = pct, fill = kingdom_label)) +
+             aes(x = label, y = pct, fill = kingdom_label)) +
   geom_col(position = "stack", width = 0.8) +
   scale_fill_manual(values = kingdom_colors, drop = FALSE) +
   add_stand_facet() +
@@ -636,12 +664,15 @@ fc_plot <- fc_df %>%
   group_by(sample) %>%
   mutate(pct = count / sum(count) * 100) %>%
   ungroup() %>%
-  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
-  mutate(status_grouped = factor(status_grouped, levels = names(fc_colors)))
+  left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+  mutate(
+    status_grouped = factor(status_grouped, levels = names(fc_colors)),
+    label = factor(as.character(label), levels = levels(sample_meta$label))
+  )
 
 assigned_labels <- fc_plot %>% filter(status_grouped == "Assigned")
 
-p7 <- ggplot(fc_plot, aes(x = sample, y = count, fill = status_grouped)) +
+p7 <- ggplot(fc_plot, aes(x = label, y = count, fill = status_grouped)) +
   geom_col(position = "stack", width = 0.8) +
   geom_text(data = assigned_labels,
             aes(label = sprintf("%.1f%%", pct), y = count / 2),
@@ -672,7 +703,7 @@ fc_assigned <- fc_df %>%
   mutate(pct_assigned = assigned_reads / total_reads * 100)
 
 summary_tbl <- sample_meta %>%
-  select(sample, stand_type) %>%
+  select(sample, label, stand_type) %>%
   left_join(tiara_df %>% select(sample, n_total, n_euk),
             by = "sample") %>%
   left_join(metaeuk_df %>% select(sample, n_proteins), by = "sample") %>%
@@ -693,8 +724,9 @@ summary_tbl <- sample_meta %>%
   mutate(
     pct_euk = n_euk / n_total * 100
   ) %>%
+  arrange(stand_type, label) %>%
   select(
-    Sample    = sample,
+    Sample    = label,
     `Stand type` = stand_type,
     `Contigs (k)`  = n_total,
     `% euk`        = pct_euk,
