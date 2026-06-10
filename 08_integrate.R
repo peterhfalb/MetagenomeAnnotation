@@ -364,7 +364,20 @@ if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
   if (!is.null(tax_lookup)) {
     tax_lookup_dt <- as.data.table(tax_lookup, keep.rownames = "lca_taxid")
     tax_lookup_dt[, lca_taxid := as.integer(lca_taxid)]
-    setnames(tax_lookup_dt, tax_ranks, paste0("tax_", tax_ranks))
+
+    # Rename only ranks present in the returned object; fill missing with NA.
+    # getTaxonomy() column names vary across taxonomizr versions.
+    present_ranks <- intersect(tax_ranks, names(tax_lookup_dt))
+    missing_ranks <- setdiff(tax_ranks, names(tax_lookup_dt))
+    if (length(present_ranks) > 0) {
+      setnames(tax_lookup_dt, present_ranks, paste0("tax_", present_ranks))
+    }
+    for (r in missing_ranks) {
+      tax_lookup_dt[, (paste0("tax_", r)) := NA_character_]
+    }
+    if (length(missing_ranks) > 0) {
+      cat("  NOTE: ranks not returned by getTaxonomy():", paste(missing_ranks, collapse = ", "), "\n")
+    }
 
     lca_table <- mmseqs_all[
       !is.na(lca_taxid)
@@ -372,9 +385,11 @@ if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
 
     cat("  Rank expansion complete for", nrow(lca_table), "genes.\n")
 
-    kingdom_tbl <- lca_table[, .N, by = tax_superkingdom][order(-N)]
-    cat("  Kingdom breakdown:\n")
-    print(kingdom_tbl)
+    if ("tax_superkingdom" %in% names(lca_table)) {
+      kingdom_tbl <- lca_table[, .N, by = tax_superkingdom][order(-N)]
+      cat("  Kingdom breakdown:\n")
+      print(kingdom_tbl)
+    }
   }
 }
 cat("\n")
