@@ -103,7 +103,7 @@ read_featurecounts <- function(file, sample_name) {
   # Column names: Geneid Chr Start End Strand Length <bam_path>
   count_col <- ncol(dt)
   result <- dt[, .(
-    gene_id = sub("_mRNA$", "", Geneid),
+    gene_id = normalize_gene_id(sub("_mRNA$", "", Geneid)),
     contig  = Chr,
     start   = Start,
     end     = End,
