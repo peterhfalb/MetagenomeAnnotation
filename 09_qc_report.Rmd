@@ -343,7 +343,7 @@ avail <- bind_rows(
                   summarise(n_hits = if (all(is.na(n_hits))) NA_integer_ else sum(n_hits, na.rm=TRUE),
                             .groups="drop"),  "PHI-base"),
   check_missing(mmseqs_df %>% group_by(sample) %>%
-                  summarise(n = if (all(is.na(n))) NA_integer_ else sum(n, na.rm=TRUE),
+                  summarise(n = if (all(is.na(.data$n))) NA_integer_ else sum(.data$n, na.rm=TRUE),
                             .groups="drop"),  "MMseqs2 LCA"),
   check_missing(fc_df %>% group_by(sample) %>%
                   summarise(count = if (all(is.na(count))) NA_integer_ else sum(count, na.rm=TRUE),
@@ -448,12 +448,12 @@ phi_sum <- phi_df %>%
   summarise(n_phi = sum(n_hits), .groups = "drop")
 
 mmseqs_sum <- mmseqs_df %>%
-  filter(!is.na(n)) %>%
+  filter(!is.na(.data$n)) %>%
   group_by(sample) %>%
   summarise(
-    n_classified = sum(n[kingdom_label != "unclassified"], na.rm = TRUE),
-    n_fungi      = sum(n[kingdom_label %in% c("Ascomycota", "Basidiomycota",
-                                               "Glomeromycota", "other Fungi")], na.rm = TRUE),
+    n_classified = sum(.data$n[kingdom_label != "unclassified"], na.rm = TRUE),
+    n_fungi      = sum(.data$n[kingdom_label %in% c("Ascomycota", "Basidiomycota",
+                                                     "Glomeromycota", "other Fungi")], na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -592,7 +592,7 @@ mmseqs_plot <- mmseqs_df %>%
   filter(!is.na(kingdom_label)) %>%
   left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
   group_by(sample, stand_type, kingdom_label) %>%
-  summarise(n = sum(n, na.rm = TRUE), .groups = "drop") %>%
+  summarise(n = sum(.data$n, na.rm = TRUE), .groups = "drop") %>%
   group_by(sample) %>%
   mutate(pct = n / sum(n) * 100) %>%
   ungroup() %>%
