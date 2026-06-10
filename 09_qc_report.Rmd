@@ -639,22 +639,26 @@ load_ko_by_id <- function(samples, ann_dir) {
 ko_by_id <- load_ko_by_id(samples, params$ann_dir)
 
 if (nrow(ko_by_id) > 0) {
-  # Try KEGGREST for KO → pathway category mapping; cache result to avoid repeat calls
-  brite_cache <- file.path(out_dir, "ko_brite_cache.rds")
-  ko_brite <- if (file.exists(brite_cache)) {
-    readRDS(brite_cache)
-  } else {
+  # Download complete KO→pathway table from KEGG REST API (no R package needed)
+  # One request (~200k rows), cached after first run
+  get_ko_categories <- function(cache_dir) {
+    cache_file <- file.path(cache_dir, "ko_pathway_cache.rds")
+    if (file.exists(cache_file)) return(readRDS(cache_file))
     tryCatch({
-      if (!requireNamespace("KEGGREST", quietly = TRUE)) stop("KEGGREST not installed")
-      ko_ids_unique <- unique(ko_by_id$ko)
-      # keggLink batches automatically; returns named vector ko:KXXXXX → path:mapXXXXX
-      links <- KEGGREST::keggLink("pathway", ko_ids_unique)
-      map_nums <- as.integer(regmatches(links, regexpr("[0-9]+$", links)))
-      cat_df <- data.frame(
-        ko       = sub("^ko:", "", names(links)),
-        map_num  = map_nums,
+      tmp <- tempfile()
+      download.file("https://rest.kegg.jp/link/pathway/ko",
+                    destfile = tmp, quiet = TRUE, method = "auto")
+      lines <- readLines(tmp, warn = FALSE)
+      unlink(tmp)
+      if (length(lines) == 0) stop("empty response from KEGG REST")
+      mat <- do.call(rbind, strsplit(lines, "\t"))
+      df <- data.frame(
+        ko      = sub("^ko:",   "", mat[, 1]),
+        map_num = suppressWarnings(
+                    as.integer(sub("^path:map0*", "", mat[, 2]))),
         stringsAsFactors = FALSE
       ) %>%
+        filter(!is.na(map_num)) %>%
         mutate(category = case_when(
           map_num < 2000 ~ "Metabolism",
           map_num < 3000 ~ "Env. Info Processing",
@@ -664,23 +668,29 @@ if (nrow(ko_by_id) > 0) {
         )) %>%
         group_by(ko) %>% arrange(map_num) %>% slice(1) %>% ungroup() %>%
         select(ko, category)
-      saveRDS(cat_df, brite_cache)
-      cat_df
-    }, error = function(e) NULL)
+      saveRDS(df, cache_file)
+      df
+    }, error = function(e) {
+      message("KEGG REST download failed: ", conditionMessage(e))
+      NULL
+    })
   }
 
+  ko_brite <- get_ko_categories(out_dir)
+
+  cat_levels <- c("Metabolism", "Genetic Info Processing",
+                  "Env. Info Processing", "Cellular/Organismal Processes",
+                  "Other", "Unclassified")
+  cat_colors <- c(
+    "Metabolism"                    = "#E41A1C",
+    "Genetic Info Processing"       = "#377EB8",
+    "Env. Info Processing"          = "#4DAF4A",
+    "Cellular/Organismal Processes" = "#FF7F00",
+    "Other"                         = "#AAAAAA",
+    "Unclassified"                  = "#DDDDDD"
+  )
+
   if (!is.null(ko_brite) && nrow(ko_brite) > 0) {
-    cat_levels <- c("Metabolism", "Genetic Info Processing",
-                    "Env. Info Processing", "Cellular/Organismal Processes",
-                    "Other", "Unclassified")
-    cat_colors <- c(
-      "Metabolism"                    = "#E41A1C",
-      "Genetic Info Processing"       = "#377EB8",
-      "Env. Info Processing"          = "#4DAF4A",
-      "Cellular/Organismal Processes" = "#FF7F00",
-      "Other"                         = "#AAAAAA",
-      "Unclassified"                  = "#DDDDDD"
-    )
     ko_cat_plot <- ko_by_id %>%
       left_join(ko_brite, by = "ko") %>%
       mutate(category = factor(coalesce(category, "Unclassified"), levels = cat_levels)) %>%
@@ -694,7 +704,7 @@ if (nrow(ko_by_id) > 0) {
       scale_fill_manual(values = cat_colors, drop = FALSE) +
       add_stand_facet() +
       labs(title    = "KEGG Orthology — Functional Categories",
-           subtitle = "KO assignments mapped to KEGG pathway categories via KEGGREST",
+           subtitle = "KO assignments mapped to KEGG pathway categories (KEGG REST API)",
            x = NULL, y = "# gene annotations", fill = "KEGG category")
     save_fig(p4b, "fig4b_ko_categories")
 
@@ -716,7 +726,7 @@ if (nrow(ko_by_id) > 0) {
       scale_fill_viridis_d(option = "turbo") +
       add_stand_facet() +
       labs(title    = "Top 20 KEGG Orthology Terms",
-           subtitle = "Most frequently annotated KOs per sample (KEGGREST unavailable for pathway grouping)",
+           subtitle = "Most frequently annotated KOs (KEGG REST API unavailable — check internet access on login node)",
            x = NULL, y = "# gene annotations", fill = "KO ID")
     save_fig(p4b, "fig4b_ko_top20", width = 14, height = 6)
   }
