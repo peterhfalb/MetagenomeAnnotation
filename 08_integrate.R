@@ -346,8 +346,8 @@ if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
   # Build SQLite taxonomy DB from local names.dmp/nodes.dmp (once, ~5-10 min)
   if (!file.exists(tax_sql)) {
     cat("  Building taxonomizr SQLite database (one-time, ~5-10 min)...\n")
-    read.names.sql(names = names_dmp, sqlFile = tax_sql)
-    read.nodes.sql(nodes = nodes_dmp, sqlFile = tax_sql)
+    read.names.sql(names_dmp, sqlFile = tax_sql)
+    read.nodes.sql(nodes_dmp, sqlFile = tax_sql)
     cat("  Done:", tax_sql, "\n")
   } else {
     cat("  Using existing taxonomy database:", tax_sql, "\n")
