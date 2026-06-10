@@ -397,11 +397,7 @@ tiara_long <- tiara_df %>%
 
 tiara_totals <- tiara_df %>%
   filter(!is.na(n_total)) %>%
-  left_join(sample_meta %>% select(sample, label), by = "sample") %>%
   mutate(count_label = paste0(round(n_total / 1000, 1), "k"))
-
-tiara_long <- tiara_long %>%
-  left_join(sample_meta %>% select(sample, label), by = "sample")
 
 p1 <- ggplot(tiara_long, aes(x = label, y = pct, fill = class)) +
   geom_col(position = "stack", width = 0.8) +
