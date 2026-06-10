@@ -325,8 +325,8 @@ metaeuk_df <- left_join(metaeuk_df, sample_meta, by = "sample")
 
 ```{r missing-data-check}
 check_missing <- function(df, step) {
-  missing <- df$sample[apply(df[, !names(df) %in% c("sample", "stand_type", "stake_id")],
-                              1, function(r) all(is.na(r)))]
+  sub_df <- df[, !names(df) %in% c("sample", "stand_type", "stake_id"), drop = FALSE]
+  missing <- df$sample[apply(sub_df, 1, function(r) all(is.na(r)))]
   data.frame(step = step, n_missing = length(missing),
              samples = if (length(missing) > 0) paste(missing, collapse = ", ") else "—",
              stringsAsFactors = FALSE)
