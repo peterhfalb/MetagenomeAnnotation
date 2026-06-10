@@ -118,12 +118,19 @@ read_featurecounts <- function(file, sample_name) {
 # Read KOfamScan detail-tsv output.
 # Returns data.table: gene_id, KO, KO_definition (significant hits only, * in col 1)
 read_kofam <- function(file) {
-  if (!file.exists(file) || file.info(file)$size == 0) return(data.table(gene_id = character(), KO = character(), KO_definition = character()))
+  empty <- data.table(gene_id = character(), KO = character(), KO_definition = character())
+  if (!file.exists(file) || file.info(file)$size == 0) return(empty)
   dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE)
-  # Columns: threshold_flag, gene_id, KO, threshold, score, evalue, definition
-  sig <- dt[V1 == "*"]
-  if (nrow(sig) == 0) return(data.table(gene_id = character(), KO = character(), KO_definition = character()))
-  sig[, .(gene_id = normalize_gene_id(V2), KO = V3, KO_definition = if (ncol(dt) >= 7) V7 else NA_character_)]
+  if (nrow(dt) == 0) return(empty)
+  if (any(dt$V1 == "*")) {
+    # exec_annotation detail-tsv: threshold_flag | gene_id | KO | threshold | score | evalue | definition
+    sig <- dt[V1 == "*"]
+    sig[, .(gene_id = normalize_gene_id(V2), KO = V3,
+            KO_definition = if (ncol(dt) >= 7L) V7 else NA_character_)]
+  } else {
+    # mapper format: gene_id | KO  (no threshold flag column)
+    dt[, .(gene_id = normalize_gene_id(V1), KO = V2, KO_definition = NA_character_)]
+  }
 }
 
 # Read dbCAN3 overview.txt for one sample.
@@ -162,14 +169,17 @@ read_dbcan <- function(file) {
 # or older format: gene_name pathogen_species | phenotype
 # Returns a list with: phi_accession, phi_gene, phi_pathogen, phi_phenotype
 parse_phi_stitle <- function(stitle) {
-  # Try pipe-delimited format (PHI:ID|gene|pathogen|host|phenotype...)
-  if (grepl("\\|", stitle)) {
-    parts <- str_split(stitle, "\\|")[[1]]
+  # PHI-base stitle format (# delimited):
+  #   UniProtID # PHI:XXXX # gene_name # taxid # pathogen # phenotype
+  # Multiple PHI IDs / phenotypes are joined with __ within a field.
+  # Take the first phenotype when multiple are present.
+  if (grepl("#", stitle, fixed = TRUE)) {
+    parts <- str_split(stitle, "#")[[1]]
     list(
-      phi_accession = str_extract(parts[1], "PHI:[0-9]+"),
-      phi_gene      = if (length(parts) >= 2) trimws(parts[2]) else NA_character_,
-      phi_pathogen  = if (length(parts) >= 3) trimws(parts[3]) else NA_character_,
-      phi_phenotype = if (length(parts) >= 5) trimws(parts[5]) else NA_character_
+      phi_accession = str_extract(parts[2], "PHI:[0-9]+"),
+      phi_gene      = if (length(parts) >= 3) trimws(parts[3]) else NA_character_,
+      phi_pathogen  = if (length(parts) >= 5) trimws(parts[5]) else NA_character_,
+      phi_phenotype = if (length(parts) >= 6) trimws(strsplit(parts[6], "__", fixed = TRUE)[[1]][1]) else NA_character_
     )
   } else {
     list(phi_accession = str_extract(stitle, "PHI:[0-9]+"),
@@ -218,13 +228,35 @@ read_mmseqs_taxonomy <- function(file) {
   result
 }
 
-# Normalize MetaEuk gene IDs to the first 4 pipe-delimited fields
-# (targetID|contigID|strand|startPos). MetaEuk FASTA headers carry additional
-# fields (evalue, nExons, coordinates) that featureCounts never sees — it
-# reads gene IDs from the GFF3 Parent= attribute, which only has 4 fields.
-# Applying this to all annotation layers ensures the join key matches.
+# Normalize MetaEuk gene IDs to a consistent 4-field join key:
+#   targetID | contigID | strand | lowerBound
+#
+# GFF3 IDs (featureCounts, 4 fields):  targetID|contig|strand|lowerBound
+# FASTA IDs (annotation tools, 9 fields): targetID|contig|strand|score|evalue|numExons|lowerBound|...
+#
+# The two sources differ in which field holds lowerBound: field 4 in GFF3 vs
+# field 7 in FASTA. Detect format by pipe count and extract accordingly.
 normalize_gene_id <- function(ids) {
-  sub("^([^|]+\\|[^|]+\\|[^|]+\\|[^|]+)(\\|.*)?$", "\\1", ids)
+  n_pipes <- nchar(ids) - nchar(gsub("|", "", ids, fixed = TRUE))
+  result  <- ids
+
+  # FASTA format (6+ pipes = 7+ fields): lowerBound is at field 7
+  fas <- n_pipes >= 5L
+  if (any(fas)) {
+    result[fas] <- sub(
+      "^([^|]+)\\|([^|]+)\\|([^|]+)\\|[^|]+\\|[^|]+\\|[^|]+\\|([^|]+)(\\|.*)?$",
+      "\\1|\\2|\\3|\\4",
+      ids[fas]
+    )
+  }
+
+  # GFF format (≤4 pipes = ≤5 fields): lowerBound is already at field 4
+  gff <- !fas
+  if (any(gff)) {
+    result[gff] <- sub("^([^|]+\\|[^|]+\\|[^|]+\\|[^|]+)(\\|.*)?$", "\\1", ids[gff])
+  }
+
+  result
 }
 
 # Find dbCAN overview file — filename changed across dbCAN v4 sub-versions.
