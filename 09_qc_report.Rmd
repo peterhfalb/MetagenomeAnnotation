@@ -279,7 +279,7 @@ load_mmseqs <- function(samples, ann_dir) {
       TRUE                                   ~ "unclassified"
     )]
 
-    result <- dt[, .N, by = kingdom_label]
+    result <- dt[, .(n = .N), by = kingdom_label]
     result[, sample := s]
     as.data.frame(result)
   }) %>% bind_rows()
