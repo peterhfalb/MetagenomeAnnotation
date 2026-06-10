@@ -552,8 +552,8 @@ heatmap_df <- heatmap_df %>%
   mutate(label = factor(as.character(label), levels = as.character(label)))
 
 heatmap_long <- heatmap_df %>%
-  select(label, pct_kofam, pct_cazy, pct_phi, pct_mmseqs, pct_fungi) %>%
-  pivot_longer(-label, names_to = "tool", values_to = "pct") %>%
+  select(label, stand_type, pct_kofam, pct_cazy, pct_phi, pct_mmseqs, pct_fungi) %>%
+  pivot_longer(-c(label, stand_type), names_to = "tool", values_to = "pct") %>%
   mutate(tool = recode(tool,
     pct_kofam  = "KOfamScan",
     pct_cazy   = paste0("dbCAN\n(≥", params$min_tools, " tools)"),
@@ -565,11 +565,12 @@ heatmap_long <- heatmap_df %>%
 p3 <- ggplot(heatmap_long, aes(x = tool, y = label, fill = pct)) +
   geom_tile(color = "white", linewidth = 0.4) +
   geom_text(aes(label = ifelse(is.na(pct), "—", sprintf("%.1f%%", pct))),
-            size = 2.8, color = "black") +
+            size = 2.8, color = "white") +
   scale_fill_gradient(low = "#EFF3FF", high = "#2171B5",
                       na.value = "gray92", name = "% genes") +
+  facet_grid(stand_type ~ ., scales = "free_y", space = "free_y") +
   labs(title    = "Annotation Coverage Heatmap",
-       subtitle = "Samples sorted by stand type; fill = % of predicted proteins annotated",
+       subtitle = "Samples grouped by stand type; fill = % of predicted proteins annotated",
        x = NULL, y = NULL)
 
 save_fig(p3, "fig3_annotation_heatmap", width = 9, height = max(6, length(samples) * 0.25 + 2))
@@ -613,6 +614,113 @@ p4 <- ggplot(dbcan_plot, aes(x = label, y = n_hicof,
        x = NULL, y = "# high-confidence CAZyme calls", fill = "CAZy class")
 
 save_fig(p4, "fig4_cazyme_classes")
+```
+
+---
+
+## Fig 4b: KEGG Orthology Pathway Categories {.tabset}
+
+```{r fig4b, fig.height=5}
+# Load per-sample KO assignments (mapper format: col1 = gene_id, col2 = KO)
+load_ko_by_id <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "kofam", paste0(s, "_kofam_mapper.tsv"))
+    if (!file.exists(f) || file.size(f) == 0) return(NULL)
+    dt <- tryCatch(
+      fread(f, sep = "\t", header = FALSE, comment.char = "#",
+            col.names = c("gene_id", "ko")),
+      error = function(e) NULL
+    )
+    if (is.null(dt) || nrow(dt) == 0) return(NULL)
+    as.data.frame(dt[!is.na(ko) & nzchar(ko), .(n_genes = .N), by = ko][, sample := s])
+  }) %>% bind_rows()
+}
+
+ko_by_id <- load_ko_by_id(samples, params$ann_dir)
+
+if (nrow(ko_by_id) > 0) {
+  # Try KEGGREST for KO → pathway category mapping; cache result to avoid repeat calls
+  brite_cache <- file.path(out_dir, "ko_brite_cache.rds")
+  ko_brite <- if (file.exists(brite_cache)) {
+    readRDS(brite_cache)
+  } else {
+    tryCatch({
+      if (!requireNamespace("KEGGREST", quietly = TRUE)) stop("KEGGREST not installed")
+      ko_ids_unique <- unique(ko_by_id$ko)
+      # keggLink batches automatically; returns named vector ko:KXXXXX → path:mapXXXXX
+      links <- KEGGREST::keggLink("pathway", ko_ids_unique)
+      map_nums <- as.integer(regmatches(links, regexpr("[0-9]+$", links)))
+      cat_df <- data.frame(
+        ko       = sub("^ko:", "", names(links)),
+        map_num  = map_nums,
+        stringsAsFactors = FALSE
+      ) %>%
+        mutate(category = case_when(
+          map_num < 2000 ~ "Metabolism",
+          map_num < 3000 ~ "Env. Info Processing",
+          map_num < 4000 ~ "Genetic Info Processing",
+          map_num < 5000 ~ "Cellular/Organismal Processes",
+          TRUE           ~ "Other"
+        )) %>%
+        group_by(ko) %>% arrange(map_num) %>% slice(1) %>% ungroup() %>%
+        select(ko, category)
+      saveRDS(cat_df, brite_cache)
+      cat_df
+    }, error = function(e) NULL)
+  }
+
+  if (!is.null(ko_brite) && nrow(ko_brite) > 0) {
+    cat_levels <- c("Metabolism", "Genetic Info Processing",
+                    "Env. Info Processing", "Cellular/Organismal Processes",
+                    "Other", "Unclassified")
+    cat_colors <- c(
+      "Metabolism"                    = "#E41A1C",
+      "Genetic Info Processing"       = "#377EB8",
+      "Env. Info Processing"          = "#4DAF4A",
+      "Cellular/Organismal Processes" = "#FF7F00",
+      "Other"                         = "#AAAAAA",
+      "Unclassified"                  = "#DDDDDD"
+    )
+    ko_cat_plot <- ko_by_id %>%
+      left_join(ko_brite, by = "ko") %>%
+      mutate(category = factor(coalesce(category, "Unclassified"), levels = cat_levels)) %>%
+      left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+      group_by(sample, label, stand_type, category) %>%
+      summarise(n_genes = sum(n_genes), .groups = "drop") %>%
+      mutate(label = factor(as.character(label), levels = levels(sample_meta$label)))
+
+    p4b <- ggplot(ko_cat_plot, aes(x = label, y = n_genes, fill = category)) +
+      geom_col(position = "stack", width = 0.8) +
+      scale_fill_manual(values = cat_colors, drop = FALSE) +
+      add_stand_facet() +
+      labs(title    = "KEGG Orthology — Functional Categories",
+           subtitle = "KO assignments mapped to KEGG pathway categories via KEGGREST",
+           x = NULL, y = "# gene annotations", fill = "KEGG category")
+    save_fig(p4b, "fig4b_ko_categories")
+
+  } else {
+    # Fallback: top 20 KOs by total count
+    top_kos <- ko_by_id %>%
+      group_by(ko) %>% summarise(total = sum(n_genes), .groups = "drop") %>%
+      arrange(desc(total)) %>% slice_head(n = 20) %>% pull(ko)
+
+    ko_top_plot <- ko_by_id %>%
+      filter(ko %in% top_kos) %>%
+      left_join(sample_meta %>% select(sample, stand_type, label), by = "sample") %>%
+      mutate(
+        ko    = factor(ko, levels = rev(top_kos)),
+        label = factor(as.character(label), levels = levels(sample_meta$label))
+      )
+    p4b <- ggplot(ko_top_plot, aes(x = label, y = n_genes, fill = ko)) +
+      geom_col(position = "stack", width = 0.8) +
+      scale_fill_viridis_d(option = "turbo") +
+      add_stand_facet() +
+      labs(title    = "Top 20 KEGG Orthology Terms",
+           subtitle = "Most frequently annotated KOs per sample (KEGGREST unavailable for pathway grouping)",
+           x = NULL, y = "# gene annotations", fill = "KO ID")
+    save_fig(p4b, "fig4b_ko_top20", width = 14, height = 6)
+  }
+}
 ```
 
 ---
@@ -699,19 +807,23 @@ save_fig(p6, "fig6_mmseqs_taxonomy")
 
 ```{r fig7, fig.height=5}
 fc_colors <- c(
-  "Assigned"                 = "#1F78B4",
-  "Unassigned_NoFeatures"    = "#A6CEE3",
-  "Unassigned_Ambiguity"     = "#FB9A99",
-  "other"                    = "#DDDDDD"
+  "Assigned"                  = "#1F78B4",
+  "Unassigned_NoFeatures"     = "#A6CEE3",
+  "Unassigned_Unmapped"       = "#FB9A99",
+  "Unassigned_MultiMapping"   = "#FDBF6F",
+  "Unassigned_Ambiguity"      = "#CAB2D6",
+  "other"                     = "#DDDDDD"
 )
 
 fc_plot <- fc_df %>%
   filter(!is.na(status)) %>%
   mutate(status_grouped = case_when(
-    status == "Assigned"              ~ "Assigned",
-    status == "Unassigned_NoFeatures" ~ "Unassigned_NoFeatures",
-    status == "Unassigned_Ambiguity"  ~ "Unassigned_Ambiguity",
-    TRUE                              ~ "other"
+    status == "Assigned"                ~ "Assigned",
+    status == "Unassigned_NoFeatures"   ~ "Unassigned_NoFeatures",
+    status == "Unassigned_Unmapped"     ~ "Unassigned_Unmapped",
+    status == "Unassigned_MultiMapping" ~ "Unassigned_MultiMapping",
+    status == "Unassigned_Ambiguity"    ~ "Unassigned_Ambiguity",
+    TRUE                                ~ "other"
   )) %>%
   group_by(sample, status_grouped) %>%
   summarise(count = sum(count, na.rm = TRUE), .groups = "drop") %>%
@@ -734,7 +846,15 @@ p7 <- ggplot(fc_plot, aes(x = label, y = count, fill = status_grouped)) +
   scale_fill_manual(values = fc_colors, drop = FALSE) +
   scale_y_continuous(labels = scales::label_comma()) +
   add_stand_facet() +
-  labs(title = "featureCounts Read-pair Assignment",
+  labs(title   = "featureCounts Read-pair Assignment",
+       caption = paste0(
+         "Assigned: read pair overlaps an annotated MetaEuk gene. ",
+         "NoFeatures: maps to assembly but not to any gene (intergenic, prokaryotic contigs, etc.). ",
+         "Unmapped: did not align to the assembly at all. ",
+         "MultiMapping: aligns to multiple genomic locations. ",
+         "Ambiguity: overlaps multiple features simultaneously. ",
+         "High NoFeatures/Unmapped is expected because MetaEuk only annotates Tiara-classified eukaryotic contigs."
+       ),
        x = NULL, y = "Read pairs", fill = "Assignment status")
 
 save_fig(p7, "fig7_featurecounts")
@@ -813,7 +933,8 @@ for (cn in color_cols) {
       tbl_out <- column_spec(tbl_out, col_idx,
                              background = spec_color(vals, na_color = "#F8F8F8",
                                                      option = "D", begin = 0.15, end = 0.85,
-                                                     direction = 1))
+                                                     direction = 1),
+                             color = "white")
     }
   }
 }
