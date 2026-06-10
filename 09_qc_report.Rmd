@@ -1,0 +1,747 @@
+---
+title: "Metagenome Annotation Pipeline — QC Report"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    code_folding: hide
+params:
+  ann_dir:   NULL
+  metadata:  "/Users/peterfalb/Documents/Research/Kennedy/ForestGEO/MesoFun/stakes.csv"
+  min_tools: 2
+  out_dir:   NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width  = 12,
+  fig.height = 5
+)
+
+suppressPackageStartupMessages({
+  library(data.table)
+  library(dplyr)
+  library(tidyr)
+  library(stringr)
+  library(ggplot2)
+  library(scales)
+  library(knitr)
+  library(kableExtra)
+})
+
+if (is.null(params$ann_dir)) stop("params$ann_dir is required.")
+
+out_dir <- if (is.null(params$out_dir)) file.path(params$ann_dir, "qc") else params$out_dir
+fig_dir <- file.path(out_dir, "figures")
+dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
+
+theme_set(theme_bw(base_size = 11) + theme(
+  axis.text.x = element_text(angle = 45, hjust = 1),
+  strip.background = element_rect(fill = "#f0f0f0")
+))
+
+save_fig <- function(p, name, width = 12, height = 5) {
+  ggsave(file.path(fig_dir, paste0(name, ".png")), plot = p,
+         width = width, height = height, dpi = 150)
+  p
+}
+
+# Palette for stand_type
+stand_colors <- c(
+  "ash or elm" = "#66C2A5",
+  "oak"        = "#FC8D62",
+  "pine"       = "#8DA0CB",
+  "mixed"      = "#E78AC3",
+  "unknown"    = "#CCCCCC"
+)
+```
+
+```{r load-samples}
+sample_list_file <- file.path(params$ann_dir, "sample_list.txt")
+if (!file.exists(sample_list_file)) {
+  stop("sample_list.txt not found: ", sample_list_file)
+}
+samples <- readLines(sample_list_file)
+samples <- samples[nzchar(trimws(samples))]
+```
+
+```{r load-metadata}
+meta_df <- NULL
+sample_meta <- data.frame(
+  sample     = samples,
+  stake_id   = sub("^GEO-(.+)_S[0-9]+$", "\\1", samples),
+  stand_type = "unknown",
+  stringsAsFactors = FALSE
+)
+
+if (!is.null(params$metadata) && file.exists(params$metadata)) {
+  meta_raw <- read.csv(params$metadata, stringsAsFactors = FALSE)
+  meta_df  <- meta_raw[meta_raw$metagenomics == "yes", c("stake", "stand_type")]
+  sample_meta <- sample_meta %>%
+    left_join(meta_df, by = c("stake_id" = "stake")) %>%
+    mutate(stand_type = coalesce(stand_type.y, "unknown")) %>%
+    select(sample, stake_id, stand_type)
+}
+
+add_stand_facet <- function() {
+  if (!is.null(meta_df)) facet_wrap(~stand_type, scales = "free_x", nrow = 1) else NULL
+}
+```
+
+```{r define-loaders}
+# ── Tiara summary ─────────────────────────────────────────────────────────────
+load_tiara <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "tiara", paste0(s, "_tiara_summary.txt"))
+    if (!file.exists(f) || file.size(f) == 0) {
+      return(data.frame(sample = s, n_total = NA_integer_, n_euk = NA_integer_,
+                        n_prok = NA_integer_, n_mito = NA_integer_,
+                        n_plastid = NA_integer_, n_unknown = NA_integer_,
+                        stringsAsFactors = FALSE))
+    }
+    lines <- readLines(f)
+    parse_val <- function(pattern) {
+      line <- grep(pattern, lines, value = TRUE, ignore.case = TRUE)
+      if (length(line) == 0) return(NA_integer_)
+      m <- regexpr("[0-9]+", line[1])
+      if (m == -1) NA_integer_ else as.integer(regmatches(line[1], m))
+    }
+    data.frame(
+      sample    = s,
+      n_total   = parse_val("Total contigs"),
+      n_euk     = parse_val("Eukarya"),
+      n_prok    = parse_val("Prokarya"),
+      n_mito    = parse_val("Mitochondria"),
+      n_plastid = parse_val("Plastid"),
+      n_unknown = parse_val("Unknown"),
+      stringsAsFactors = FALSE
+    )
+  }) %>% bind_rows()
+}
+
+# ── MetaEuk protein count ─────────────────────────────────────────────────────
+load_metaeuk <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "metaeuk", s, paste0(s, ".fas"))
+    n <- if (file.exists(f) && file.size(f) > 0) {
+      as.integer(trimws(system(
+        paste0("grep -c '>' ", shQuote(f), " 2>/dev/null || echo 0"),
+        intern = TRUE
+      )[1]))
+    } else NA_integer_
+    data.frame(sample = s, n_proteins = n, stringsAsFactors = FALSE)
+  }) %>% bind_rows()
+}
+
+# ── KOfamScan ─────────────────────────────────────────────────────────────────
+load_kofam <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "kofam", paste0(s, "_kofam_mapper.tsv"))
+    if (!file.exists(f) || file.size(f) == 0) {
+      return(data.frame(sample = s, n_ko_genes = NA_integer_, stringsAsFactors = FALSE))
+    }
+    dt <- tryCatch(
+      fread(f, sep = "\t", header = FALSE, comment.char = "#",
+            col.names = c("ko", "gene_id")),
+      error = function(e) NULL
+    )
+    if (is.null(dt) || nrow(dt) == 0) {
+      return(data.frame(sample = s, n_ko_genes = 0L, stringsAsFactors = FALSE))
+    }
+    data.frame(sample = s, n_ko_genes = length(unique(dt$gene_id)),
+               stringsAsFactors = FALSE)
+  }) %>% bind_rows()
+}
+
+# ── dbCAN ─────────────────────────────────────────────────────────────────────
+find_dbcan_overview <- function(dir) {
+  for (nm in c("overview.tsv", "overview.txt", "CAZyme_annotation.tsv")) {
+    f <- file.path(dir, nm)
+    if (file.exists(f) && file.size(f) > 0) return(f)
+  }
+  NULL
+}
+
+load_dbcan <- function(samples, ann_dir, min_tools = 2) {
+  lapply(samples, function(s) {
+    f <- find_dbcan_overview(file.path(ann_dir, "dbcan", s))
+    if (is.null(f)) {
+      return(data.frame(sample = s, cazy_class = NA_character_,
+                        n_hicof = NA_integer_, stringsAsFactors = FALSE))
+    }
+    dt <- tryCatch(fread(f, sep = "\t"), error = function(e) NULL)
+    if (is.null(dt) || nrow(dt) == 0) {
+      return(data.frame(sample = s, cazy_class = "none",
+                        n_hicof = 0L, stringsAsFactors = FALSE))
+    }
+
+    hmm_col   <- grep("hmm",              names(dt), value = TRUE, ignore.case = TRUE)[1]
+    tools_col <- grep("#.*tool|ofTool|n_tool", names(dt), value = TRUE, ignore.case = TRUE)[1]
+
+    if (is.na(hmm_col) || is.na(tools_col)) {
+      return(data.frame(sample = s, cazy_class = NA_character_,
+                        n_hicof = NA_integer_, stringsAsFactors = FALSE))
+    }
+
+    dt_hi <- dt[dt[[tools_col]] >= min_tools, ]
+    if (nrow(dt_hi) == 0) {
+      return(data.frame(sample = s, cazy_class = "none",
+                        n_hicof = 0L, stringsAsFactors = FALSE))
+    }
+
+    hmm_vals <- as.character(dt_hi[[hmm_col]])
+    hmm_vals[hmm_vals %in% c("N/A", "-", "", "NA")] <- NA_character_
+    class_vals <- sub("([A-Z]+).*", "\\1", hmm_vals)
+    class_vals[!class_vals %in% c("GH", "AA", "CE", "PL", "CBM", "GT")] <- "other"
+    class_vals[is.na(hmm_vals)] <- "unclassified"
+
+    result <- as.data.frame(table(class_vals), stringsAsFactors = FALSE)
+    names(result) <- c("cazy_class", "n_hicof")
+    result$sample <- s
+    result
+  }) %>% bind_rows()
+}
+
+# ── PHI-base ──────────────────────────────────────────────────────────────────
+load_phibase <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv"))
+    if (!file.exists(f) || file.size(f) == 0) {
+      return(data.frame(sample = s, phi_phenotype = NA_character_,
+                        n_hits = NA_integer_, stringsAsFactors = FALSE))
+    }
+    dt <- tryCatch(fread(f, sep = "\t", header = FALSE), error = function(e) NULL)
+    if (is.null(dt) || nrow(dt) == 0) {
+      return(data.frame(sample = s, phi_phenotype = "none",
+                        n_hits = 0L, stringsAsFactors = FALSE))
+    }
+
+    # Find column containing '#'-delimited stitle (PHI-base header format)
+    stitle_col <- which(sapply(dt, function(x) any(grepl("#", head(x, 10)))))[1]
+    if (is.na(stitle_col)) {
+      return(data.frame(sample = s, phi_phenotype = "unknown",
+                        n_hits = nrow(dt), stringsAsFactors = FALSE))
+    }
+
+    phenotypes <- sapply(as.character(dt[[stitle_col]]), function(x) {
+      parts <- strsplit(x, "#")[[1]]
+      if (length(parts) >= 6) trimws(parts[6]) else "unknown"
+    })
+
+    phenotypes <- case_when(
+      str_detect(tolower(phenotypes), "reduced.{0,10}virulen")    ~ "reduced_virulence",
+      str_detect(tolower(phenotypes), "loss.{0,10}pathogen")      ~ "loss_of_pathogenicity",
+      str_detect(tolower(phenotypes), "increased.{0,10}virulen")  ~ "increased_virulence",
+      str_detect(tolower(phenotypes), "effector")                 ~ "effector",
+      str_detect(tolower(phenotypes), "unaffected")               ~ "unaffected",
+      TRUE                                                        ~ "other"
+    )
+
+    result <- as.data.frame(table(phenotypes), stringsAsFactors = FALSE)
+    names(result) <- c("phi_phenotype", "n_hits")
+    result$sample <- s
+    result
+  }) %>% bind_rows()
+}
+
+# ── MMseqs2 LCA ───────────────────────────────────────────────────────────────
+load_mmseqs <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "mmseqs_taxonomy", paste0(s, "_lca.tsv"))
+    if (!file.exists(f) || file.size(f) == 0) {
+      return(data.frame(sample = s, kingdom_label = NA_character_,
+                        n = NA_integer_, stringsAsFactors = FALSE))
+    }
+    dt <- tryCatch(
+      fread(f, sep = "\t", header = FALSE,
+            col.names = c("gene_id", "taxid", "rank", "name", "lineage")),
+      error = function(e) NULL
+    )
+    if (is.null(dt) || nrow(dt) == 0) {
+      return(data.frame(sample = s, kingdom_label = "unclassified",
+                        n = 0L, stringsAsFactors = FALSE))
+    }
+
+    dt[, kingdom_label := case_when(
+      taxid == 0 | is.na(taxid)              ~ "unclassified",
+      str_detect(lineage, "Ascomycota")      ~ "Ascomycota",
+      str_detect(lineage, "Basidiomycota")   ~ "Basidiomycota",
+      str_detect(lineage, "Glomeromycota")   ~ "Glomeromycota",
+      str_detect(lineage, "Fungi")           ~ "other Fungi",
+      str_detect(lineage, "Eukaryota")       ~ "other Eukaryota",
+      str_detect(lineage, "Bacteria")        ~ "Bacteria",
+      str_detect(lineage, "Archaea")         ~ "Archaea",
+      TRUE                                   ~ "unclassified"
+    )]
+
+    result <- dt[, .N, by = kingdom_label]
+    result[, sample := s]
+    as.data.frame(result)
+  }) %>% bind_rows()
+}
+
+# ── featureCounts summary ─────────────────────────────────────────────────────
+load_featurecounts <- function(samples, ann_dir) {
+  lapply(samples, function(s) {
+    f <- file.path(ann_dir, "featurecounts", paste0(s, "_counts.txt.summary"))
+    if (!file.exists(f) || file.size(f) == 0) {
+      return(data.frame(sample = s, status = NA_character_,
+                        count = NA_integer_, stringsAsFactors = FALSE))
+    }
+    dt <- tryCatch(fread(f, sep = "\t", header = TRUE), error = function(e) NULL)
+    if (is.null(dt) || nrow(dt) == 0) {
+      return(data.frame(sample = s, status = NA_character_,
+                        count = NA_integer_, stringsAsFactors = FALSE))
+    }
+    setnames(dt, c("status", "count"))
+    dt[, sample := s]
+    as.data.frame(dt)
+  }) %>% bind_rows()
+}
+```
+
+```{r run-loaders, cache=FALSE}
+tiara_df   <- load_tiara(samples, params$ann_dir)
+metaeuk_df <- load_metaeuk(samples, params$ann_dir)
+kofam_df   <- load_kofam(samples, params$ann_dir)
+dbcan_df   <- load_dbcan(samples, params$ann_dir, min_tools = params$min_tools)
+phi_df     <- load_phibase(samples, params$ann_dir)
+mmseqs_df  <- load_mmseqs(samples, params$ann_dir)
+fc_df      <- load_featurecounts(samples, params$ann_dir)
+
+# Attach stand_type to base dataframes
+tiara_df   <- left_join(tiara_df,   sample_meta, by = "sample")
+metaeuk_df <- left_join(metaeuk_df, sample_meta, by = "sample")
+```
+
+---
+
+## Data availability
+
+```{r missing-data-check}
+check_missing <- function(df, step) {
+  missing <- df$sample[apply(df[, !names(df) %in% c("sample", "stand_type", "stake_id")],
+                              1, function(r) all(is.na(r)))]
+  data.frame(step = step, n_missing = length(missing),
+             samples = if (length(missing) > 0) paste(missing, collapse = ", ") else "—",
+             stringsAsFactors = FALSE)
+}
+
+avail <- bind_rows(
+  check_missing(tiara_df,                                                     "Tiara"),
+  check_missing(metaeuk_df,                                                   "MetaEuk"),
+  check_missing(kofam_df,                                                     "KOfamScan"),
+  check_missing(dbcan_df %>% group_by(sample) %>%
+                  summarise(n_hicof = if (all(is.na(n_hicof))) NA_integer_ else sum(n_hicof, na.rm=TRUE),
+                            .groups="drop"), "dbCAN"),
+  check_missing(phi_df %>% group_by(sample) %>%
+                  summarise(n_hits = if (all(is.na(n_hits))) NA_integer_ else sum(n_hits, na.rm=TRUE),
+                            .groups="drop"),  "PHI-base"),
+  check_missing(mmseqs_df %>% group_by(sample) %>%
+                  summarise(n = if (all(is.na(n))) NA_integer_ else sum(n, na.rm=TRUE),
+                            .groups="drop"),  "MMseqs2 LCA"),
+  check_missing(fc_df %>% group_by(sample) %>%
+                  summarise(count = if (all(is.na(count))) NA_integer_ else sum(count, na.rm=TRUE),
+                            .groups="drop"),  "featureCounts")
+)
+
+kable(avail, col.names = c("Step", "Missing samples", "Sample IDs"),
+      caption = paste0("Samples with no output detected (n = ", length(samples), " total)")) %>%
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) %>%
+  row_spec(which(avail$n_missing > 0), background = "#FFF3CD")
+```
+
+---
+
+## Fig 1: Tiara Contig Classification {.tabset}
+
+```{r fig1, fig.height=5}
+tiara_long <- tiara_df %>%
+  filter(!is.na(n_total)) %>%
+  mutate(
+    pct_euk     = n_euk     / n_total * 100,
+    pct_prok    = n_prok    / n_total * 100,
+    pct_mito    = n_mito    / n_total * 100,
+    pct_plastid = n_plastid / n_total * 100,
+    pct_unknown = n_unknown / n_total * 100
+  ) %>%
+  pivot_longer(starts_with("pct_"), names_to = "class", values_to = "pct") %>%
+  mutate(class = factor(recode(class,
+    pct_euk     = "Eukarya",
+    pct_prok    = "Prokarya",
+    pct_mito    = "Mitochondria",
+    pct_plastid = "Plastid",
+    pct_unknown = "Unknown"
+  ), levels = c("Eukarya", "Prokarya", "Mitochondria", "Plastid", "Unknown")))
+
+tiara_totals <- tiara_df %>%
+  filter(!is.na(n_total)) %>%
+  mutate(label = paste0(round(n_total / 1000, 1), "k"))
+
+p1 <- ggplot(tiara_long, aes(x = sample, y = pct, fill = class)) +
+  geom_col(position = "stack", width = 0.8) +
+  geom_text(data = tiara_totals,
+            aes(x = sample, y = 101, label = label, fill = NULL),
+            size = 2.5, vjust = 0, inherit.aes = FALSE) +
+  scale_fill_manual(values = c(
+    "Eukarya"     = "#4DAF4A",
+    "Prokarya"    = "#377EB8",
+    "Mitochondria"= "#FF7F00",
+    "Plastid"     = "#984EA3",
+    "Unknown"     = "#AAAAAA"
+  )) +
+  add_stand_facet() +
+  labs(title = "Tiara Contig Classification",
+       subtitle = "Text labels = total contigs (thousands)",
+       x = NULL, y = "% of contigs", fill = "Class") +
+  coord_cartesian(ylim = c(0, 110))
+
+save_fig(p1, "fig1_tiara")
+```
+
+---
+
+## Fig 2: MetaEuk Gene Prediction {.tabset}
+
+```{r fig2, fig.height=5}
+med_p <- median(metaeuk_df$n_proteins, na.rm = TRUE)
+q25_p <- quantile(metaeuk_df$n_proteins, 0.25, na.rm = TRUE)
+
+p2 <- ggplot(metaeuk_df %>% filter(!is.na(n_proteins)),
+             aes(x = sample, y = n_proteins, fill = stand_type)) +
+  geom_col(width = 0.8) +
+  geom_hline(yintercept = med_p, linetype = "dashed", linewidth = 0.6, color = "black") +
+  geom_hline(yintercept = q25_p, linetype = "dotted", linewidth = 0.6, color = "#D7191C") +
+  scale_fill_manual(values = stand_colors, na.value = "#CCCCCC") +
+  add_stand_facet() +
+  labs(title    = "MetaEuk Predicted Proteins per Sample",
+       subtitle = paste0("Dashed = median (", round(med_p),
+                         "); red dotted = 25th percentile (", round(q25_p), ")"),
+       x = NULL, y = "# predicted proteins", fill = "Stand type")
+
+save_fig(p2, "fig2_metaeuk")
+```
+
+---
+
+## Fig 3: Annotation Coverage Heatmap {.tabset}
+
+```{r fig3, fig.height=6, fig.width=9}
+# Per-sample totals needed for % calculation
+prot_total <- metaeuk_df %>% select(sample, n_proteins)
+
+kofam_sum <- kofam_df %>% select(sample, n_ko_genes)
+
+dbcan_sum <- dbcan_df %>%
+  filter(!is.na(n_hicof)) %>%
+  group_by(sample) %>%
+  summarise(n_cazy = sum(n_hicof), .groups = "drop")
+
+phi_sum <- phi_df %>%
+  filter(!is.na(n_hits)) %>%
+  group_by(sample) %>%
+  summarise(n_phi = sum(n_hits), .groups = "drop")
+
+mmseqs_sum <- mmseqs_df %>%
+  filter(!is.na(n)) %>%
+  group_by(sample) %>%
+  summarise(
+    n_classified = sum(n[kingdom_label != "unclassified"], na.rm = TRUE),
+    n_fungi      = sum(n[kingdom_label %in% c("Ascomycota", "Basidiomycota",
+                                               "Glomeromycota", "other Fungi")], na.rm = TRUE),
+    .groups = "drop"
+  )
+
+heatmap_df <- prot_total %>%
+  left_join(kofam_sum,  by = "sample") %>%
+  left_join(dbcan_sum,  by = "sample") %>%
+  left_join(phi_sum,    by = "sample") %>%
+  left_join(mmseqs_sum, by = "sample") %>%
+  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
+  mutate(
+    pct_kofam    = n_ko_genes   / n_proteins * 100,
+    pct_cazy     = n_cazy       / n_proteins * 100,
+    pct_phi      = n_phi        / n_proteins * 100,
+    pct_mmseqs   = n_classified / n_proteins * 100,
+    pct_fungi    = n_fungi      / n_proteins * 100
+  )
+
+# Sort samples by stand_type then by name
+heatmap_df <- heatmap_df %>%
+  arrange(stand_type, sample) %>%
+  mutate(sample = factor(sample, levels = sample))
+
+heatmap_long <- heatmap_df %>%
+  select(sample, pct_kofam, pct_cazy, pct_phi, pct_mmseqs, pct_fungi) %>%
+  pivot_longer(-sample, names_to = "tool", values_to = "pct") %>%
+  mutate(tool = recode(tool,
+    pct_kofam  = "KOfamScan",
+    pct_cazy   = paste0("dbCAN\n(≥", params$min_tools, " tools)"),
+    pct_phi    = "PHI-base",
+    pct_mmseqs = "MMseqs2\nclassified",
+    pct_fungi  = "MMseqs2\nFungi"
+  ))
+
+p3 <- ggplot(heatmap_long, aes(x = tool, y = sample, fill = pct)) +
+  geom_tile(color = "white", linewidth = 0.4) +
+  geom_text(aes(label = ifelse(is.na(pct), "—", sprintf("%.1f%%", pct))),
+            size = 2.8, color = "black") +
+  scale_fill_gradient(low = "#EFF3FF", high = "#2171B5",
+                      na.value = "gray92", name = "% genes") +
+  labs(title    = "Annotation Coverage Heatmap",
+       subtitle = "Samples sorted by stand type; fill = % of predicted proteins annotated",
+       x = NULL, y = NULL)
+
+save_fig(p3, "fig3_annotation_heatmap", width = 9, height = max(6, length(samples) * 0.25 + 2))
+```
+
+---
+
+## Fig 4: CAZyme Class Breakdown {.tabset}
+
+```{r fig4, fig.height=5}
+cazy_colors <- c(
+  "GH"           = "#E41A1C",
+  "AA"           = "#377EB8",
+  "CE"           = "#4DAF4A",
+  "PL"           = "#FF7F00",
+  "CBM"          = "#984EA3",
+  "GT"           = "#A65628",
+  "other"        = "#AAAAAA",
+  "unclassified" = "#DDDDDD",
+  "none"         = "#F0F0F0"
+)
+
+dbcan_plot <- dbcan_df %>%
+  filter(!is.na(cazy_class), cazy_class != "none") %>%
+  left_join(sample_meta %>% select(sample, stand_type), by = "sample")
+
+total_range <- dbcan_df %>%
+  filter(!is.na(n_hicof)) %>%
+  group_by(sample) %>%
+  summarise(total = sum(n_hicof)) %>%
+  summarise(rng = paste0(min(total), "–", max(total)))
+
+p4 <- ggplot(dbcan_plot, aes(x = sample, y = n_hicof,
+             fill = factor(cazy_class, levels = names(cazy_colors)))) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = cazy_colors, drop = FALSE) +
+  add_stand_facet() +
+  labs(title    = paste0("CAZyme Class Breakdown (≥", params$min_tools, " tools)"),
+       subtitle = paste0("Total high-confidence CAZymes per sample: ", total_range$rng),
+       x = NULL, y = "# high-confidence CAZyme calls", fill = "CAZy class")
+
+save_fig(p4, "fig4_cazyme_classes")
+```
+
+---
+
+## Fig 5: PHI-base Phenotype Breakdown {.tabset}
+
+```{r fig5, fig.height=5}
+phi_colors <- c(
+  "reduced_virulence"     = "#FC8D62",
+  "loss_of_pathogenicity" = "#E31A1C",
+  "increased_virulence"   = "#FF7F00",
+  "effector"              = "#6A3D9A",
+  "unaffected"            = "#33A02C",
+  "other"                 = "#AAAAAA"
+)
+
+phi_plot <- phi_df %>%
+  filter(!is.na(phi_phenotype), phi_phenotype != "none") %>%
+  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
+  mutate(phi_phenotype = factor(phi_phenotype, levels = names(phi_colors)))
+
+p5 <- ggplot(phi_plot, aes(x = sample, y = n_hits, fill = phi_phenotype)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = phi_colors, drop = FALSE) +
+  add_stand_facet() +
+  labs(title = "PHI-base Hit Phenotypes",
+       x = NULL, y = "# DIAMOND hits", fill = "Phenotype")
+
+save_fig(p5, "fig5_phibase_phenotypes")
+```
+
+---
+
+## Fig 6: MMseqs2 Taxonomy {.tabset}
+
+```{r fig6, fig.height=5}
+kingdom_levels <- c("Ascomycota", "Basidiomycota", "Glomeromycota",
+                    "other Fungi", "other Eukaryota",
+                    "Bacteria", "Archaea", "unclassified")
+
+kingdom_colors <- c(
+  "Ascomycota"      = "#E8736C",
+  "Basidiomycota"   = "#4DBEAE",
+  "Glomeromycota"   = "#EDB120",
+  "other Fungi"     = "#77AC30",
+  "other Eukaryota" = "#7E2F8E",
+  "Bacteria"        = "#AAAAAA",
+  "Archaea"         = "#D4B896",
+  "unclassified"    = "#DDDDDD"
+)
+
+mmseqs_plot <- mmseqs_df %>%
+  filter(!is.na(kingdom_label)) %>%
+  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
+  group_by(sample, stand_type, kingdom_label) %>%
+  summarise(n = sum(n, na.rm = TRUE), .groups = "drop") %>%
+  group_by(sample) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ungroup() %>%
+  mutate(kingdom_label = factor(kingdom_label, levels = kingdom_levels))
+
+p6 <- ggplot(mmseqs_plot,
+             aes(x = sample, y = pct, fill = kingdom_label)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = kingdom_colors, drop = FALSE) +
+  add_stand_facet() +
+  labs(title   = "MMseqs2 Protein-level Taxonomy (LCA)",
+       caption = paste0("Bacterial assignments on eukaryotic contigs reflect conserved ",
+                        "proteins, not contamination (all contigs pre-filtered by Tiara)."),
+       x = NULL, y = "% of proteins", fill = "Kingdom / Phylum")
+
+save_fig(p6, "fig6_mmseqs_taxonomy")
+```
+
+---
+
+## Fig 7: featureCounts Read Assignment {.tabset}
+
+```{r fig7, fig.height=5}
+fc_colors <- c(
+  "Assigned"                 = "#1F78B4",
+  "Unassigned_NoFeatures"    = "#A6CEE3",
+  "Unassigned_Ambiguity"     = "#FB9A99",
+  "other"                    = "#DDDDDD"
+)
+
+fc_plot <- fc_df %>%
+  filter(!is.na(status)) %>%
+  mutate(status_grouped = case_when(
+    status == "Assigned"              ~ "Assigned",
+    status == "Unassigned_NoFeatures" ~ "Unassigned_NoFeatures",
+    status == "Unassigned_Ambiguity"  ~ "Unassigned_Ambiguity",
+    TRUE                              ~ "other"
+  )) %>%
+  group_by(sample, status_grouped) %>%
+  summarise(count = sum(count, na.rm = TRUE), .groups = "drop") %>%
+  group_by(sample) %>%
+  mutate(pct = count / sum(count) * 100) %>%
+  ungroup() %>%
+  left_join(sample_meta %>% select(sample, stand_type), by = "sample") %>%
+  mutate(status_grouped = factor(status_grouped, levels = names(fc_colors)))
+
+assigned_labels <- fc_plot %>% filter(status_grouped == "Assigned")
+
+p7 <- ggplot(fc_plot, aes(x = sample, y = count, fill = status_grouped)) +
+  geom_col(position = "stack", width = 0.8) +
+  geom_text(data = assigned_labels,
+            aes(label = sprintf("%.1f%%", pct), y = count / 2),
+            size = 2.5, color = "white", fontface = "bold") +
+  scale_fill_manual(values = fc_colors, drop = FALSE) +
+  scale_y_continuous(labels = scales::label_comma()) +
+  add_stand_facet() +
+  labs(title = "featureCounts Read-pair Assignment",
+       x = NULL, y = "Read pairs", fill = "Assignment status")
+
+save_fig(p7, "fig7_featurecounts")
+```
+
+---
+
+## Summary Table
+
+```{r summary-table}
+# Build per-sample summary row
+fc_assigned <- fc_df %>%
+  filter(!is.na(status)) %>%
+  group_by(sample) %>%
+  summarise(
+    total_reads    = sum(count, na.rm = TRUE),
+    assigned_reads = sum(count[status == "Assigned"], na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(pct_assigned = assigned_reads / total_reads * 100)
+
+summary_tbl <- sample_meta %>%
+  select(sample, stand_type) %>%
+  left_join(tiara_df %>% select(sample, n_total, n_euk),
+            by = "sample") %>%
+  left_join(metaeuk_df %>% select(sample, n_proteins), by = "sample") %>%
+  left_join(heatmap_df %>% select(sample, pct_kofam, pct_cazy, pct_phi,
+                                   pct_mmseqs, pct_fungi),
+            by = "sample") %>%
+  left_join(fc_assigned %>% select(sample, pct_assigned), by = "sample") %>%
+  left_join(dbcan_df %>%
+              filter(!is.na(n_hicof)) %>%
+              group_by(sample) %>%
+              summarise(n_cazy_hicof = sum(n_hicof), .groups = "drop"),
+            by = "sample") %>%
+  left_join(phi_df %>%
+              filter(!is.na(n_hits)) %>%
+              group_by(sample) %>%
+              summarise(n_phi_hits = sum(n_hits), .groups = "drop"),
+            by = "sample") %>%
+  mutate(
+    pct_euk = n_euk / n_total * 100
+  ) %>%
+  select(
+    Sample    = sample,
+    `Stand type` = stand_type,
+    `Contigs (k)`  = n_total,
+    `% euk`        = pct_euk,
+    `Proteins`     = n_proteins,
+    `% KO`         = pct_kofam,
+    `CAZy (hi-cf)` = n_cazy_hicof,
+    `PHI hits`     = n_phi_hits,
+    `% MMseqs2 Fungi` = pct_fungi,
+    `% reads assigned` = pct_assigned
+  ) %>%
+  mutate(`Contigs (k)` = round(`Contigs (k)` / 1000, 1))
+
+kbl_tbl <- summary_tbl %>%
+  mutate(across(where(is.numeric), ~ round(.x, 1)))
+
+# Apply green→white gradient to % columns, blue gradient to count columns
+color_cols <- c("% euk", "% KO", "% MMseqs2 Fungi", "% reads assigned",
+                "Proteins", "CAZy (hi-cf)", "PHI hits")
+
+tbl_out <- kable(kbl_tbl, caption = "Per-sample annotation metrics summary",
+                 format = "html", escape = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = TRUE, font_size = 12)
+
+for (cn in color_cols) {
+  col_idx <- which(names(kbl_tbl) == cn)
+  if (length(col_idx) == 1) {
+    vals <- as.numeric(kbl_tbl[[cn]])
+    if (any(!is.na(vals))) {
+      tbl_out <- column_spec(tbl_out, col_idx,
+                             background = spec_color(vals, na_color = "#F8F8F8",
+                                                     option = "D", begin = 0.15, end = 0.85,
+                                                     direction = 1))
+    }
+  }
+}
+
+tbl_out %>% scroll_box(width = "100%")
+```
+
+```{r save-summary-csv, include=FALSE}
+write.csv(summary_tbl, file.path(out_dir, "qc_summary.csv"),
+          row.names = FALSE, na = "")
+```
+
+---
+
+*Report generated: `r Sys.time()`*
+*Annotation directory: `r params$ann_dir`*
+*Figures saved to: `r fig_dir`*

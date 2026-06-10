@@ -123,7 +123,7 @@ read_kofam <- function(file) {
   # Columns: threshold_flag, gene_id, KO, threshold, score, evalue, definition
   sig <- dt[V1 == "*"]
   if (nrow(sig) == 0) return(data.table(gene_id = character(), KO = character(), KO_definition = character()))
-  sig[, .(gene_id = V2, KO = V3, KO_definition = if (ncol(dt) >= 7) V7 else NA_character_)]
+  sig[, .(gene_id = normalize_gene_id(V2), KO = V3, KO_definition = if (ncol(dt) >= 7) V7 else NA_character_)]
 }
 
 # Read dbCAN3 overview.txt for one sample.
@@ -136,11 +136,14 @@ read_dbcan <- function(file) {
   # Column names vary slightly by version; normalise
   setnames(dt, c("Gene.ID", "Gene ID"), c("gene_id", "gene_id"), skip_absent = TRUE)
   if (!"gene_id" %in% names(dt)) setnames(dt, 1, "gene_id")
+  dt[, gene_id := normalize_gene_id(gene_id)]
 
-  # Identify HMMER, DIAMOND, and #ofTools columns by name patterns
-  hmmer_col   <- grep("(?i)hmmer",   names(dt), value = TRUE)[1]
-  diamond_col <- grep("(?i)diamond", names(dt), value = TRUE)[1]
-  tools_col   <- grep("(?i)#.*tool|n.*tool|ofTool", names(dt), value = TRUE)[1]
+  # Identify columns by name patterns — use ignore.case instead of (?i) inline
+  # flag so it works with R's default regex engine without requiring perl=TRUE.
+  # v3 used "HMMER"; v4 uses "dbCAN_hmm" — both contain "hmm".
+  hmmer_col   <- grep("hmm",     names(dt), value = TRUE, ignore.case = TRUE)[1]
+  diamond_col <- grep("diamond", names(dt), value = TRUE, ignore.case = TRUE)[1]
+  tools_col   <- grep("#.*tool|ofTool|n_tool", names(dt), value = TRUE, ignore.case = TRUE)[1]
 
   result <- data.table(
     gene_id       = dt[["gene_id"]],
@@ -148,9 +151,9 @@ read_dbcan <- function(file) {
     CAZy_DIAMOND  = if (!is.na(diamond_col)) dt[[diamond_col]] else NA_character_,
     CAZy_n_tools  = if (!is.na(tools_col))   as.integer(dt[[tools_col]])   else NA_integer_
   )
-  # Normalise N/A strings to NA
-  result[CAZy_HMMER  == "N/A", CAZy_HMMER  := NA_character_]
-  result[CAZy_DIAMOND == "N/A", CAZy_DIAMOND := NA_character_]
+  # Normalise no-hit strings to NA — v3 used "N/A", v4 uses "-"
+  result[CAZy_HMMER   %in% c("N/A", "-"), CAZy_HMMER   := NA_character_]
+  result[CAZy_DIAMOND %in% c("N/A", "-"), CAZy_DIAMOND := NA_character_]
   result
 }
 
@@ -189,7 +192,7 @@ read_phibase <- function(file) {
   if (nrow(dt) == 0) return(empty)
   # Parse stitle into structured columns
   parsed <- rbindlist(lapply(dt$stitle, parse_phi_stitle))
-  cbind(dt[, .(gene_id, phi_pident = pident, phi_evalue = evalue, phi_bitscore = bitscore)],
+  cbind(dt[, .(gene_id = normalize_gene_id(gene_id), phi_pident = pident, phi_evalue = evalue, phi_bitscore = bitscore)],
         parsed)
 }
 
@@ -205,7 +208,7 @@ read_mmseqs_taxonomy <- function(file) {
   dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE)
   if (nrow(dt) == 0) return(empty)
   result <- data.table(
-    gene_id   = as.character(dt[[1]]),
+    gene_id   = normalize_gene_id(as.character(dt[[1]])),
     lca_taxid = as.integer(dt[[2]]),
     lca_rank  = if (ncol(dt) >= 3) as.character(dt[[3]]) else NA_character_,
     lca_name  = if (ncol(dt) >= 4) as.character(dt[[4]]) else NA_character_,
@@ -213,6 +216,15 @@ read_mmseqs_taxonomy <- function(file) {
   )
   result[lca_taxid == 0L, lca_taxid := NA_integer_]
   result
+}
+
+# Normalize MetaEuk gene IDs to the first 4 pipe-delimited fields
+# (targetID|contigID|strand|startPos). MetaEuk FASTA headers carry additional
+# fields (evalue, nExons, coordinates) that featureCounts never sees — it
+# reads gene IDs from the GFF3 Parent= attribute, which only has 4 fields.
+# Applying this to all annotation layers ensures the join key matches.
+normalize_gene_id <- function(ids) {
+  sub("^([^|]+\\|[^|]+\\|[^|]+\\|[^|]+)(\\|.*)?$", "\\1", ids)
 }
 
 # Find dbCAN overview file — filename changed across dbCAN v4 sub-versions.
