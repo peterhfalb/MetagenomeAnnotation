@@ -323,9 +323,15 @@ phi_df     <- load_phibase(samples, params$ann_dir)
 mmseqs_df  <- load_mmseqs(samples, params$ann_dir)
 fc_df      <- load_featurecounts(samples, params$ann_dir)
 
-# Attach stand_type to base dataframes
-tiara_df   <- left_join(tiara_df,   sample_meta, by = "sample")
-metaeuk_df <- left_join(metaeuk_df, sample_meta, by = "sample")
+# Attach metadata columns to base dataframes via direct match (avoids join ambiguity)
+idx_t <- match(tiara_df$sample,   sample_meta$sample)
+idx_m <- match(metaeuk_df$sample, sample_meta$sample)
+tiara_df$stake_id   <- sample_meta$stake_id[idx_t]
+tiara_df$stand_type <- sample_meta$stand_type[idx_t]
+tiara_df$label      <- sample_meta$label[idx_t]
+metaeuk_df$stake_id   <- sample_meta$stake_id[idx_m]
+metaeuk_df$stand_type <- sample_meta$stand_type[idx_m]
+metaeuk_df$label      <- sample_meta$label[idx_m]
 ```
 
 ---
