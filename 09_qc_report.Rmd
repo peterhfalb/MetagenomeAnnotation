@@ -9,7 +9,7 @@ output:
     code_folding: hide
 params:
   ann_dir:   NULL
-  metadata:  "/Users/peterfalb/Documents/Research/Kennedy/ForestGEO/MesoFun/stakes.csv"
+  metadata:  "/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation/stakes.csv"
   min_tools: 2
   out_dir:   NULL
 ---
@@ -425,6 +425,58 @@ p1 <- ggplot(tiara_long, aes(x = label, y = pct, fill = class)) +
   coord_cartesian(ylim = c(0, 110))
 
 save_fig(p1, "fig1_tiara")
+```
+
+### Fig 1b: Tiara — classified contigs only (≥ 500 bp)
+
+```{r fig1b, fig.height=5}
+tiara_class_levels_b <- c("Eukarya", "Prokarya", "Mitochondria", "Plastid", "Unknown")
+
+tiara_long_b <- tiara_df %>%
+  filter(!is.na(n_total)) %>%
+  mutate(
+    n_classified = rowSums(cbind(n_euk, n_prok, n_mito, n_plastid, n_unknown), na.rm = TRUE),
+    pct_euk      = n_euk      / n_classified * 100,
+    pct_prok     = n_prok     / n_classified * 100,
+    pct_mito     = n_mito     / n_classified * 100,
+    pct_plastid  = n_plastid  / n_classified * 100,
+    pct_unknown  = n_unknown  / n_classified * 100
+  ) %>%
+  pivot_longer(starts_with("pct_"), names_to = "class", values_to = "pct") %>%
+  mutate(class = factor(recode(class,
+    pct_euk     = "Eukarya",
+    pct_prok    = "Prokarya",
+    pct_mito    = "Mitochondria",
+    pct_plastid = "Plastid",
+    pct_unknown = "Unknown"
+  ), levels = tiara_class_levels_b))
+
+tiara_totals_b <- tiara_df %>%
+  filter(!is.na(n_total)) %>%
+  mutate(
+    n_classified = rowSums(cbind(n_euk, n_prok, n_mito, n_plastid, n_unknown), na.rm = TRUE),
+    count_label  = paste0(round(n_classified / 1000, 1), "k")
+  )
+
+p1b <- ggplot(tiara_long_b, aes(x = label, y = pct, fill = class)) +
+  geom_col(position = "stack", width = 0.8) +
+  geom_text(data = tiara_totals_b,
+            aes(x = label, y = 101, label = count_label, fill = NULL),
+            size = 2.5, vjust = 0, inherit.aes = FALSE) +
+  scale_fill_manual(values = c(
+    "Eukarya"      = "#4DAF4A",
+    "Prokarya"     = "#377EB8",
+    "Mitochondria" = "#FF7F00",
+    "Plastid"      = "#984EA3",
+    "Unknown"      = "#AAAAAA"
+  )) +
+  add_stand_facet() +
+  labs(title    = "Tiara Contig Classification — classified contigs only (≥ 500 bp)",
+       subtitle = "Text labels = # classified contigs (k). Denominator excludes contigs < 500 bp.",
+       x = NULL, y = "% of classified contigs", fill = "Class") +
+  coord_cartesian(ylim = c(0, 110))
+
+save_fig(p1b, "fig1b_tiara_classified")
 ```
 
 ---
