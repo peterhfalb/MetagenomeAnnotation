@@ -10,7 +10,7 @@ output:
 params:
   ann_dir:   NULL
   metadata:  "/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation/stakes.csv"
-  min_tools: 2
+  min_tools: 1
   out_dir:   NULL
 ---
 
@@ -610,8 +610,8 @@ p4 <- ggplot(dbcan_plot, aes(x = label, y = n_hicof,
   scale_fill_manual(values = cazy_colors, drop = FALSE) +
   add_stand_facet() +
   labs(title    = paste0("CAZyme Class Breakdown (≥", params$min_tools, " tools)"),
-       subtitle = paste0("Total high-confidence CAZymes per sample: ", total_range$rng),
-       x = NULL, y = "# high-confidence CAZyme calls", fill = "CAZy class")
+       subtitle = paste0("Total CAZymes per sample (≥", params$min_tools, " tool support): ", total_range$rng),
+       x = NULL, y = paste0("# CAZyme calls (≥", params$min_tools, " tools)"), fill = "CAZy class")
 
 save_fig(p4, "fig4_cazyme_classes")
 ```
@@ -916,7 +916,7 @@ summary_tbl <- sample_meta %>%
     `% euk`        = pct_euk,
     `Proteins`     = n_proteins,
     `% KO`         = pct_kofam,
-    `CAZy (hi-cf)` = n_cazy_hicof,
+    `CAZy genes` = n_cazy_hicof,
     `PHI hits`     = n_phi_hits,
     `% MMseqs2 Fungi` = pct_fungi,
     `% reads assigned` = pct_assigned
@@ -928,7 +928,7 @@ kbl_tbl <- summary_tbl %>%
 
 # Apply green→white gradient to % columns, blue gradient to count columns
 color_cols <- c("% euk", "% KO", "% MMseqs2 Fungi", "% reads assigned",
-                "Proteins", "CAZy (hi-cf)", "PHI hits")
+                "Proteins", "CAZy genes", "PHI hits")
 
 tbl_out <- kable(kbl_tbl, caption = "Per-sample annotation metrics summary",
                  format = "html", escape = FALSE) %>%
