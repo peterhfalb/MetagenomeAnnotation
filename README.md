@@ -110,18 +110,97 @@ MetaEuk v6 predicts gene models on eukaryotic contigs via homology to the Fungi 
 
 ### Steps 3–7 — Functional annotation and quantification (run in parallel after step 2)
 
-| Step | Tool | What it produces | Runtime |
-|---|---|---|---|
-| 3 | KOfamScan | KEGG KO assignments per protein (mapper format) | ~4–8 hr, 32 CPU |
-| 4 | dbCAN3 | CAZyme family calls — HMMER + DIAMOND evidence | ~2–4 hr, 16 CPU |
-| 5 | DIAMOND vs PHI-base | Pathogenicity gene hits with phenotype labels | ~1 hr, 8 CPU |
-| 6 | MMseqs2 taxonomy | Per-protein LCA taxonomy vs. Fungi RefSeq | ~2–6 hr, 32 CPU |
-| 6b | DIAMOND vs NCBI NR *(optional)* | Broad taxonomic profiling vs. all NCBI NR | ~8–16 hr, 32 CPU |
-| 7 | featureCounts | Read counts per predicted gene (uses existing BAM files) | ~15 min, 8 CPU |
+All five steps take the MetaEuk protein FASTA (`metaeuk/<SAMPLE>/<SAMPLE>.fas`) as input and run independently of each other.
 
-**dbCAN high-confidence threshold:** genes are called high-confidence CAZymes when supported by ≥ 2 tools (HMMER + DIAMOND). This threshold is configurable in step 8 via `--min-tools`.
+---
 
-**MMseqs2 taxonomy (step 6):** LCA is computed natively by MMseqs2 across the top hits within 90% of the best bitscore. The `_lca.tsv` output contains one taxid per protein, which is expanded to standard ranks in step 8 via taxonomizr.
+#### Step 3 — KEGG KO assignment (KOfamScan) — 32 CPU, 32 GB, ~4–8 hr
+
+KOfamScan searches predicted proteins against the **KEGG KOfam database** — ~26,000 HMM profiles, one per KEGG Orthology (KO) number. Each profile is built from curated sequences for that KO and comes with a KO-specific score threshold in `ko_list` that balances precision and recall for that functional group.
+
+**How assignment works:**
+1. Each protein is searched against all KOfam profiles using HMMER (`hmmsearch` internally).
+2. A hit is **significant** (column 1 = `*`) when its HMMER score exceeds that KO's threshold. Thresholds vary by KO — conserved enzyme families have stricter thresholds than rare or divergent ones.
+3. A protein can receive multiple significant KO assignments if it encodes a bifunctional enzyme or a domain shared across KOs.
+
+**Output files per sample:**
+- `kofam/<SAMPLE>_kofam.tsv` — full detail-tsv: every gene–KO pair (significant and sub-threshold), with HMMER score and e-value. Useful for re-filtering at different thresholds in R.
+- `kofam/<SAMPLE>_kofam_mapper.tsv` — two-column table (`gene_id → KO`) of significant hits only. This is the file read by `08_integrate.R`.
+
+---
+
+#### Step 4 — CAZyme annotation (dbCAN3) — 16 CPU, 32 GB, ~2–4 hr
+
+dbCAN3 identifies **carbohydrate-active enzymes (CAZymes)** using two independent evidence streams, run together by `run_dbcan CAZyme_annotation`:
+
+| Tool | Database | How it works |
+|---|---|---|
+| **HMMER** | dbCAN HMM profiles (one per CAZy family) | Detects conserved domain architecture; good for divergent sequences within a family |
+| **DIAMOND** | Characterized CAZy protein sequences | Sequence similarity to biochemically verified CAZymes; good for well-studied families |
+
+**High-confidence call:** a gene is a high-confidence CAZyme when supported by ≥ 2 tools. This threshold is applied in step 8 (`--min-tools`, default 2), not here — all calls are kept in the raw output so the threshold can be adjusted without re-running.
+
+**CAZy class** is extracted from the HMMER family call by stripping the numeric suffix: `GH` (glycoside hydrolases — cellulose, hemicellulose, starch degradation), `AA` (auxiliary activities — oxidative lignin/cellulose degradation), `CE` (carbohydrate esterases — deacetylation of plant polymers), `PL` (polysaccharide lyases — pectin degradation), `CBM` (carbohydrate-binding modules — substrate targeting, not catalytic), `GT` (glycosyltransferases — biosynthesis).
+
+**Output file per sample:** `dbcan/<SAMPLE>/overview.txt` (filename varies by dbCAN version) — one row per gene with the HMMER call, DIAMOND call, and `#ofTools` (number of supporting tools).
+
+---
+
+#### Step 5 — Pathogenicity gene annotation (DIAMOND vs PHI-base) — 8 CPU, 16 GB, ~1 hr
+
+PHI-base (Pathogen-Host Interaction database) is a curated collection of experimentally verified pathogenicity, virulence, and effector genes from fungal and oomycete pathogens. A DIAMOND search finds predicted proteins with homology to these known pathogenicity genes.
+
+**How assignment works:**
+- `diamond blastp --sensitive` mode (slower but recovers more divergent homologs), E-value ≤ 1e-5, `--max-target-seqs 1` (best hit per query only). One hit per gene is sufficient here — we want the closest known pathogenicity gene match, not a ranked list.
+- The subject title (`stitle`) field encodes the PHI-base annotation as a `#`-delimited string: `UniProtID # PHI:XXXX # gene_name # taxid # pathogen_species # phenotype`. The phenotype (field 6) gives the virulence class: `reduced_virulence`, `loss_of_pathogenicity`, `increased_virulence`, `effector`, or `unaffected`. Parsed in step 8.
+- A PHI-base hit does **not** mean the gene is necessarily a pathogenicity factor in your organism — it means the protein is homologous to one. Interpret in the context of the organism's known lifestyle.
+
+**Output file per sample:** `phibase/<SAMPLE>_phibase.tsv` — DIAMOND tabular format (qseqid, sseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore, stitle).
+
+---
+
+#### Step 6 — Protein-level taxonomy (MMseqs2 easy-taxonomy) — 32 CPU, 128 GB, ~2–6 hr
+
+`mmseqs easy-taxonomy` assigns each predicted protein a taxonomic identity by searching against **UniRef90** and computing a lowest common ancestor (LCA) across the top hits. The full pipeline (database creation → search → LCA → output conversion) runs internally as a single command.
+
+**How assignment works:**
+1. **Search:** proteins are searched against UniRef90 at sensitivity `-s 6` (scale 1–7.5; 6 is the recommended metagenomics default). UniRef90 clusters UniProt at 90% identity, providing broad taxonomic coverage with manageable size.
+2. **LCA mode 2 (2bLCA):** this is MMseqs2's recommended mode for metagenomics. It combines two signals:
+   - the **top-scoring hit** (for specificity — resolves well-matched genes to species/genus)
+   - the **LCA across all hits within a bitscore window** (for robustness — prevents a single divergent hit from pulling the assignment up to a wrong taxon)
+   
+   2bLCA produces assignments that are more resolved than pure LCA while being less susceptible to false specificity than top-hit-only assignment.
+3. **Output:** one row per protein. `lca_taxid = 0` = unclassified (no hits above threshold). `--tax-lineage 1` adds the full semicolon-separated lineage path (e.g., `Eukaryota;Fungi;Dikarya;Ascomycota;...`).
+4. In step 8, `lca_taxid` values are expanded to standard ranks (superkingdom → species) using **taxonomizr** and the local NCBI taxonomy database.
+
+**Memory note:** the UniRef90 prefilter index requires ~306 GB when fully loaded. `--split-memory-limit 100G` chunks the target database and runs ~3 search passes per sample, making it feasible on 128 GB nodes.
+
+**Output file per sample:** `mmseqs_taxonomy/<SAMPLE>_lca.tsv` — columns: `gene_id`, `lca_taxid`, `lca_rank`, `lca_name`, `lineage`.
+
+---
+
+#### Step 6b — Broad protein taxonomy, optional (DIAMOND vs NCBI NR) — 32 CPU, ~8–16 hr
+
+An optional step that searches predicted proteins against all of NCBI NR via DIAMOND. Provides broader taxonomic coverage than the UniRef90 search, at the cost of much higher runtime and storage I/O. Useful for characterizing bacterial/archaeal contamination or non-fungal eukaryotes. Not included in the default pipeline; output in `diamond_nr/`.
+
+---
+
+#### Step 7 — Read quantification (featureCounts) — 8 CPU, 16 GB, ~15 min
+
+featureCounts (from the subread package) intersects each sample's sorted BAM file with MetaEuk's GFF to count how many reads overlap each predicted gene. This produces the raw read counts used in differential abundance analysis. No re-mapping is needed — the BAM files from the assembly step already map reads to all contigs.
+
+**How counting works:**
+
+- **GFF auto-detection:** MetaEuk v6 produces `exon` features with a `Parent=` attribute; older versions produce `CDS` features with an `ID=` attribute. The script detects which is present and sets the feature type (`-t`) and grouping attribute (`-g`) accordingly.
+- **Overlap handling (`-O --fraction`):** if a read spans multiple adjacent exon features from the same gene model (common with MetaEuk's tiled exon structure), it is distributed fractionally rather than double-counted.
+- **Strandedness (`-s 0`):** unstranded — metagenome DNA reads carry no strand orientation information.
+- **Paired-end (`-p --countReadPairs`):** counts read pairs, not individual reads, which better reflects library complexity.
+
+**Why most reads are `Unassigned_NoFeatures`:** the BAM contains reads mapped to all assembled contigs, but MetaEuk only predicted genes on Tiara-classified eukaryotic contigs (≥ 500 bp, typically 5–30% of total contigs). Reads mapping to prokaryotic contigs, short contigs, or unannotated intergenic regions are all `Unassigned_NoFeatures`. A low assigned fraction is expected and is not a problem.
+
+**Output files per sample:**
+- `featurecounts/<SAMPLE>_counts.txt` — count table: one row per gene model, columns = Geneid, Chr, Start, End, Strand, Length, counts.
+- `featurecounts/<SAMPLE>_counts.txt.summary` — assignment status breakdown (Assigned, Unassigned_NoFeatures, Unassigned_Unmapped, Unassigned_MultiMapping, Unassigned_Ambiguity, etc.).
 
 ---
 
