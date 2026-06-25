@@ -12,24 +12,39 @@
 #     [--min-tools     2]                 dbCAN: minimum tools for high-confidence call
 #     [--top-hits      10]                DIAMOND NR: top N hits per gene for LCA
 #     [--bitscore-frac 0.90]              LCA: fraction of top bitscore to retain hits
+#     [--pseudocount   1]                 ALR normalization: pseudocount added to
+#                                          numerator/denominator (see Section 6b)
 #
 # Interactive use (in an R session):
 #   Set variables in the CONFIG block below, then source() this file.
 #
 # Outputs (all in out-dir/):
-#   gene_annotations.tsv    one row per gene — contig coords + all annotation layers
-#   gene_counts_raw.tsv     raw count matrix: genes × samples (sparse — one assembly
-#                           per sample means each gene appears in one sample only)
-#   ko_count_matrix.tsv     KO × sample count matrix       ← main input for DESeq2
-#   cazy_count_matrix.tsv   CAZy family × sample matrix    ← main input for DESeq2
-#   phi_count_matrix.tsv    PHI-base phenotype × sample    ← pathogenicity analysis
-#   summary_stats.tsv       per-sample QC: gene counts, annotation rates
+#   gene_annotations.tsv               one row per gene — contig coords + all annotation
+#                                       layers (KO, CAZy, PHI, Pfam, UniRef90 + Mycocosm/
+#                                       Phytozome taxonomy)
+#   gene_counts_raw.tsv                raw count matrix: genes × samples (sparse — one
+#                                       assembly per sample means each gene appears in
+#                                       one sample only)
+#   ko_count_matrix.tsv                KO × sample count matrix       ← DESeq2 / vegan
+#   cazy_count_matrix.tsv              CAZy family × sample matrix    ← DESeq2 / vegan
+#   phi_count_matrix.tsv               PHI-base phenotype × sample    ← pathogenicity
+#   pfam_count_matrix.tsv              Pfam family × sample count matrix
+#   *_count_matrix_normalized.tsv      ALR-normalized versions of all four matrices
+#                                       above (Asparaginase/PF01112 pseudo-genome
+#                                       normalization — see Section 6b and README)
+#   asparaginase_pseudogenome_counts.tsv  raw PF01112 read count per sample (the ALR
+#                                       denominator) — audit/QC file
+#   summary_stats.tsv                  per-sample QC: gene counts, annotation rates
 #
 # NOTE on count normalization:
-#   Outputs are RAW read counts. Normalize in R before differential analysis:
+#   The raw *_count_matrix.tsv outputs are RAW read counts. Normalize in R
+#   before differential analysis:
 #   - DESeq2: pass raw counts directly (DESeq2 handles its own normalization)
 #   - vegan:  normalize with decostand() (e.g., "total", "log", "hellinger")
 #   - Do NOT pre-normalize before DESeq2.
+#   The *_normalized.tsv outputs are a SEPARATE, already-log-transformed
+#   pseudo-genome (ALR) normalization — do not feed these into DESeq2/vegan,
+#   which expect raw counts; they are for direct compositional comparison.
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -61,7 +76,9 @@ option_list <- list(
   make_option("--top-hits",       type = "integer",   default = 10L,
               help = "DIAMOND NR: top N hits per gene for LCA [default: %default]"),
   make_option("--bitscore-frac",  type = "double",    default = 0.90,
-              help = "LCA: retain hits within this fraction of top bitscore [default: %default]")
+              help = "LCA: retain hits within this fraction of top bitscore [default: %default]"),
+  make_option("--pseudocount",    type = "double",    default = 1.0,
+              help = "ALR normalization: pseudocount for numerator/denominator [default: %default]")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -77,6 +94,7 @@ out_dir    <- if (is.null(opt[["out-dir"]])) file.path(ann_dir, "integrated") el
 min_tools  <- opt[["min-tools"]]
 top_hits   <- opt[["top-hits"]]
 bs_frac    <- opt[["bitscore-frac"]]
+pseudocount <- opt[["pseudocount"]]
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -228,6 +246,44 @@ read_mmseqs_taxonomy <- function(file) {
   result
 }
 
+# Read MMseqs2 easy-taxonomy _lca.tsv output from the Mycocosm/Phytozome
+# custom database (06c_mycocosm_taxonomy.sh). Identical schema to
+# read_mmseqs_taxonomy() (UniRef90) — same function body, renamed so the
+# distinction at the call site is unambiguous. Column names get a myco_
+# prefix downstream (Section 5) to avoid colliding with the UniRef90 columns
+# when both taxonomy layers are joined into the same master table.
+read_mycocosm_taxonomy <- function(file) {
+  empty <- data.table(gene_id = character(), lca_taxid = integer(),
+                      lca_rank = character(), lca_name = character(),
+                      lineage = character())
+  if (!file.exists(file) || file.info(file)$size == 0) return(empty)
+  dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE)
+  if (nrow(dt) == 0) return(empty)
+  result <- data.table(
+    gene_id   = normalize_gene_id(as.character(dt[[1]])),
+    lca_taxid = as.integer(dt[[2]]),
+    lca_rank  = if (ncol(dt) >= 3) as.character(dt[[3]]) else NA_character_,
+    lca_name  = if (ncol(dt) >= 4) as.character(dt[[4]]) else NA_character_,
+    lineage   = if (ncol(dt) >= 5) as.character(dt[[5]]) else NA_character_
+  )
+  result[lca_taxid == 0L, lca_taxid := NA_integer_]
+  result
+}
+
+# Read Pfam hmmscan mapper output (03b_pfam.sh).
+# Returns data.table: gene_id, Pfam_accession, Pfam_name (one row per domain
+# hit — a gene with multiple distinct Pfam domains has multiple rows). Every
+# row already passed that family's gathering threshold (--cut_ga), so unlike
+# read_kofam() there is no significance flag to filter on.
+read_pfam <- function(file) {
+  empty <- data.table(gene_id = character(), Pfam_accession = character(),
+                      Pfam_name = character())
+  if (!file.exists(file) || file.info(file)$size == 0) return(empty)
+  dt <- fread(file, header = FALSE, sep = "\t", quote = "", fill = TRUE)
+  if (nrow(dt) == 0) return(empty)
+  dt[, .(gene_id = normalize_gene_id(V1), Pfam_name = V2, Pfam_accession = V3)]
+}
+
 # Normalize MetaEuk gene IDs to a consistent 4-field join key:
 #   targetID | contigID | strand | lowerBound
 #
@@ -290,7 +346,9 @@ counts_list  <- list()  # featureCounts per sample
 kofam_list   <- list()  # KOfamScan per sample
 dbcan_list   <- list()  # dbCAN3 per sample
 phi_list     <- list()  # PHI-base per sample
-mmseqs_list  <- list()  # MMseqs2 taxonomy per sample
+mmseqs_list  <- list()  # MMseqs2 taxonomy (UniRef90) per sample
+pfam_list    <- list()  # Pfam (hmmscan) per sample
+myco_list    <- list()  # MMseqs2 taxonomy (Mycocosm/Phytozome) per sample
 
 for (s in samples) {
   cat("  Reading:", s, "\n")
@@ -308,23 +366,48 @@ for (s in samples) {
   # PHI-base
   phi_list[[s]] <- read_phibase(file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv")))
 
-  # MMseqs2 taxonomy (_lca.tsv — LCA already computed by MMseqs2)
+  # MMseqs2 taxonomy vs UniRef90 (_lca.tsv — LCA already computed by MMseqs2)
   mmseqs_list[[s]] <- read_mmseqs_taxonomy(
     file.path(ann_dir, "mmseqs_taxonomy", paste0(s, "_lca.tsv")))
+
+  # Pfam domain annotation (gene_id -> Pfam_accession mapper, --cut_ga hits)
+  pfam_list[[s]] <- read_pfam(file.path(ann_dir, "pfam", paste0(s, "_pfam_mapper.tsv")))
+
+  # MMseqs2 taxonomy vs Mycocosm/Phytozome (additive — finer fungal subphylum
+  # resolution + plant-sequence flagging; absent if the optional DB wasn't built)
+  myco_list[[s]] <- read_mycocosm_taxonomy(
+    file.path(ann_dir, "mycocosm_taxonomy", paste0(s, "_lca.tsv")))
 }
 
 # Combine across samples
 counts_all <- rbindlist(counts_list,  use.names = TRUE, fill = TRUE)
 kofam_all  <- rbindlist(kofam_list,   use.names = TRUE, fill = TRUE)
 dbcan_all  <- rbindlist(dbcan_list,   use.names = TRUE, fill = TRUE)
+pfam_all   <- rbindlist(pfam_list,    use.names = TRUE, fill = TRUE)
+myco_all   <- rbindlist(myco_list,    use.names = TRUE, fill = TRUE)
 phi_all    <- rbindlist(phi_list,     use.names = TRUE, fill = TRUE)
 mmseqs_all <- rbindlist(mmseqs_list,  use.names = TRUE, fill = TRUE)
+
+# Rename myco_all's columns immediately so they never collide with
+# mmseqs_all's identically-named columns (lca_taxid, lca_rank, lca_name,
+# lineage) once both taxonomy layers are joined into base_dt (Section 5).
+if (nrow(myco_all) > 0) {
+  setnames(myco_all,
+           c("lca_taxid", "lca_rank", "lca_name", "lineage"),
+           c("myco_lca_taxid", "myco_lca_rank", "myco_lca_name", "myco_lineage"))
+} else {
+  myco_all <- data.table(gene_id = character(), myco_lca_taxid = integer(),
+                          myco_lca_rank = character(), myco_lca_name = character(),
+                          myco_lineage = character())
+}
 
 cat("\n  Genes with featureCounts data :", nrow(counts_all), "\n")
 cat("  KOfam significant hits        :", nrow(kofam_all), "\n")
 cat("  dbCAN gene calls              :", nrow(dbcan_all), "\n")
 cat("  PHI-base hits                 :", nrow(phi_all), "\n")
-cat("  MMseqs2 taxonomy assignments  :", sum(!is.na(mmseqs_all$lca_taxid)), "\n\n")
+cat("  MMseqs2 taxonomy assignments  :", sum(!is.na(mmseqs_all$lca_taxid)), "\n")
+cat("  Pfam domain hits               :", nrow(pfam_all), "\n")
+cat("  Mycocosm/Phytozome assignments :", sum(!is.na(myco_all$myco_lca_taxid)), "\n\n")
 
 # =============================================================================
 # SECTION 3: Build raw count matrix (gene × sample)
@@ -358,21 +441,31 @@ if (nrow(counts_all) > 0) {
 # (superkingdom, phylum, class, order, family, genus, species) using taxonomizr.
 # This is far simpler than the previous approach: one lookup per unique taxid
 # rather than processing top-N hits per gene and computing LCA in R.
+#
+# Two taxonomy sources are expanded here, sharing one getTaxonomy() lookup to
+# avoid redundant queries: the existing UniRef90 LCA (mmseqs_all) and the
+# additive Mycocosm/Phytozome LCA (myco_all). The latter only resolves
+# correctly if taxid_mapping.tsv (00_setup_databases.sh Section 8) used valid
+# NCBI taxids — see README for this dependency.
 
-cat("--- Section 4: Expanding MMseqs2 LCA taxon IDs to standard ranks ---\n")
+cat("--- Section 4: Expanding LCA taxon IDs to standard ranks ---\n")
 
 tax_sql   <- file.path(db_dir, "taxonomy", "taxonomy.sql")
 names_dmp <- file.path(db_dir, "taxonomy", "names.dmp")
 nodes_dmp <- file.path(db_dir, "taxonomy", "nodes.dmp")
 tax_ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
 
-lca_table <- NULL
+lca_table      <- NULL  # UniRef90, columns prefixed tax_*
+myco_lca_table <- NULL  # Mycocosm/Phytozome, columns prefixed myco_tax_*
+
+all_taxids_present <- (nrow(mmseqs_all) > 0 && !all(is.na(mmseqs_all$lca_taxid))) ||
+                       (nrow(myco_all)   > 0 && !all(is.na(myco_all$myco_lca_taxid)))
 
 if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
   warning("NCBI taxonomy files not found — skipping rank expansion.\n",
           "  Expected: ", names_dmp)
-} else if (nrow(mmseqs_all) == 0 || all(is.na(mmseqs_all$lca_taxid))) {
-  warning("No classified MMseqs2 hits — skipping rank expansion.")
+} else if (!all_taxids_present) {
+  warning("No classified MMseqs2 hits (UniRef90 or Mycocosm/Phytozome) — skipping rank expansion.")
 } else {
 
   # Build SQLite taxonomy DB from local names.dmp/nodes.dmp (once, ~5-10 min)
@@ -385,8 +478,10 @@ if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
     cat("  Using existing taxonomy database:", tax_sql, "\n")
   }
 
-  unique_taxids <- unique(na.omit(mmseqs_all$lca_taxid))
-  cat("  Unique LCA taxids to expand:", length(unique_taxids), "\n")
+  # Collect unique taxids from BOTH sources together — one getTaxonomy() call
+  # serves both, regardless of which taxonomy step a given taxid came from.
+  unique_taxids <- unique(na.omit(c(mmseqs_all$lca_taxid, myco_all$myco_lca_taxid)))
+  cat("  Unique LCA taxids to expand (UniRef90 + Mycocosm/Phytozome):", length(unique_taxids), "\n")
 
   tax_lookup <- tryCatch(
     getTaxonomy(as.character(unique_taxids), tax_sql),
@@ -411,17 +506,43 @@ if (!file.exists(names_dmp) || !file.exists(nodes_dmp)) {
       cat("  NOTE: ranks not returned by getTaxonomy():", paste(missing_ranks, collapse = ", "), "\n")
     }
 
+    # UniRef90 expansion (existing behavior, tax_* columns)
     lca_table <- mmseqs_all[
       !is.na(lca_taxid)
     ][tax_lookup_dt, on = "lca_taxid", nomatch = NA]
 
-    cat("  Rank expansion complete for", nrow(lca_table), "genes.\n")
+    cat("  UniRef90 rank expansion complete for", nrow(lca_table), "genes.\n")
 
     if ("tax_superkingdom" %in% names(lca_table)) {
       kingdom_tbl <- lca_table[, .N, by = tax_superkingdom][order(-N)]
-      cat("  Kingdom breakdown:\n")
+      cat("  Kingdom breakdown (UniRef90):\n")
       print(kingdom_tbl)
     }
+
+    # Mycocosm/Phytozome expansion — reuse the same tax_lookup_dt, but
+    # re-prefix the rank columns myco_tax_* so they don't collide with the
+    # UniRef90 tax_* columns once both are joined into base_dt (Section 5).
+    # Join key is renamed to myco_lca_taxid to match myco_all's own columns.
+    myco_tax_lookup_dt <- copy(tax_lookup_dt)
+    setnames(myco_tax_lookup_dt,
+             c("lca_taxid", paste0("tax_", tax_ranks)),
+             c("myco_lca_taxid", paste0("myco_tax_", tax_ranks)))
+
+    myco_lca_table <- myco_all[
+      !is.na(myco_lca_taxid)
+    ][myco_tax_lookup_dt, on = "myco_lca_taxid", nomatch = NA]
+
+    # Informational flags derived from the lineage string — purely additive,
+    # no filtering. Subphylum name list is provisional: finalize once the
+    # actual lineage strings from the user's genome panel can be inspected,
+    # since Mycocosm/NCBI subphylum naming doesn't always align 1:1.
+    myco_lca_table[, myco_is_plant := grepl("Viridiplantae", myco_lineage)]
+    myco_lca_table[, myco_fungal_subphylum := str_extract(
+      myco_lineage,
+      "Agaricomycotina|Pezizomycotina|Ustilaginomycotina|Saccharomycotina|Taphrinomycotina"
+    )]
+
+    cat("  Mycocosm/Phytozome rank expansion complete for", nrow(myco_lca_table), "genes.\n")
   }
 }
 cat("\n")
@@ -440,7 +561,9 @@ all_genes <- unique(c(
   kofam_all$gene_id,
   dbcan_all$gene_id,
   phi_all$gene_id,
-  mmseqs_all$gene_id
+  mmseqs_all$gene_id,
+  pfam_all$gene_id,
+  myco_all$gene_id
 ))
 base_dt <- data.table(gene_id = all_genes)
 
@@ -479,6 +602,23 @@ base_dt <- phi_best[base_dt, on = "gene_id"]
 # tax_superkingdom … tax_species). Genes with no hit or unclassified get NAs.
 if (!is.null(lca_table)) {
   base_dt <- lca_table[base_dt, on = "gene_id"]
+}
+
+# Pfam: collapse multiple domain hits per gene to semicolon-separated strings
+# (same convention as KO/CAZy multi-hit genes above).
+pfam_collapsed <- pfam_all[
+  , .(Pfam_accessions = paste(unique(Pfam_accession), collapse = ";"),
+      Pfam_names      = paste(unique(Pfam_name), collapse = ";")
+  ), by = gene_id
+]
+base_dt <- pfam_collapsed[base_dt, on = "gene_id"]
+
+# Mycocosm/Phytozome LCA taxonomy (gene_id, myco_lca_taxid, myco_lca_rank,
+# myco_lca_name, myco_lineage, myco_tax_superkingdom … myco_tax_species,
+# myco_is_plant, myco_fungal_subphylum). Additive — purely informational,
+# no filtering applied. Genes with no hit get NAs for these columns.
+if (!is.null(myco_lca_table)) {
+  base_dt <- myco_lca_table[base_dt, on = "gene_id"]
 }
 
 cat("  Master annotation table:", nrow(base_dt), "genes,",
@@ -548,6 +688,104 @@ phi_matrix <- if (nrow(phi_long) > 0) {
 cat("    PHI phenotype matrix:", nrow(phi_matrix), "phenotypes ×",
     max(0, ncol(phi_matrix) - 1), "samples\n\n")
 
+# 6d: Pfam family count matrix
+# build_family_matrix() is fully generic over any (gene_id, family) table —
+# no new helper logic needed, same instantiation pattern as KO/CAZy/PHI above.
+cat("  Building Pfam family count matrix...\n")
+pfam_long <- pfam_all[, .(gene_id, family = Pfam_accession)]
+pfam_matrix <- if (nrow(pfam_long) > 0) {
+  build_family_matrix(gene_counts_long, pfam_long, "family")
+} else {
+  data.table(family = character())
+}
+cat("    Pfam matrix:", nrow(pfam_matrix), "families ×",
+    max(0, ncol(pfam_matrix) - 1), "samples\n\n")
+
+# =============================================================================
+# SECTION 6b: Pseudo-genome (additive log-ratio) normalization
+# =============================================================================
+# Replicates the normalization approach from the source methodology paper:
+# Asparaginase (Pfam PF01112) is treated as a near-single-copy marker, used
+# as a proxy for genome equivalents represented by each sample's sequencing
+# depth. All four family matrices (KO, CAZy, PHI, Pfam) are normalized against
+# it, then log-transformed — mathematically an additive log-ratio (ALR)
+# transform using Asparaginase as the reference component.
+#
+# Why all four matrices, not just Pfam: KO/CAZy/PHI/Pfam matrices are all
+# built from the same underlying featureCounts read-pair counts
+# (gene_counts_long), just bucketed by different functional-family
+# assignments — so numerator and denominator are always on identical units
+# regardless of which annotation tool produced the family label. Asparaginase
+# acts as a sample-level scaling factor (how much genomic content this
+# sample's sequencing represents), independent of which functional system is
+# being normalized — the same logic behind single-copy-marker "genome
+# equivalents" methods (e.g. MicrobeCensus). NOTE: this is a methodological
+# extension beyond the cited paper's literal scope — the paper only had
+# Pfam-derived functional counts to normalize, so it never tested this logic
+# against KO/CAZy/PHI-style counts from other annotation tools. See README.
+#
+# Zero-handling: an additive pseudocount is applied to both numerator and
+# denominator before the ratio (simpler than Aitchison-style multiplicative
+# zero replacement, avoids a new dependency). pseudocount is exposed as a CLI
+# flag since the "right" value is somewhat arbitrary and depth-sensitive —
+# treat the default as a starting point requiring a sensitivity check, not a
+# fixed constant.
+
+cat("--- Section 6b: Pseudo-genome (ALR) normalization ---\n")
+
+# Asparaginase pseudo-genome count per sample: pull the PF01112 row out of
+# pfam_matrix. build_family_matrix()'s dcast(..., fill = 0L) already
+# guarantees 0 (not NA) for samples with no PF01112 hit.
+asparaginase_counts <- setNames(rep(0, length(samples)), samples)
+if (nrow(pfam_matrix) > 0 && "PF01112" %in% pfam_matrix$family) {
+  pf_row <- pfam_matrix[family == "PF01112"]
+  for (s in samples) {
+    if (s %in% names(pf_row)) asparaginase_counts[s] <- pf_row[[s]]
+  }
+} else {
+  warning("No PF01112 (Asparaginase) hits found in any sample — pseudo-genome ",
+          "normalization will be dominated by the pseudocount for all samples. ",
+          "Check that the Pfam step (03b_pfam.sh) ran successfully.")
+}
+
+asparaginase_dt <- data.table(sample = samples,
+                               asparaginase_pseudogenome_count = asparaginase_counts[samples])
+near_zero <- asparaginase_dt[asparaginase_pseudogenome_count <= pseudocount]
+if (nrow(near_zero) > 0) {
+  cat("  WARNING: samples with near-zero Asparaginase pseudo-genome count",
+      "(ALR normalization unreliable for these):\n")
+  print(near_zero)
+}
+
+# alr_normalize(): for each sample column, ratio = (count + pc) / (denom + pc),
+# then natural-log-transform. Applies to any family x sample matrix produced
+# by build_family_matrix().
+alr_normalize <- function(family_matrix, denom_vec, pseudocount = 1) {
+  if (nrow(family_matrix) == 0) return(family_matrix)
+  family_col <- names(family_matrix)[1]
+  sample_cols <- setdiff(names(family_matrix), family_col)
+  result <- copy(family_matrix)
+  for (s in sample_cols) {
+    denom <- if (s %in% names(denom_vec)) denom_vec[[s]] else NA_real_
+    result[[s]] <- log((family_matrix[[s]] + pseudocount) / (denom + pseudocount))
+  }
+  result
+}
+
+denom_vec <- asparaginase_counts
+
+cat("  Normalizing KO, CAZy, PHI, and Pfam matrices against Asparaginase (PF01112)...\n")
+ko_matrix_normalized   <- alr_normalize(ko_matrix,   denom_vec, pseudocount)
+cazy_matrix_normalized <- alr_normalize(cazy_matrix, denom_vec, pseudocount)
+phi_matrix_normalized  <- alr_normalize(phi_matrix,  denom_vec, pseudocount)
+pfam_matrix_normalized <- alr_normalize(pfam_matrix, denom_vec, pseudocount)
+
+# Expected transform artifact: normalizing pfam_matrix by its own PF01112 row
+# makes that row's ALR value log(1) = 0 for every sample by construction.
+# This is NOT a bug and NOT a biological signal ("Asparaginase abundance is
+# flat") — see README for this caveat.
+cat("\n")
+
 # =============================================================================
 # SECTION 7: Per-sample QC summary
 # =============================================================================
@@ -562,7 +800,12 @@ summary_rows <- lapply(samples, function(s) {
                 } else 0L
   n_phi      <- if (!is.null(phi_list[[s]]))    nrow(phi_list[[s]])        else 0L
   n_tax <- if (!is.null(mmseqs_list[[s]])) sum(!is.na(mmseqs_list[[s]]$lca_taxid)) else 0L
+  n_pfam <- if (!is.null(pfam_list[[s]])) n_distinct(pfam_list[[s]]$gene_id) else 0L
+  # NOTE: myco_list elements still use the reader's original column name
+  # (lca_taxid) — the myco_lca_taxid rename happens later, only on myco_all.
+  n_myco_tax <- if (!is.null(myco_list[[s]])) sum(!is.na(myco_list[[s]]$lca_taxid)) else 0L
   total_reads <- if (!is.null(counts_list[[s]])) sum(counts_list[[s]]$count) else 0L
+  asparaginase_count <- asparaginase_counts[[s]]
 
   data.table(
     sample                  = s,
@@ -575,7 +818,12 @@ summary_rows <- lapply(samples, function(s) {
     genes_with_PHI_hit      = n_phi,
     pct_PHI                 = round(100 * n_phi  / max(n_genes, 1), 1),
     genes_with_taxonomy     = n_tax,
-    pct_taxonomy            = round(100 * n_tax  / max(n_genes, 1), 1)
+    pct_taxonomy            = round(100 * n_tax  / max(n_genes, 1), 1),
+    genes_with_Pfam         = n_pfam,
+    pct_Pfam                = round(100 * n_pfam / max(n_genes, 1), 1),
+    genes_with_myco_taxonomy = n_myco_tax,
+    pct_myco_taxonomy       = round(100 * n_myco_tax / max(n_genes, 1), 1),
+    asparaginase_pseudogenome_count = asparaginase_count
   )
 })
 
@@ -599,10 +847,21 @@ write_tsv(count_matrix,  file.path(out_dir, "gene_counts_raw.tsv"))
 write_tsv(ko_matrix,     file.path(out_dir, "ko_count_matrix.tsv"))
 write_tsv(cazy_matrix,   file.path(out_dir, "cazy_count_matrix.tsv"))
 write_tsv(phi_matrix,    file.path(out_dir, "phi_count_matrix.tsv"))
+write_tsv(pfam_matrix,   file.path(out_dir, "pfam_count_matrix.tsv"))
 write_tsv(summary_dt,    file.path(out_dir, "summary_stats.tsv"))
 
+# Pseudo-genome (ALR) normalized matrices — see Section 6b for the transform
+# and the README for the all-four-matrices normalization rationale.
+write_tsv(ko_matrix_normalized,   file.path(out_dir, "ko_count_matrix_normalized.tsv"))
+write_tsv(cazy_matrix_normalized, file.path(out_dir, "cazy_count_matrix_normalized.tsv"))
+write_tsv(phi_matrix_normalized,  file.path(out_dir, "phi_count_matrix_normalized.tsv"))
+write_tsv(pfam_matrix_normalized, file.path(out_dir, "pfam_count_matrix_normalized.tsv"))
+write_tsv(asparaginase_dt,        file.path(out_dir, "asparaginase_pseudogenome_counts.tsv"))
+
 # Also save as R objects for direct use in downstream analysis
-save(base_dt, count_matrix, ko_matrix, cazy_matrix, phi_matrix, summary_dt,
+save(base_dt, count_matrix, ko_matrix, cazy_matrix, phi_matrix, pfam_matrix,
+     ko_matrix_normalized, cazy_matrix_normalized, phi_matrix_normalized,
+     pfam_matrix_normalized, asparaginase_dt, summary_dt,
      file = file.path(out_dir, "integrated_data.RData"))
 cat("  Wrote:", file.path(out_dir, "integrated_data.RData"), "(all objects)\n")
 
@@ -612,8 +871,12 @@ cat("Outputs in:", out_dir, "\n")
 cat("\nTo load in R:\n")
 cat("  load('", file.path(out_dir, "integrated_data.RData"), "')\n", sep = "")
 cat("\nKey analysis tables:\n")
-cat("  ko_matrix    — KO × sample count matrix      → DESeq2 / vegan\n")
-cat("  cazy_matrix  — CAZy family × sample matrix   → DESeq2 / vegan\n")
-cat("  phi_matrix   — PHI phenotype × sample matrix → DESeq2 / vegan\n")
-cat("  base_dt      — full gene annotation table    → custom queries\n")
+cat("  ko_matrix / ko_matrix_normalized       — KO × sample (raw / ALR)      → DESeq2 / vegan\n")
+cat("  cazy_matrix / cazy_matrix_normalized   — CAZy family × sample (raw / ALR)\n")
+cat("  phi_matrix / phi_matrix_normalized     — PHI phenotype × sample (raw / ALR)\n")
+cat("  pfam_matrix / pfam_matrix_normalized   — Pfam family × sample (raw / ALR)\n")
+cat("  asparaginase_dt                        — per-sample ALR denominator (PF01112 reads)\n")
+cat("  base_dt                                — full gene annotation table  → custom queries\n")
+cat("  NOTE: *_normalized matrices are already log-transformed — do not feed\n")
+cat("        them into DESeq2/vegan, which expect raw counts.\n")
 cat("============================================================\n")

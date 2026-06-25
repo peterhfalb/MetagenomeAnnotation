@@ -93,6 +93,7 @@ check_databases() {
         "NCBI taxonomy"
         "KOfam profiles"
         "dbCAN3"
+        "Pfam-A"
         "MetaEuk target DB"
     )
     local -a paths=(
@@ -100,6 +101,7 @@ check_databases() {
         "${DB_DIR}/taxonomy/nodes.dmp"
         "${DB_DIR}/kofam/profiles"
         "${DB_DIR}/dbcan/dbCAN.hmm.h3i"
+        "${DB_DIR}/pfam/Pfam-A.hmm.h3i"
         "${DB_DIR}/metaeuk/fungi_refseq_db"
     )
 
@@ -124,6 +126,24 @@ check_databases() {
         echo "    [MISSING] PHI-base  (FASTA not found — manual download required before setup job runs)"
         echo "              See Section 5 in 00_setup_databases.sh for instructions."
         all_present=false
+    fi
+
+    # Mycocosm/Phytozome: FASTA + taxid mapping require manual download; the
+    # custom MMseqs2 taxonomy DB is built by the setup job. WARNING, not a
+    # hard failure — this taxonomy layer is additive, the pipeline runs fine
+    # without it (06_mmseqs_taxonomy.sh / UniRef90 still provides taxonomy).
+    local myco_fasta myco_mapping
+    myco_fasta=$(find "${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome" -maxdepth 1 -name "combined_proteins.faa" 2>/dev/null | head -1)
+    myco_mapping="${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome/taxid_mapping.tsv"
+    if [[ -f "${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome/db" ]]; then
+        echo "    [OK]      Mycocosm/Phytozome taxonomy DB"
+    elif [[ -n "${myco_fasta}" && -f "${myco_mapping}" ]]; then
+        echo "    [OK]      Mycocosm/Phytozome taxonomy DB  (FASTA + mapping present — DB will be built by setup job)"
+    else
+        echo "    [MISSING] Mycocosm/Phytozome taxonomy DB  (manual download + taxid mapping required — optional, additive taxonomy layer)"
+        echo "              See Section 8 in 00_setup_databases.sh for instructions."
+        # Not added to all_present — this database is optional/additive, so its
+        # absence should not block the rest of the pipeline from running.
     fi
 
     ${all_present}
@@ -278,6 +298,15 @@ if ! step_complete "KOfamScan" "${ANN_DIR}/kofam/SAMPLE_kofam.tsv"; then
 fi
 echo ""
 
+STEP3B_ID=""
+echo "Step 3b: Pfam domain annotation (HMMER)"
+if ! step_complete "Pfam" "${ANN_DIR}/pfam/SAMPLE_pfam_mapper.tsv"; then
+    STEP3B_ID=$(bash "${SCRIPT_DIR}/submit_pfam.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP3B_ID}"
+fi
+echo ""
+
 STEP4_ID=""
 echo "Step 4: dbCAN3"
 if ! step_complete "dbCAN3" "${ANN_DIR}/dbcan/SAMPLE/overview.*"; then
@@ -305,6 +334,15 @@ if ! step_complete "MMseqs2 taxonomy" "${ANN_DIR}/mmseqs_taxonomy/SAMPLE_lca.tsv
 fi
 echo ""
 
+STEP6C_ID=""
+echo "Step 6c: Mycocosm/Phytozome taxonomy (additive — no filtering applied)"
+if ! step_complete "Mycocosm/Phytozome taxonomy" "${ANN_DIR}/mycocosm_taxonomy/SAMPLE_lca.tsv"; then
+    STEP6C_ID=$(bash "${SCRIPT_DIR}/submit_mycocosm_taxonomy.sh" "${PARALLEL_ARGS[@]}" \
+        | grep -oP '(?<=job: )\d+')
+    echo "  Job ID: ${STEP6C_ID}"
+fi
+echo ""
+
 STEP7_ID=""
 echo "Step 7: featureCounts"
 FC_ARGS=( --assembly-dir "${ASM_DIR}" --annotation-dir "${ANN_DIR}" )
@@ -323,14 +361,16 @@ echo ""
 
 # Collect only the IDs of steps that were actually submitted.
 SUBMITTED_IDS=()
-[[ -n "${STEP0_ID}" ]] && SUBMITTED_IDS+=("${STEP0_ID}")
-[[ -n "${STEP1_ID}" ]] && SUBMITTED_IDS+=("${STEP1_ID}")
-[[ -n "${STEP2_ID}" ]] && SUBMITTED_IDS+=("${STEP2_ID}")
-[[ -n "${STEP3_ID}" ]] && SUBMITTED_IDS+=("${STEP3_ID}")
-[[ -n "${STEP4_ID}" ]] && SUBMITTED_IDS+=("${STEP4_ID}")
-[[ -n "${STEP5_ID}" ]] && SUBMITTED_IDS+=("${STEP5_ID}")
-[[ -n "${STEP6_ID}" ]] && SUBMITTED_IDS+=("${STEP6_ID}")
-[[ -n "${STEP7_ID}" ]] && SUBMITTED_IDS+=("${STEP7_ID}")
+[[ -n "${STEP0_ID}"  ]] && SUBMITTED_IDS+=("${STEP0_ID}")
+[[ -n "${STEP1_ID}"  ]] && SUBMITTED_IDS+=("${STEP1_ID}")
+[[ -n "${STEP2_ID}"  ]] && SUBMITTED_IDS+=("${STEP2_ID}")
+[[ -n "${STEP3_ID}"  ]] && SUBMITTED_IDS+=("${STEP3_ID}")
+[[ -n "${STEP3B_ID}" ]] && SUBMITTED_IDS+=("${STEP3B_ID}")
+[[ -n "${STEP4_ID}"  ]] && SUBMITTED_IDS+=("${STEP4_ID}")
+[[ -n "${STEP5_ID}"  ]] && SUBMITTED_IDS+=("${STEP5_ID}")
+[[ -n "${STEP6_ID}"  ]] && SUBMITTED_IDS+=("${STEP6_ID}")
+[[ -n "${STEP6C_ID}" ]] && SUBMITTED_IDS+=("${STEP6C_ID}")
+[[ -n "${STEP7_ID}"  ]] && SUBMITTED_IDS+=("${STEP7_ID}")
 
 if [[ "${#SUBMITTED_IDS[@]}" -eq 0 ]]; then
     echo "============================================================"
@@ -357,9 +397,11 @@ echo "  Step 0 databases    : ${STEP0_ID:-skipped}"
 echo "  Step 1 Tiara        : ${STEP1_ID:-skipped}"
 echo "  Step 2 MetaEuk      : ${STEP2_ID:-skipped}"
 echo "  Step 3 KOfamScan    : ${STEP3_ID:-skipped}"
+echo "  Step 3b Pfam        : ${STEP3B_ID:-skipped}"
 echo "  Step 4 dbCAN3       : ${STEP4_ID:-skipped}"
 echo "  Step 5 PHI-base     : ${STEP5_ID:-skipped}"
 echo "  Step 6 MMseqs2 tax  : ${STEP6_ID:-skipped}"
+echo "  Step 6c Myco/Phyto  : ${STEP6C_ID:-skipped}"
 echo "  Step 7 featureCounts: ${STEP7_ID:-skipped}"
 echo ""
 echo "Monitor:"
@@ -403,3 +445,9 @@ echo ""
 #
 # Note: steps 3-7 are independent of each other. If only step 6 (MMseqs2 taxonomy)
 # fails, steps 3-5 and 7 are unaffected and you only need to rerun step 6.
+#
+# Steps 3b (Pfam) and 6c (Mycocosm/Phytozome taxonomy) are likewise independent
+# of the rest of the parallel block and of each other — both depend only on
+# step 2 (MetaEuk). Step 6c is additive/optional: if its database isn't built
+# (see Section 8 in 00_setup_databases.sh), check_databases() warns but does
+# not block the rest of the pipeline from running.

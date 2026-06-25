@@ -8,7 +8,7 @@ Picks up from the output of `../MetagenomeAssembly/`.
 
 ## Study context
 
-40 soil samples from ForestGEO plots across a pine → oak → ash/elm mesophication gradient. Annotation targets ecological function: carbon acquisition (CAZymes), N/C cycling pathways (KEGG), pathogenicity (PHI-base), and taxonomic composition (MMseqs2 vs. Fungi RefSeq).
+40 soil samples from ForestGEO plots across a pine → oak → ash/elm mesophication gradient. Annotation targets ecological function: carbon acquisition (CAZymes, Pfam domains), N/C cycling pathways (KEGG), pathogenicity (PHI-base), and taxonomic composition (MMseqs2 vs. Fungi RefSeq, UniRef90, and Mycocosm/Phytozome). Methodology for the Pfam/Mycocosm-Phytozome/pseudo-genome normalization additions is adapted from *"Potential for functional divergence in ectomycorrhizal fungal communities across a precipitation gradient."*
 
 ---
 
@@ -63,7 +63,11 @@ Databases installed to `/projects/standard/kennedyp/shared/databases/metaG_annot
 | dbCAN3 HMM + DIAMOND databases | ~1 GB | CAZyme annotation |
 | PHI-base DIAMOND database | ~10 MB | Pathogenicity genes |
 | NCBI taxdump (names.dmp, nodes.dmp) | ~6 GB | Taxonomy rank expansion via taxonomizr |
+| Pfam-A HMM profiles + Pfam-A.hmm.dat | ~100 MB compressed | Pfam domain annotation via hmmscan |
+| Mycocosm/Phytozome custom MMseqs2 taxonomy DB *(manual download — see below)* | depends on genome panel | Finer fungal subphylum taxonomy + plant-sequence flagging |
 | DIAMOND NR (optional; built from MSI BLAST copy) | ~80 GB | Protein-level taxonomy vs. all NCBI NR |
+
+> **Mycocosm/Phytozome requires a manual download** — JGI genomes need a signed Data Use Agreement and cannot be fetched automatically. Register at the [JGI Genome Portal](https://genome.jgi.doe.gov/portal/), download a panel of fungal (Mycocosm) and plant (Phytozome) protein FASTAs, concatenate them, and supply a genome → NCBI taxid mapping TSV. Full instructions are in `00_setup_databases.sh` Section 8. This database is optional/additive — the pipeline runs fully without it (step 6 UniRef90 taxonomy is unaffected); its absence only means step 6c is skipped.
 
 ---
 
@@ -129,6 +133,22 @@ KOfamScan searches predicted proteins against the **KEGG KOfam database** — ~2
 
 ---
 
+#### Step 3b — Pfam domain annotation (HMMER) — 32 CPU, 32 GB, ~4–12 hr
+
+`hmmscan` searches predicted proteins against the **Pfam-A HMM profile database** (~20,000+ domain families), using each family's own curated **gathering threshold** (`--cut_ga`) rather than a single fixed E-value or bitscore cutoff across all families. This is the standard, reproducible approach for Pfam domain annotation. Runs additionally alongside KOfamScan (step 3) — both depend only on MetaEuk.
+
+**How assignment works:**
+1. Each protein is searched against the full Pfam-A profile library with `hmmscan --cut_ga --domtblout`.
+2. Domain-level output (`--domtblout`, not `--tblout`) is used because a single protein can carry multiple distinct Pfam domains at different coordinate ranges (e.g. a fusion protein).
+3. Every reported hit has already passed that family's gathering threshold — unlike KOfamScan's detail-tsv, there is no sub-threshold row to filter out downstream.
+4. A gene with multiple distinct domains gets multiple rows in the mapper table, the same multi-hit convention used for KO assignments.
+
+**Output files per sample:**
+- `pfam/<SAMPLE>_pfam_domtblout.tsv` — full HMMER3 domtblout (every domain hit, with scores/e-values).
+- `pfam/<SAMPLE>_pfam_mapper.tsv` — three-column table (`gene_id, Pfam_name, Pfam_accession`), accession version suffix stripped (e.g. `PF01112.21` → `PF01112`) for stability across Pfam releases. This is the file read by `08_integrate.R`, and the source of the Asparaginase (PF01112) pseudo-genome normalization (see Step 8 and the Integrated output files section below).
+
+---
+
 #### Step 4 — CAZyme annotation (dbCAN3) — 16 CPU, 32 GB, ~2–4 hr
 
 dbCAN3 identifies **carbohydrate-active enzymes (CAZymes)** using two independent evidence streams, run together by `run_dbcan CAZyme_annotation`:
@@ -179,6 +199,16 @@ PHI-base (Pathogen-Host Interaction database) is a curated collection of experim
 
 ---
 
+#### Step 6c — Mycocosm/Phytozome taxonomy, additive (MMseqs2 easy-taxonomy) — 32 CPU, 128 GB, ~8 hr
+
+Runs the same `mmseqs easy-taxonomy` mechanics as step 6 (2bLCA, `--tax-lineage`), but against a **custom MMseqs2 taxonomy database** built from JGI Mycocosm (fungal) and Phytozome (plant) genomes instead of UniRef90. This replicates the taxonomy approach from the source methodology paper for identifying ectomycorrhizal fungi: finer resolution to fungal **subphylum** (Agaricomycotina, Pezizomycotina) and explicit flagging of plant-derived sequences.
+
+**This step is purely additive — no filtering is applied anywhere in the pipeline based on this taxonomy.** It runs alongside step 6 (UniRef90), not in place of it: UniRef90 still provides broad kingdom-level taxonomy/contamination checks; this step adds a second, finer-resolution taxonomic layer. All genes are retained regardless of how they classify here. Optional: if the custom database isn't built (see the manual-download note in the database setup table above), this step is skipped and the rest of the pipeline runs unaffected.
+
+**Output file per sample:** `mycocosm_taxonomy/<SAMPLE>_lca.tsv` — identical 5-column schema to step 6's output (`gene_id`, `lca_taxid`, `lca_rank`, `lca_name`, `lineage`). In `08_integrate.R` and `gene_annotations.tsv`, these columns are prefixed `myco_` to distinguish them from the UniRef90 taxonomy columns.
+
+---
+
 #### Step 6b — Broad protein taxonomy, optional (DIAMOND vs NCBI NR) — 32 CPU, ~8–16 hr
 
 An optional step that searches predicted proteins against all of NCBI NR via DIAMOND. Provides broader taxonomic coverage than the UniRef90 search, at the cost of much higher runtime and storage I/O. Useful for characterizing bacterial/archaeal contamination or non-fungal eukaryotes. Not included in the default pipeline; output in `diamond_nr/`.
@@ -215,7 +245,7 @@ Rscript 08_integrate.R \
   --db-dir         /projects/standard/kennedyp/shared/databases/metaG_annotation
 ```
 
-Optional flags: `--min-tools 2` (dbCAN confidence threshold), `--top-hits 10`, `--bitscore-frac 0.90`.
+Optional flags: `--min-tools 2` (dbCAN confidence threshold), `--top-hits 10`, `--bitscore-frac 0.90`, `--pseudocount 1` (pseudo-genome ALR normalization — see below).
 
 ---
 
@@ -251,6 +281,8 @@ Rscript -e "rmarkdown::render(
 
 All figures are saved as PNGs to `{ann_dir}/qc/figures/`. A per-sample summary table with cell color-coding and `qc_summary.csv` are also written to `{ann_dir}/qc/`.
 
+> **Not yet covered in the QC report:** Pfam family breakdown and Mycocosm/Phytozome taxonomy (plant vs. fungi proportions, fungal subphylum breakdown) figures are planned as a fast-follow, once real data exists from steps 3b/6c to visualize and verify against.
+
 **Stand type metadata** is read from `/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation/stakes.csv`. Samples are joined on stake number (extracted from the sample name pattern `GEO-XX-YY_[Cleaned_]SN`) and grouped/colored by `stand_type` (ash or elm / oak / pine / mixed) in all figures.
 
 ---
@@ -282,13 +314,22 @@ Master annotation table — **one row per predicted gene**, all annotation layer
 | `phi_gene` | Gene name in PHI-base (e.g., `BMP1`) |
 | `phi_pathogen` | Pathogen species in PHI-base |
 | `phi_phenotype` | Virulence phenotype: `reduced_virulence`, `loss_of_pathogenicity`, `increased_virulence`, `effector`, `unaffected`, or `other` |
-| `lca_taxid` | NCBI taxon ID of the MMseqs2 LCA assignment |
+| `lca_taxid` | NCBI taxon ID of the MMseqs2 LCA assignment (UniRef90, step 6) |
 | `lca_rank` | Taxonomic rank of the LCA (e.g., `species`, `genus`, `phylum`) |
 | `lca_name` | Taxon name at the LCA rank |
-| `lineage` | Full lineage string from MMseqs2 |
-| `tax_superkingdom` … `tax_species` | Standard rank expansion via taxonomizr (7 columns: superkingdom, phylum, class, order, family, genus, species) |
+| `lineage` | Full lineage string from MMseqs2 (UniRef90) |
+| `tax_superkingdom` … `tax_species` | Standard rank expansion via taxonomizr (7 columns: superkingdom, phylum, class, order, family, genus, species), UniRef90 source |
+| `Pfam_accessions` | Pfam domain accession(s), semicolon-separated if multiple (e.g., `PF00187;PF01112`); bare accessions, version suffix stripped |
+| `Pfam_names` | Pfam family name(s), semicolon-separated, matching `Pfam_accessions` order |
+| `myco_lca_taxid` | NCBI taxon ID of the Mycocosm/Phytozome LCA assignment (step 6c, additive) |
+| `myco_lca_rank` | Taxonomic rank of the Mycocosm/Phytozome LCA |
+| `myco_lca_name` | Taxon name at the Mycocosm/Phytozome LCA rank |
+| `myco_lineage` | Full lineage string from the Mycocosm/Phytozome taxonomy search |
+| `myco_tax_superkingdom` … `myco_tax_species` | Standard rank expansion via taxonomizr, Mycocosm/Phytozome source — only resolves correctly if `taxid_mapping.tsv` used valid NCBI taxids (see Step 6c) |
+| `myco_is_plant` | `TRUE` if `myco_lineage` contains "Viridiplantae" — informational flag, not a filter |
+| `myco_fungal_subphylum` | Fungal subphylum extracted from `myco_lineage` (e.g., `Agaricomycotina`, `Pezizomycotina`) if present; provisional vocabulary, see note below |
 
-Genes missing an annotation layer have `NA` for that layer's columns.
+Genes missing an annotation layer have `NA` for that layer's columns. All `myco_*` columns are `NA` for every gene if step 6c's database wasn't built (optional/additive layer).
 
 ---
 
@@ -342,6 +383,42 @@ Useful subsets: filter rows by prefix to isolate GH (cellulose/hemicellulose deg
 
 ---
 
+### `pfam_count_matrix.tsv`
+
+**Pfam family × sample count matrix** — built the same way as the KO/CAZy/PHI matrices above, via the same generic `build_family_matrix()` helper.
+
+- Rows = Pfam accession (e.g., `PF01112`)
+- Columns = sample names
+- Values = summed read-pair counts for genes with that Pfam domain
+- Genes with multiple distinct Pfam domains contribute their count to each family
+
+---
+
+### Pseudo-genome (ALR) normalized matrices
+
+`ko_count_matrix_normalized.tsv`, `cazy_count_matrix_normalized.tsv`, `phi_count_matrix_normalized.tsv`, `pfam_count_matrix_normalized.tsv`, and `asparaginase_pseudogenome_counts.tsv`.
+
+This replicates the normalization approach from the source methodology paper: **Asparaginase (Pfam `PF01112`)** is treated as a near-single-copy marker gene, used as a proxy for the genome equivalents represented by each sample's sequencing depth. For each sample, the Asparaginase pseudo-genome count is the summed featureCounts read-pair count across all genes with a PF01112 hit (written out directly in `asparaginase_pseudogenome_counts.tsv` for auditing).
+
+Each of the four family matrices is normalized per sample as:
+
+```
+ratio     = (family_count + pseudocount) / (asparaginase_count + pseudocount)
+normalized = log(ratio)
+```
+
+This is mathematically an **additive log-ratio (ALR) transform** using Asparaginase as the reference component. `pseudocount` (default 1, set via `--pseudocount`) is added to both numerator and denominator to avoid `log(0)`; the "right" value is somewhat arbitrary and depth-sensitive — treat the default as a starting point requiring a sensitivity check (e.g. rerun with `--pseudocount 0.5` or `5` and confirm conclusions are stable), not a fixed constant.
+
+**Why all four matrices, not just Pfam:** the KO, CAZy, PHI, and Pfam matrices are all built from the same underlying featureCounts read-pair counts, just bucketed by different functional-family assignments from different annotation tools — so the numerator and denominator are always on identical units regardless of which tool produced the family label. The Asparaginase count functions as a **sample-level scaling factor** (how much genomic content that sample's sequencing represents), a property of the sample rather than of the annotation system used to derive the numerator — the same logic behind single-copy-marker "genome equivalents" normalization methods (e.g. MicrobeCensus). **This is a methodological extension beyond the cited paper's literal scope**: the paper only had Pfam-derived functional counts to normalize (Pfam was its only functional annotation system), so it never tested this logic against KO/CAZy/PHI-style counts from other annotation tools. Treat the Pfam-normalized matrix as the direct replication and the KO/CAZy/PHI-normalized matrices as an analogous extension.
+
+**Caveats:**
+- Samples with a near-zero Asparaginase pseudo-genome count have unreliable normalized values for all four matrices — their ALR values become dominated by the pseudocount rather than reflecting real abundance. `08_integrate.R` prints a warning listing any such samples; check `asparaginase_pseudogenome_counts.tsv` before trusting normalized values for those samples.
+- The PF01112 row in `pfam_count_matrix_normalized.tsv` is exactly `log(1) = 0` for every sample, by construction (it's normalized against itself). **This is an expected transform artifact, not a biological signal** — do not interpret it as "Asparaginase abundance is flat across samples."
+- The Asparaginase single-copy-marker assumption is inherited from the source paper's methodology and cannot be independently validated by this pipeline.
+- The `*_normalized.tsv` files are already log-transformed — do not feed them into DESeq2 or `vegan::decostand()`, which expect raw counts. Use the raw `*_count_matrix.tsv` files for those tools instead.
+
+---
+
 ### `summary_stats.tsv`
 
 Per-sample QC metrics table. One row per sample.
@@ -357,8 +434,13 @@ Per-sample QC metrics table. One row per sample.
 | `pct_CAZy` | % genes with CAZy annotation |
 | `genes_with_PHI_hit` | Genes with a PHI-base DIAMOND hit |
 | `pct_PHI` | % genes with PHI annotation |
-| `genes_with_taxonomy` | Genes with a classified MMseqs2 LCA taxid (taxid ≠ 0) |
-| `pct_taxonomy` | % genes with taxonomy assignment |
+| `genes_with_taxonomy` | Genes with a classified MMseqs2 LCA taxid (UniRef90, taxid ≠ 0) |
+| `pct_taxonomy` | % genes with UniRef90 taxonomy assignment |
+| `genes_with_Pfam` | Genes with at least one Pfam domain hit |
+| `pct_Pfam` | % genes with Pfam annotation |
+| `genes_with_myco_taxonomy` | Genes with a classified Mycocosm/Phytozome LCA taxid (additive layer) |
+| `pct_myco_taxonomy` | % genes with Mycocosm/Phytozome taxonomy assignment |
+| `asparaginase_pseudogenome_count` | Raw PF01112 read-pair count for this sample — the ALR normalization denominator (see above) |
 
 ---
 
@@ -368,7 +450,9 @@ All tables above saved as named R objects. Load directly into analysis scripts:
 
 ```r
 load("/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation/integrated/integrated_data.RData")
-# Objects: base_dt, count_matrix, ko_matrix, cazy_matrix, phi_matrix, summary_dt
+# Objects: base_dt, count_matrix, ko_matrix, cazy_matrix, phi_matrix, pfam_matrix,
+#          ko_matrix_normalized, cazy_matrix_normalized, phi_matrix_normalized,
+#          pfam_matrix_normalized, asparaginase_dt, summary_dt
 ```
 
 ---
@@ -382,9 +466,11 @@ MetaG_Annotation/
   prok_contigs/        Prokaryotic contig FASTAs (retained for future use)
   metaeuk/             Gene predictions: .fas (proteins), .gff, .codon.fas
   kofam/               KOfamScan mapper TSVs (_kofam_mapper.tsv per sample)
+  pfam/                Pfam hmmscan domtblout + mapper TSVs per sample
   dbcan/               dbCAN3 overview file per sample
   phibase/             DIAMOND vs PHI-base hit tables
-  mmseqs_taxonomy/     MMseqs2 LCA taxonomy tables (_lca.tsv per sample)
+  mmseqs_taxonomy/     MMseqs2 LCA taxonomy tables vs UniRef90 (_lca.tsv per sample)
+  mycocosm_taxonomy/   MMseqs2 LCA taxonomy tables vs Mycocosm/Phytozome (additive, optional)
   diamond_nr/          DIAMOND vs NCBI NR hit tables (optional step 6b)
   featurecounts/       featureCounts count tables + .summary QC files
   integrated/          Final merged tables (see above)
@@ -398,11 +484,13 @@ MetaG_Annotation/
 
 ## Taxonomy note
 
-Taxonomy is assigned at two levels:
+Taxonomy is assigned at three levels:
 
 1. **Contig level (Tiara, step 1):** domain only — eukaryote vs. prokaryote vs. organelle. Used to route contigs to the correct gene caller. Tiara requires contigs ≥ 500 bp; shorter contigs are excluded from classification.
 
-2. **Protein level (MMseqs2, step 6):** LCA computed natively by MMseqs2 across top hits within 90% of the best bitscore against the Fungi RefSeq proteome database. Expanded to standard ranks (superkingdom → species) via taxonomizr in step 8. Expect reliable resolution to phylum (Ascomycota/Basidiomycota) for most fungal genes, order/family for well-studied groups (Agaricales, Hypocreales), and genus for genes with close reference matches. AM fungi (Glomeromycota) resolve poorly due to sparse reference genomes.
+2. **Protein level, broad (MMseqs2 vs UniRef90, step 6):** LCA computed natively by MMseqs2 across top hits within 90% of the best bitscore against UniRef90. Expanded to standard ranks (superkingdom → species) via taxonomizr in step 8. Expect reliable resolution to phylum (Ascomycota/Basidiomycota) for most fungal genes, order/family for well-studied groups (Agaricales, Hypocreales), and genus for genes with close reference matches. AM fungi (Glomeromycota) resolve poorly due to sparse reference genomes.
+
+3. **Protein level, fine fungal/plant resolution (MMseqs2 vs Mycocosm/Phytozome, step 6c, additive):** same LCA mechanics as (2), but against a custom database of curated JGI fungal and plant genomes. Purpose-built for two things UniRef90 resolves poorly: fungal **subphylum**-level placement (Agaricomycotina, Pezizomycotina) and explicit flagging of plant-derived sequences (`myco_is_plant`). Runs alongside (2), not in place of it — no filtering is applied based on this layer anywhere in the pipeline; both taxonomy layers are retained side by side in `gene_annotations.tsv` for every gene. Optional: skipped entirely if the custom database isn't built (see Step 6c).
 
 ---
 

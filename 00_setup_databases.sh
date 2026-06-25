@@ -13,9 +13,15 @@
 #   dbcan/        dbCAN3 CAZyme databases (HMM + DIAMOND modes)
 #   phibase/      PHI-base DIAMOND database (pathogenicity genes)
 #   metaeuk/      Fungi RefSeq proteins + MMseqs2 database (MetaEuk gene calling)
+#   pfam/         Pfam-A HMM profiles (domain annotation via hmmscan)
+#   mmseqs_taxonomy/mycocosm_phytozome/  Custom MMseqs2 taxonomy DB built from
+#                 user-supplied Mycocosm (fungal) + Phytozome (plant) proteins
 #
 # NOTE — PHI-base requires a manual download step before this job runs.
 #        See SECTION 5 below for instructions.
+#
+# NOTE — Mycocosm/Phytozome requires a manual download + taxid mapping step
+#        before this job runs. See SECTION 8 below for instructions.
 #
 # NOTE — DIAMOND NR build requires the BLAST+ module for blastdbcmd.
 #        Find the correct module name: module spider blast
@@ -54,7 +60,8 @@ set -u
 module load diamond/2.0.15-gcc-8.2.0-gkldzx7
 
 # ── Create directories ────────────────────────────────────────────────────────
-mkdir -p "${DB_DIR}"/{taxonomy,mmseqs_taxonomy,diamond,kofam,dbcan,phibase,metaeuk}
+mkdir -p "${DB_DIR}"/{taxonomy,mmseqs_taxonomy,diamond,kofam,dbcan,phibase,metaeuk,pfam}
+mkdir -p "${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome"
 mkdir -p "${SCRATCH_DIR}"/{fungi_refseq,mmseqs_dl_tmp}
 
 echo "============================================================"
@@ -286,6 +293,120 @@ else
 fi
 
 # =============================================================================
+# SECTION 7: Pfam-A — domain annotation HMM profiles
+# Used by hmmscan (step 03b) to assign Pfam domains to predicted proteins via
+# the family-specific "gathering threshold" (--cut_ga), Pfam's own curated
+# cutoff rather than a single fixed E-value across all families. Also fetches
+# Pfam-A.hmm.dat (family accession → human-readable name/description) so
+# downstream tables aren't limited to bare PF##### accessions.
+# =============================================================================
+
+PFAM_HMM="${DB_DIR}/pfam/Pfam-A.hmm"
+
+if [[ ! -f "${PFAM_HMM}.h3i" ]]; then
+    echo "--- [7] Downloading and indexing Pfam-A (~100 MB compressed) ---"
+    # If this 403s from a compute node (EBI FTP can be flaky from MSI compute
+    # nodes — dbCAN's Section 4 hits the same class of issue), re-run just this
+    # wget on the login node, then resubmit the job; hmmpress will pick up from
+    # the already-downloaded file.
+    wget -q -O "${PFAM_HMM}.gz" \
+        https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+    gunzip "${PFAM_HMM}.gz"
+
+    wget -q -O "${DB_DIR}/pfam/Pfam-A.hmm.dat.gz" \
+        https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
+    gunzip "${DB_DIR}/pfam/Pfam-A.hmm.dat.gz"
+
+    hmmpress "${PFAM_HMM}"
+    echo "Pfam-A done: $(date)"
+else
+    echo "[SKIP] Pfam-A database already exists"
+fi
+
+# =============================================================================
+# SECTION 8: Mycocosm + Phytozome — custom MMseqs2 taxonomy database
+# Provides finer-resolution fungal taxonomy (down to subphylum, e.g.
+# Agaricomycotina / Pezizomycotina) and flags plant-derived sequences, by
+# searching against JGI's curated fungal (Mycocosm) and plant (Phytozome)
+# proteomes. Runs ADDITIONALLY alongside the UniRef90 MMseqs2 taxonomy step
+# (Section 2 above) — this does not replace it, and no filtering is applied
+# anywhere in the pipeline based on this taxonomy; it only adds resolution.
+#
+# *** MANUAL STEPS REQUIRED BEFORE THIS JOB RUNS ***
+# JGI genomes require a signed Data Use Agreement and cannot be auto-downloaded:
+#   1. Register at https://genome.jgi.doe.gov/portal/ and accept the Mycocosm
+#      and Phytozome data use policies.
+#   2. Download protein FASTA files for your genome panel — recommended: fungal
+#      genomes spanning Agaricomycotina and Pezizomycotina (the two EM-forming
+#      subphyla), plus a panel of plant genomes for host/contamination flagging.
+#   3. Concatenate all downloaded FASTAs into one file and place it at:
+#        ${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome/combined_proteins.faa
+#   4. Build a two-column TSV (no header) mapping each FASTA header ID (or a
+#      unique prefix shared by all headers from one genome) to its NCBI taxid,
+#      and place it at:
+#        ${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome/taxid_mapping.tsv
+#      This step is required because JGI headers do not carry NCBI taxonomy
+#      IDs the way UniProt/UniRef headers do (unlike Section 2's UniRef90
+#      build, which has NCBI taxonomy mapping built in automatically). Use
+#      NCBI-recognized taxids only — taxonomizr rank expansion in step 08
+#      depends on it.
+# This script will then build the database automatically.
+# =============================================================================
+
+MYCO_DIR="${DB_DIR}/mmseqs_taxonomy/mycocosm_phytozome"
+MYCO_FASTA=$(find "${MYCO_DIR}" -maxdepth 1 -name "combined_proteins.faa" | head -1)
+MYCO_MAPPING="${MYCO_DIR}/taxid_mapping.tsv"
+MYCO_DB="${MYCO_DIR}/db"
+
+if [[ -z "${MYCO_FASTA}" || ! -f "${MYCO_MAPPING}" ]]; then
+    echo ""
+    echo "WARNING: Mycocosm/Phytozome FASTA or taxid mapping not found — skipping build."
+    echo "  Required files:"
+    echo "    ${MYCO_DIR}/combined_proteins.faa"
+    echo "    ${MYCO_MAPPING}"
+    echo "  See SECTION 8 comments above for download/mapping instructions."
+    echo "  Then re-run this script; the database build will run automatically."
+    echo ""
+elif [[ ! -f "${MYCO_DB}" ]]; then
+    echo "--- [8a] Validating taxid mapping coverage ---"
+    # Catch unmapped headers now rather than letting createtaxdb silently
+    # assign taxid 0 to anything missing from the mapping file.
+    UNMAPPED=$(grep '^>' "${MYCO_FASTA}" | sed 's/^>//' | awk '{print $1}' \
+        | sort -u > "${SCRATCH_DIR}/myco_headers.txt"; \
+        cut -f1 "${MYCO_MAPPING}" | sort -u > "${SCRATCH_DIR}/myco_mapped.txt"; \
+        comm -23 "${SCRATCH_DIR}/myco_headers.txt" "${SCRATCH_DIR}/myco_mapped.txt")
+
+    if [[ -n "${UNMAPPED}" ]]; then
+        echo "ERROR: Some FASTA header IDs have no entry in taxid_mapping.tsv:" >&2
+        echo "${UNMAPPED}" | head -20 >&2
+        echo "  (showing up to 20; see ${SCRATCH_DIR}/myco_headers.txt vs ${SCRATCH_DIR}/myco_mapped.txt)" >&2
+        echo "  Fix taxid_mapping.tsv to cover all headers, then re-run." >&2
+        exit 1
+    fi
+    echo "  All FASTA headers have a taxid mapping."
+
+    echo "--- [8b] Building Mycocosm/Phytozome MMseqs2 taxonomy database ---"
+    mmseqs createdb \
+        "${MYCO_FASTA}" \
+        "${MYCO_DB}" \
+        --threads ${THREADS}
+
+    # NOTE: verify exact flag names against the installed MMseqs2 version
+    # (mmseqs createtaxdb -h) before relying on this in production — flag
+    # naming for custom tax-mapping-file-driven taxonomy DBs has changed
+    # across MMseqs2 releases.
+    mmseqs createtaxdb \
+        "${MYCO_DB}" \
+        "${SCRATCH_DIR}/myco_taxdb_tmp" \
+        --tax-mapping-file "${MYCO_MAPPING}" \
+        --ncbi-tax-dump "${DB_DIR}/taxonomy"
+
+    echo "Mycocosm/Phytozome taxonomy DB done: $(date)"
+else
+    echo "[SKIP] Mycocosm/Phytozome taxonomy database already exists"
+fi
+
+# =============================================================================
 # Completion
 # =============================================================================
 
@@ -294,13 +415,15 @@ echo "============================================================"
 echo "Database setup COMPLETE : $(date)"
 echo ""
 echo "Summary of database locations:"
-echo "  MMseqs2 UniRef90 : ${DB_DIR}/mmseqs_taxonomy/uniref90"
-echo "  NCBI taxonomy    : ${DB_DIR}/taxonomy/"
-echo "  KOfam            : ${DB_DIR}/kofam/"
-echo "  dbCAN3           : ${DB_DIR}/dbcan/"
-echo "  PHI-base         : ${DB_DIR}/phibase/phi-base.dmnd"
-echo "  MetaEuk target   : ${DB_DIR}/metaeuk/fungi_refseq_db"
-echo "  MetaEuk FASTA    : ${DB_DIR}/metaeuk/fungi_refseq_proteins.faa"
+echo "  MMseqs2 UniRef90       : ${DB_DIR}/mmseqs_taxonomy/uniref90"
+echo "  Mycocosm/Phytozome     : ${MYCO_DB} $([[ -f "${MYCO_DB}" ]] && echo '[OK]' || echo '[MISSING - see SECTION 8]')"
+echo "  NCBI taxonomy          : ${DB_DIR}/taxonomy/"
+echo "  KOfam                  : ${DB_DIR}/kofam/"
+echo "  dbCAN3                 : ${DB_DIR}/dbcan/"
+echo "  PHI-base               : ${DB_DIR}/phibase/phi-base.dmnd"
+echo "  Pfam-A                 : ${PFAM_HMM}"
+echo "  MetaEuk target         : ${DB_DIR}/metaeuk/fungi_refseq_db"
+echo "  MetaEuk FASTA          : ${DB_DIR}/metaeuk/fungi_refseq_proteins.faa"
 echo "============================================================"
 
 touch "${DB_DIR}/databases_complete.flag"
