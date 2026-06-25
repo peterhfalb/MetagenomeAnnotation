@@ -3,11 +3,19 @@
 # 04_dbcan.sh
 # Slurm array job: CAZyme annotation with dbCAN3.
 #
-# dbCAN3 identifies carbohydrate-active enzymes (CAZymes) by running two
-# evidence modes and reporting genes supported by both as high-confidence:
-#   HMMER  — searched against dbCAN HMM profiles (CAZy family-level)
-#   DIAMOND — searched against characterized CAZy proteins
-# Genes called by ≥2 tools (field #ofTools ≥ 2) are considered reliable.
+# dbCAN3 identifies carbohydrate-active enzymes (CAZymes) by running three
+# evidence modes:
+#   HMMER     — searched against dbCAN HMM profiles (CAZy family-level)
+#   DIAMOND   — searched against characterized CAZy proteins
+#   dbCAN_sub — searched against substrate-annotated CAZy subfamily HMMs;
+#               gives a per-protein predicted glycan substrate (e.g. cellulose,
+#               xylan, chitin) independent of genomic context, so it works for
+#               fungal genomes (unlike dbCAN3's other substrate method — CGC/PUL
+#               gene-cluster homology — which models bacterial-style
+#               Polysaccharide Utilization Loci and isn't used here).
+# Genes called by ≥2 of the family-calling tools (HMMER, DIAMOND; field
+# #ofTools ≥ 2) are considered reliable family assignments. dbCAN_sub's
+# substrate call is reported separately and doesn't affect that count.
 # CAZy families relevant to carbon acquisition in fungi:
 #   GH (glycoside hydrolases)   — cellulose, hemicellulose, starch degradation
 #   PL (polysaccharide lyases)  — pectin degradation
@@ -19,9 +27,16 @@
 #   ${ANNOTATION_DIR}/metaeuk/${SAMPLE}/${SAMPLE}.fas   (MetaEuk proteins)
 #
 # Outputs (in ${ANNOTATION_DIR}/dbcan/${SAMPLE}/):
-#   overview.txt   main results: gene_id, HMMER call, DIAMOND call, #ofTools
+#   overview.txt   main results: gene_id, HMMER call, DIAMOND call, #ofTools,
+#                  dbCAN_sub substrate call (column name/presence depends on
+#                  the installed run_dbcan version — see NOTE below)
 #   hmmer.out      raw HMMER output
 #   diamond.out    raw DIAMOND output
+#
+# NOTE: the exact --methods value for the dbCAN_sub evidence stream
+# ("dbCANsub" below) should be verified against the installed run_dbcan
+# version with `run_dbcan CAZyme_annotation --help` before relying on this in
+# production — dbCAN's CLI flag naming has shifted across releases.
 #
 # Do not run directly. Submit via submit_dbcan.sh.
 # =============================================================================
@@ -87,6 +102,11 @@ if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
     echo "  Run 00_setup_databases.sh first." >&2
     exit 1
 fi
+if [[ ! -f "${DB_DIR}/dbcan/dbCAN_sub.hmm.h3i" ]]; then
+    echo "ERROR: dbCAN_sub database not found in ${DB_DIR}/dbcan/" >&2
+    echo "  Run 00_setup_databases.sh first (Section 4 now presses dbCAN_sub.hmm)." >&2
+    exit 1
+fi
 
 mkdir -p "${OUT_DIR}"
 
@@ -95,8 +115,13 @@ mkdir -p "${OUT_DIR}"
 # Input type 'protein' is appropriate for eukaryotic gene predictions from
 # MetaEuk (as opposed to 'prok' which skips signal peptide prediction, or
 # 'meta' which runs additional steps for mixed-domain metagenomes).
-# --tools hmmer diamond: run both evidence modes; SignalP excluded (requires
-#   a separate license and is less critical for fungal CAZyme calling).
+# --methods hmm,diamond,dbCANsub: family calling (hmm, diamond) plus the
+#   substrate-prediction evidence stream (dbCANsub). SignalP excluded
+#   (requires a separate license and is less critical for fungal CAZyme
+#   calling). CGC/PUL substrate prediction (gene-cluster homology to
+#   bacterial-style PULs) is intentionally NOT run — not applicable to
+#   fungal genomes, and would need the TF.hmm/STP.hmm/dbCAN-PUL.xlsx files
+#   that 00_setup_databases.sh deliberately stubs out.
 # ─────────────────────────────────────────────────────────────────────────────
 
 if [[ -n "${OVERVIEW}" ]]; then
@@ -111,7 +136,7 @@ else
         --mode protein \
         --db_dir "${DB_DIR}/dbcan" \
         --output_dir "${OUT_DIR}" \
-        --methods hmm,diamond \
+        --methods hmm,diamond,dbCANsub \
         --threads ${THREADS}
     echo "Step 1 done: $(date)"
 
@@ -128,6 +153,9 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 # STEP 2: Summary
 # High-confidence CAZymes = supported by ≥2 tools (#ofTools column ≥ 2).
+# Substrate count is purely informational here — exact column name/position
+# depends on the installed run_dbcan version (see NOTE at top of file);
+# 08_integrate.R locates it dynamically by name pattern rather than position.
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo "--- Step 2: CAZyme summary ---"
@@ -136,10 +164,13 @@ N_TOTAL=$(grep -c '>' "${PROTEINS_FAA}" 2>/dev/null || echo 0)
 # overview.txt has a header line; skip it with NR>1
 N_CALLED=$(awk 'NR>1 {c++} END {print c+0}' "${OVERVIEW}")
 N_HICOF=$(awk 'NR>1 && $NF >= 2 {c++} END {print c+0}' "${OVERVIEW}")
+N_SUBSTRATE=$(awk -F'\t' 'NR==1 {for (i=1;i<=NF;i++) if (tolower($i) ~ /substrate/) col=i}
+                          NR>1 && col && $col != "-" && $col != "" {c++} END {print c+0}' "${OVERVIEW}")
 
 echo "  Proteins searched           : ${N_TOTAL}"
 echo "  Total CAZyme calls          : ${N_CALLED}"
 echo "  High-confidence (≥2 tools)  : ${N_HICOF}"
+echo "  Substrate calls (dbCAN_sub) : ${N_SUBSTRATE}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 echo "============================================================"

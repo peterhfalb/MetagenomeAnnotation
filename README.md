@@ -60,7 +60,7 @@ Databases installed to `/projects/standard/kennedyp/shared/databases/metaG_annot
 |---|---|---|
 | Fungi RefSeq proteomes (MMseqs2 DB) | ~5 GB | MetaEuk gene prediction target; MMseqs2 taxonomy |
 | KOfam HMM profiles + ko_list | ~5 GB | KEGG KO assignment |
-| dbCAN3 HMM + DIAMOND databases | ~1 GB | CAZyme annotation |
+| dbCAN3 HMM + DIAMOND + dbCAN_sub databases | ~1 GB | CAZyme family annotation + substrate prediction |
 | PHI-base DIAMOND database | ~10 MB | Pathogenicity genes |
 | NCBI taxdump (names.dmp, nodes.dmp) | ~6 GB | Taxonomy rank expansion via taxonomizr |
 | Pfam-A HMM profiles + Pfam-A.hmm.dat | ~100 MB compressed | Pfam domain annotation via hmmscan |
@@ -151,18 +151,23 @@ KOfamScan searches predicted proteins against the **KEGG KOfam database** — ~2
 
 #### Step 4 — CAZyme annotation (dbCAN3) — 16 CPU, 32 GB, ~2–4 hr
 
-dbCAN3 identifies **carbohydrate-active enzymes (CAZymes)** using two independent evidence streams, run together by `run_dbcan CAZyme_annotation`:
+dbCAN3 identifies **carbohydrate-active enzymes (CAZymes)** using three evidence streams, run together by `run_dbcan CAZyme_annotation --methods hmm,diamond,dbCANsub`:
 
 | Tool | Database | How it works |
 |---|---|---|
 | **HMMER** | dbCAN HMM profiles (one per CAZy family) | Detects conserved domain architecture; good for divergent sequences within a family |
 | **DIAMOND** | Characterized CAZy protein sequences | Sequence similarity to biochemically verified CAZymes; good for well-studied families |
+| **dbCAN_sub** | Substrate-annotated CAZy subfamily HMMs | Per-protein predicted glycan **substrate** (e.g. cellulose, xylan, chitin) — what the enzyme actually acts on, beyond just its family |
 
-**High-confidence call:** a gene is a high-confidence CAZyme when supported by ≥ 2 tools. This threshold is applied in step 8 (`--min-tools`, default 2), not here — all calls are kept in the raw output so the threshold can be adjusted without re-running.
+**High-confidence call:** a gene is a high-confidence CAZyme when supported by ≥ 2 of the HMMER/DIAMOND family-calling tools. This threshold is applied in step 8 (`--min-tools`, default 2 — note the QC report's own default is set to 1 to show all CAZy hits, not just high-confidence ones; see Step 9), not here — all calls are kept in the raw output so the threshold can be adjusted without re-running. dbCAN_sub's substrate call does **not** count toward this ≥2 vote — it's reported alongside the family call, not used to validate it.
 
 **CAZy class** is extracted from the HMMER family call by stripping the numeric suffix: `GH` (glycoside hydrolases — cellulose, hemicellulose, starch degradation), `AA` (auxiliary activities — oxidative lignin/cellulose degradation), `CE` (carbohydrate esterases — deacetylation of plant polymers), `PL` (polysaccharide lyases — pectin degradation), `CBM` (carbohydrate-binding modules — substrate targeting, not catalytic), `GT` (glycosyltransferases — biosynthesis).
 
-**Output file per sample:** `dbcan/<SAMPLE>/overview.txt` (filename varies by dbCAN version) — one row per gene with the HMMER call, DIAMOND call, and `#ofTools` (number of supporting tools).
+**Why dbCAN_sub and not dbCAN3's other substrate method:** dbCAN3 also offers CGC/PUL substrate prediction — homology to curated Polysaccharide Utilization Loci (gene clusters of CAZyme + transporter + transcription-factor genes). PULs are a *bacterial* genomic architecture (classically from Bacteroidetes); fungal genomes don't organize CAZymes this way, so this pipeline intentionally does **not** run CGC/PUL prediction. The `TF.hmm`, `STP.hmm`, and `dbCAN-PUL.xlsx` files that mode requires are deliberately left as empty placeholders in `00_setup_databases.sh`.
+
+> **Verify before relying on this in production:** the exact `--methods` value for the dbCAN_sub stream (`dbCANsub` above) and the resulting overview.txt column name/position have shifted across dbCAN releases. Check with `run_dbcan CAZyme_annotation --help` on your installed version, and confirm `fam-substrate-mapping.tsv` downloaded successfully in `00_setup_databases.sh` (Section 4) — without it, dbCAN_sub may return blank or raw subfamily IDs instead of substrate names. `08_integrate.R` locates the substrate column dynamically by name pattern (`grep("substrate", ...)`), so it should adapt automatically once the column exists with a sensible name.
+
+**Output file per sample:** `dbcan/<SAMPLE>/overview.txt` (filename varies by dbCAN version) — one row per gene with the HMMER call, DIAMOND call, `#ofTools` (number of supporting tools), and the dbCAN_sub substrate call.
 
 ---
 
@@ -308,7 +313,8 @@ Master annotation table — **one row per predicted gene**, all annotation layer
 | `KO` | KEGG KO ID(s), semicolon-separated if multiple (e.g., `K01083;K07024`) |
 | `KO_definitions` | KO description(s), semicolon-separated |
 | `CAZy_families` | High-confidence CAZy family call(s), semicolon-separated (e.g., `GH18;CBM50`); NA if gene did not meet the `--min-tools` threshold |
-| `CAZy_n_tools` | Number of dbCAN tools supporting the call (max across families) |
+| `CAZy_substrates` | dbCAN_sub predicted glycan substrate(s), semicolon-separated (e.g., `cellulose;xylan`); only populated for genes meeting the same `--min-tools` threshold as `CAZy_families` (kept consistent rather than independently filtered); NA if no dbCAN_sub hit |
+| `CAZy_n_tools` | Number of dbCAN tools supporting the call (max across families); does not include dbCAN_sub, which is reported, not voted |
 | `phi_bitscore` | DIAMOND bitscore for best PHI-base hit |
 | `phi_accession` | PHI-base accession (e.g., `PHI:2`) |
 | `phi_gene` | Gene name in PHI-base (e.g., `BMP1`) |

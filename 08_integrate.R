@@ -166,19 +166,26 @@ read_dbcan <- function(file) {
   # Identify columns by name patterns — use ignore.case instead of (?i) inline
   # flag so it works with R's default regex engine without requiring perl=TRUE.
   # v3 used "HMMER"; v4 uses "dbCAN_hmm" — both contain "hmm".
-  hmmer_col   <- grep("hmm",     names(dt), value = TRUE, ignore.case = TRUE)[1]
-  diamond_col <- grep("diamond", names(dt), value = TRUE, ignore.case = TRUE)[1]
-  tools_col   <- grep("#.*tool|ofTool|n_tool", names(dt), value = TRUE, ignore.case = TRUE)[1]
+  hmmer_col    <- grep("hmm",       names(dt), value = TRUE, ignore.case = TRUE)[1]
+  diamond_col  <- grep("diamond",   names(dt), value = TRUE, ignore.case = TRUE)[1]
+  tools_col    <- grep("#.*tool|ofTool|n_tool", names(dt), value = TRUE, ignore.case = TRUE)[1]
+  # Substrate column from the dbCAN_sub evidence stream (04_dbcan.sh
+  # --methods hmm,diamond,dbCANsub). Exact column name depends on the
+  # installed run_dbcan version — located dynamically by name pattern, same
+  # approach as the other columns here, rather than by position.
+  substrate_col <- grep("substrate", names(dt), value = TRUE, ignore.case = TRUE)[1]
 
   result <- data.table(
     gene_id       = dt[["gene_id"]],
-    CAZy_HMMER    = if (!is.na(hmmer_col))   str_remove(dt[[hmmer_col]],   "\\(.*\\)") else NA_character_,
-    CAZy_DIAMOND  = if (!is.na(diamond_col)) dt[[diamond_col]] else NA_character_,
-    CAZy_n_tools  = if (!is.na(tools_col))   as.integer(dt[[tools_col]])   else NA_integer_
+    CAZy_HMMER    = if (!is.na(hmmer_col))     str_remove(dt[[hmmer_col]],   "\\(.*\\)") else NA_character_,
+    CAZy_DIAMOND  = if (!is.na(diamond_col))   dt[[diamond_col]] else NA_character_,
+    CAZy_n_tools  = if (!is.na(tools_col))     as.integer(dt[[tools_col]])   else NA_integer_,
+    CAZy_substrate = if (!is.na(substrate_col)) dt[[substrate_col]] else NA_character_
   )
   # Normalise no-hit strings to NA — v3 used "N/A", v4 uses "-"
-  result[CAZy_HMMER   %in% c("N/A", "-"), CAZy_HMMER   := NA_character_]
-  result[CAZy_DIAMOND %in% c("N/A", "-"), CAZy_DIAMOND := NA_character_]
+  result[CAZy_HMMER    %in% c("N/A", "-"), CAZy_HMMER    := NA_character_]
+  result[CAZy_DIAMOND  %in% c("N/A", "-"), CAZy_DIAMOND  := NA_character_]
+  result[CAZy_substrate %in% c("N/A", "-", ""), CAZy_substrate := NA_character_]
   result
 }
 
@@ -579,12 +586,18 @@ kofam_collapsed <- kofam_all[
 ]
 base_dt <- kofam_collapsed[base_dt, on = "gene_id"]
 
-# dbCAN: filter to high-confidence calls (≥ min_tools), collapse families
+# dbCAN: filter to high-confidence calls (≥ min_tools), collapse families.
+# CAZy_substrates is collapsed within this same min_tools-filtered subset, so
+# it stays consistent with CAZy_families — a gene with a dbCAN_sub substrate
+# hit but family calls below min_tools will show NA here, not a substrate
+# with no corresponding family. dbCAN_sub doesn't count toward CAZy_n_tools
+# (see 04_dbcan.sh) — it's reported, not voted, regardless of this filter.
 dbcan_hicof <- dbcan_all[
   !is.na(CAZy_n_tools) & CAZy_n_tools >= min_tools
 ][
-  , .(CAZy_families = paste(unique(na.omit(CAZy_HMMER)), collapse = ";"),
-      CAZy_n_tools  = max(CAZy_n_tools, na.rm = TRUE)
+  , .(CAZy_families  = paste(unique(na.omit(CAZy_HMMER)), collapse = ";"),
+      CAZy_substrates = paste(unique(na.omit(CAZy_substrate)), collapse = ";"),
+      CAZy_n_tools   = max(CAZy_n_tools, na.rm = TRUE)
   ), by = gene_id
 ]
 # For genes below threshold, keep them with a flag
