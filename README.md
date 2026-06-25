@@ -65,15 +65,18 @@ Databases installed to `/projects/standard/kennedyp/shared/databases/metaG_annot
 | NCBI taxdump (names.dmp, nodes.dmp) | ~6 GB | Taxonomy rank expansion via taxonomizr |
 | Pfam-A HMM profiles + Pfam-A.hmm.dat | ~100 MB compressed | Pfam domain annotation via hmmscan |
 | Mycocosm/Phytozome custom MMseqs2 taxonomy DB *(manual download — see below)* | depends on genome panel | Finer fungal subphylum taxonomy + plant-sequence flagging |
+| OrthoDB v12 Dikarya near-single-copy orthologs *(fetched automatically)* | small (~1000-1500 short protein sequences) | Genome-equivalent normalization, additive alternative to Asparaginase (see Step 1b) |
 | DIAMOND NR (optional; built from MSI BLAST copy) | ~80 GB | Protein-level taxonomy vs. all NCBI NR |
 
 > **Mycocosm/Phytozome requires a manual download** — JGI genomes need a signed Data Use Agreement and cannot be fetched automatically. Register at the [JGI Genome Portal](https://genome.jgi.doe.gov/portal/), download a panel of fungal (Mycocosm) and plant (Phytozome) protein FASTAs, concatenate them, and supply a genome → NCBI taxid mapping TSV. Full instructions are in `00_setup_databases.sh` Section 8. This database is optional/additive — the pipeline runs fully without it (step 6 UniRef90 taxonomy is unaffected); its absence only means step 6c is skipped.
+
+> **OrthoDB Dikarya orthologs are fetched automatically** via the OrthoDB v12 REST API (`00_setup_databases.sh` Section 9) — no manual step needed, but it's rate-limited (1 request/sec) and takes ~20-30 min one-time. The exact JSON response schema wasn't confirmed ahead of implementation; the parsing step is defensive and will error with diagnostic output (rather than silently mis-parsing) if OrthoDB's API shape doesn't match what was expected — check `00_setup_databases.sh` Section 9 if this happens. Optional/additive — the pipeline runs fully without it; its absence only means Step 1b is skipped and the OrthoDB-normalized matrices aren't produced.
 
 ---
 
 ### Steps 1–7 — Submit the pipeline
 
-Edit the two paths at the top of `run_annotation_pipeline.sh`, then run it once from the login node:
+Edit the three paths at the top of `run_annotation_pipeline.sh` (`ASM_DIR`, `ANN_DIR`, and `QC_DIR` — the last only needed for the additive Step 1b; if it doesn't exist or isn't set, Step 1b is skipped with a warning and the rest of the pipeline runs unaffected), then run it once from the login node:
 
 ```bash
 # Edit ASM_DIR and ANN_DIR at the top of the file, then:
@@ -96,6 +99,24 @@ Each contig is labeled `eukaryota / prokarya / mitochondria / plastid / unknown`
 
 - Runtime: ~1–4 hr/sample, 16 CPUs, 32 GB
 - Outputs: `tiara/`, `euk_contigs/`, `prok_contigs/`
+
+---
+
+### Step 1b — Genome-equivalent normalization (OrthoDB) — additive, no pipeline dependency
+
+Unlike every other step in this pipeline, this one operates on **raw QC'd reads, pre-assembly** — it needs neither Tiara nor MetaEuk nor any assembled contigs, only the QC'd FASTQ files and the OrthoDB database (Section 9 of `00_setup_databases.sh`). It can run immediately, in parallel with literally everything else, including step 1.
+
+Provides an **additive alternative** to the Asparaginase (Pfam PF01112) pseudo-genome normalization (see Step 8 / Integrated output files below) — same purpose (estimate genome equivalents per sample to normalize functional gene counts), different and more statistically robust method, from a second paper: *"Ectomycorrhizal fungal decay traits along a soil nitrogen gradient."* Instead of relying on one marker gene, this method averages over ~1000-1500 near-single-copy orthologs, so any single ortholog's noise or absence doesn't dominate the result.
+
+**How it works:**
+1. `diamond blastx --sensitive` maps QC'd R1 and R2 reads (separately, then merged) against a DIAMOND database built from OrthoDB v12's Dikarya-level (Ascomycota+Basidiomycota) near-single-copy ortholog set — the source paper used OrthoDB v9 (1,312 orthologs); this pipeline uses the current v12, which will yield a different (similar order of magnitude) count.
+2. `--max-target-seqs 1`: best hit per read only, so each read contributes to at most one OrthoDB sequence.
+3. In `08_integrate.R` (Section 6c): each ortholog group's read counts are **averaged across its member sequences** (one member per represented species) — a read homologous to a group can hit multiple per-species member sequences, so summing would inflate the count; averaging avoids this. Groups with zero hits in a sample correctly contribute a true zero to the average, not an excluded value.
+4. The **geometric mean** (and standard error, on the log scale) of these per-group averages across all ortholog groups is the sample's genome-equivalent denominator — used the same way Asparaginase is used in Step 8, via the same `alr_normalize()` helper.
+
+**Output file per sample:** `orthodb_genecount/<SAMPLE>_hits.tsv` — merged DIAMOND blastx hits (R1+R2), standard outfmt 6 columns. `sseqid` is the OrthoDB sequence ID, mapped to its ortholog group via `{db_dir}/orthodb/gene2og.tsv` in `08_integrate.R`.
+
+> **Resource sizing is a first guess.** QC'd FASTQ files run 3.5–7 GB gzip per R1/R2 (likely tens of millions of read pairs/sample). DIAMOND's runtime is dominated by query volume, not the small target database, so this should run faster than the conservative time limit in `01b_orthodb_genecount.sh` suggests — right-size CPU/mem/time after observing actual runtime on one test sample before submitting the full sample set.
 
 ---
 
@@ -430,6 +451,21 @@ This is mathematically an **additive log-ratio (ALR) transform** using Asparagin
 
 ---
 
+### OrthoDB-normalized matrices (additive alternative to Asparaginase)
+
+`ko_count_matrix_normalized_orthodb.tsv`, `cazy_count_matrix_normalized_orthodb.tsv`, `phi_count_matrix_normalized_orthodb.tsv`, `pfam_count_matrix_normalized_orthodb.tsv`, and `orthodb_genome_equivalents.tsv`. Only written if the OrthoDB database and Step 1b output are available — otherwise silently skipped, with no effect on the Asparaginase-normalized files above.
+
+This replicates the normalization approach from a second paper, *"Ectomycorrhizal fungal decay traits along a soil nitrogen gradient,"* using ~1000-1500 near-single-copy Dikaryotic orthologs from OrthoDB v12 instead of a single marker gene (see Step 1b for the full mechanism). `orthodb_genome_equivalents.tsv` records, per sample: `orthodb_geo_mean` (the ALR denominator), `orthodb_se_log` (standard error of the per-ortholog-group averages, on the log scale), and `orthodb_n_orthologs` (how many ortholog groups contributed). The same `alr_normalize()` transform and pseudocount convention from the Asparaginase section above is reused unchanged.
+
+**Asparaginase vs. OrthoDB — which to use:** both are kept side by side, not one replacing the other. OrthoDB's geometric mean over ~1000-1500 orthologs is the more statistically robust choice — a single ortholog's absence or noise is washed out by averaging over many, which directly addresses the failure mode documented above (Asparaginase's near-zero counts for some samples). **Prefer the OrthoDB-normalized matrices for publication-quality analysis** when available. Asparaginase remains useful as a lightweight, no-extra-database cross-check, and as the direct replication of the original normalization paper this pipeline started from. If the two disagree substantially for a given sample, check that sample's `asparaginase_pseudogenome_count` first — a known failure mode — before suspecting the OrthoDB result.
+
+**Caveats specific to OrthoDB normalization:**
+- The exact ortholog count will differ from the 1,312 used in the source paper (OrthoDB v9) since this pipeline uses the current v12 with updated species sampling — expected, not a bug.
+- DIAMOND blastx runs against raw reads (not predicted genes), so this method is independent of MetaEuk's gene-calling accuracy — a useful property, but also means it can't be cross-checked against `gene_annotations.tsv` the way Asparaginase can (Asparaginase counts come from the same gene-calling pipeline as everything else).
+- Per-ortholog-group averaging only correctly reflects "near-single-copy" biology if `gene2og.tsv`'s group membership is accurate — this depends on the OrthoDB API parsing in `00_setup_databases.sh` Section 9 having worked as expected on first run; spot-check a few groups if results look implausible.
+
+---
+
 ### `summary_stats.tsv`
 
 Per-sample QC metrics table. One row per sample.
@@ -472,6 +508,8 @@ load("/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation/int
 
 ```
 MetaG_Annotation/
+  orthodb_genecount/   DIAMOND vs OrthoDB Dikarya hit tables (additive, optional,
+                       pre-assembly — see Step 1b; reads from a separate QC_DIR)
   tiara/               Tiara classification tables + per-sample summary stats
   euk_contigs/         Eukaryotic contig FASTAs (input to MetaEuk)
   prok_contigs/        Prokaryotic contig FASTAs (retained for future use)

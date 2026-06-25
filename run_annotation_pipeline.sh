@@ -35,6 +35,10 @@ ASM_DIR="/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Assembled"
 # Where annotation outputs will be written (created automatically)
 ANN_DIR="/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_Annotation"
 
+# QC'd, unassembled, paired-end reads (used only by Step 1b — OrthoDB
+# genome-equivalent normalization, which works on raw reads pre-assembly)
+QC_DIR="/projects/standard/kennedyp/shared/projects/ForestGEO/MetaG_QCd/filtered"
+
 # =============================================================================
 # Configuration — leave as-is unless you have a reason to change
 # =============================================================================
@@ -67,10 +71,21 @@ if [[ ! -d "${ASM_DIR}" ]]; then
     exit 1
 fi
 
+# QC_DIR is only needed for the additive Step 1b (OrthoDB normalization) — a
+# missing directory just skips that one step, not a hard failure for the
+# rest of the pipeline (same treatment as the optional Mycocosm/Phytozome DB).
+QC_DIR_OK=true
+if [[ ! -d "${QC_DIR}" ]]; then
+    echo "WARNING: QC_DIR not found: ${QC_DIR}"
+    echo "  Step 1b (OrthoDB genome-equivalent normalization) will be skipped."
+    QC_DIR_OK=false
+fi
+
 echo "============================================================"
 echo "Annotation pipeline submission"
 echo "Assembly dir    : ${ASM_DIR}"
 echo "Annotation dir  : ${ANN_DIR}"
+echo "QC dir          : ${QC_DIR} $([[ "${QC_DIR_OK}" == true ]] && echo '[OK]' || echo '[MISSING]')"
 [[ -n "${TEST_N}" ]] && echo "TEST MODE       : first ${TEST_N} samples"
 echo "============================================================"
 echo ""
@@ -144,6 +159,17 @@ check_databases() {
         echo "              See Section 8 in 00_setup_databases.sh for instructions."
         # Not added to all_present — this database is optional/additive, so its
         # absence should not block the rest of the pipeline from running.
+    fi
+
+    # OrthoDB Dikarya orthologs: fetched automatically (00_setup_databases.sh
+    # Section 9), but WARNING-only here, not a hard failure — this is an
+    # additive normalization method (alongside Asparaginase), the rest of the
+    # pipeline runs fine without it.
+    if [[ -f "${DB_DIR}/orthodb/dikarya_orthologs.dmnd" ]]; then
+        echo "    [OK]      OrthoDB Dikarya orthologs"
+    else
+        echo "    [MISSING] OrthoDB Dikarya orthologs  (fetched automatically by setup job — optional, additive normalization layer)"
+        echo "              See Section 9 in 00_setup_databases.sh for details."
     fi
 
     ${all_present}
@@ -246,6 +272,30 @@ if ! step_complete "Tiara" "${ANN_DIR}/tiara/SAMPLE_tiara.txt"; then
     echo "  Job ID: ${STEP1_ID}"
 fi
 echo ""
+
+# =============================================================================
+# STEP 1b: OrthoDB genome-equivalent normalization (additive — works on raw
+# QC'd reads, no dependency on assembly/Tiara/MetaEuk; depends only on
+# Step 0 database setup, same as Step 1's STEP0_ID dependency below)
+# =============================================================================
+
+STEP1B_ID=""
+if [[ "${QC_DIR_OK}" == true ]]; then
+    echo "Step 1b: OrthoDB genome-equivalent normalization (additive, no pipeline dependency)"
+    if ! step_complete "OrthoDB genecount" "${ANN_DIR}/orthodb_genecount/SAMPLE_hits.tsv"; then
+        STEP1B_ARGS=(
+            --annotation-dir "${ANN_DIR}"
+            --qc-dir         "${QC_DIR}"
+        )
+        [[ -n "${TEST_FLAG}" ]] && STEP1B_ARGS+=( ${TEST_FLAG} )
+        [[ -n "${STEP0_ID}"  ]] && STEP1B_ARGS+=( --after "${STEP0_ID}" )
+
+        STEP1B_ID=$(bash "${SCRIPT_DIR}/submit_orthodb_genecount.sh" "${STEP1B_ARGS[@]}" \
+            | grep -oP '(?<=job: )\d+')
+        echo "  Job ID: ${STEP1B_ID}"
+    fi
+    echo ""
+fi
 
 # =============================================================================
 # STEP 2: MetaEuk gene prediction
@@ -363,6 +413,7 @@ echo ""
 SUBMITTED_IDS=()
 [[ -n "${STEP0_ID}"  ]] && SUBMITTED_IDS+=("${STEP0_ID}")
 [[ -n "${STEP1_ID}"  ]] && SUBMITTED_IDS+=("${STEP1_ID}")
+[[ -n "${STEP1B_ID}" ]] && SUBMITTED_IDS+=("${STEP1B_ID}")
 [[ -n "${STEP2_ID}"  ]] && SUBMITTED_IDS+=("${STEP2_ID}")
 [[ -n "${STEP3_ID}"  ]] && SUBMITTED_IDS+=("${STEP3_ID}")
 [[ -n "${STEP3B_ID}" ]] && SUBMITTED_IDS+=("${STEP3B_ID}")
@@ -395,6 +446,7 @@ echo "Jobs submitted:"
 echo ""
 echo "  Step 0 databases    : ${STEP0_ID:-skipped}"
 echo "  Step 1 Tiara        : ${STEP1_ID:-skipped}"
+echo "  Step 1b OrthoDB     : ${STEP1B_ID:-skipped}"
 echo "  Step 2 MetaEuk      : ${STEP2_ID:-skipped}"
 echo "  Step 3 KOfamScan    : ${STEP3_ID:-skipped}"
 echo "  Step 3b Pfam        : ${STEP3B_ID:-skipped}"
@@ -451,3 +503,9 @@ echo ""
 # step 2 (MetaEuk). Step 6c is additive/optional: if its database isn't built
 # (see Section 8 in 00_setup_databases.sh), check_databases() warns but does
 # not block the rest of the pipeline from running.
+#
+# Step 1b (OrthoDB genome-equivalent normalization) has the loosest
+# dependency of anything in this pipeline — it needs only QC_DIR and the
+# OrthoDB database (Section 9), not assembly/Tiara/MetaEuk at all. It's
+# additive/optional like step 6c: missing QC_DIR or database just skips this
+# one step, the rest of the pipeline is unaffected.

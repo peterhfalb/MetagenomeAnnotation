@@ -822,6 +822,106 @@ pfam_matrix_normalized <- alr_normalize(pfam_matrix, denom_vec, pseudocount)
 cat("\n")
 
 # =============================================================================
+# SECTION 6c: OrthoDB genome-equivalent normalization (additive alternative
+# to Section 6b's Asparaginase method)
+# =============================================================================
+# Replicates the normalization approach from "Ectomycorrhizal fungal decay
+# traits along a soil nitrogen gradient": instead of one marker gene, reads
+# are mapped (01b_orthodb_genecount.sh, pre-assembly) against ~1000-1500
+# near-single-copy Dikaryotic orthologs from OrthoDB v12. For each ortholog
+# group, read counts are averaged across the group's member sequences (to
+# avoid double-counting from within-group sequence redundancy — a read
+# homologous to a group can hit multiple per-species member sequences).
+# The geometric mean of these per-group averages across all groups is the
+# genome-equivalent denominator — far more robust than a single marker gene,
+# since any one ortholog's noise/absence is washed out by averaging over
+# many. This is ADDITIVE alongside Section 6b's Asparaginase normalization,
+# not a replacement — both denominators are kept side by side (see README
+# for guidance on which to prefer).
+#
+# Inputs (paths derived from existing --db-dir/--annotation-dir, no new CLI
+# flags needed):
+#   {db_dir}/orthodb/gene2og.tsv        sequence_id -> ortholog_group_id,
+#                                        built once in 00_setup_databases.sh
+#   {ann_dir}/orthodb_genecount/{S}_hits.tsv  per-sample DIAMOND blastx hits
+#                                        (R1+R2 merged) vs the OrthoDB DB
+
+cat("--- Section 6c: OrthoDB genome-equivalent normalization ---\n")
+
+gene2og_file <- file.path(db_dir, "orthodb", "gene2og.tsv")
+orthodb_dt   <- NULL
+
+if (!file.exists(gene2og_file)) {
+  warning("OrthoDB gene2og.tsv not found at ", gene2og_file, " — skipping ",
+          "OrthoDB normalization (additive/optional; Asparaginase ",
+          "normalization in Section 6b is unaffected).")
+} else {
+  gene2og <- fread(gene2og_file, header = FALSE, col.names = c("og_seq_id", "og_id"))
+  # Group sizes computed once — needed to average each group's total hits
+  # across ALL its member sequences, including those with zero hits in a
+  # given sample (not just the ones that happened to get a hit).
+  og_sizes <- gene2og[, .(n_members = .N), by = og_id]
+
+  geometric_mean_se <- function(x, pseudocount = 1) {
+    log_x <- log(x + pseudocount)
+    list(geo_mean = exp(mean(log_x)),
+         se_log   = sd(log_x) / sqrt(length(log_x)),
+         n         = length(log_x))
+  }
+
+  orthodb_rows <- lapply(samples, function(s) {
+    hits_file <- file.path(ann_dir, "orthodb_genecount", paste0(s, "_hits.tsv"))
+    if (!file.exists(hits_file) || file.info(hits_file)$size == 0) {
+      return(data.table(sample = s, orthodb_geo_mean = NA_real_,
+                        orthodb_se_log = NA_real_, orthodb_n_orthologs = 0L))
+    }
+    # DIAMOND outfmt 6, no header: qseqid, sseqid, ... (only qseqid/sseqid needed)
+    hits <- fread(hits_file, header = FALSE, sep = "\t", quote = "", fill = TRUE,
+                  select = c(1, 2), col.names = c("read_id", "og_seq_id"))
+    if (nrow(hits) == 0) {
+      return(data.table(sample = s, orthodb_geo_mean = NA_real_,
+                        orthodb_se_log = NA_real_, orthodb_n_orthologs = 0L))
+    }
+
+    # Hits per OrthoDB sequence, then roll up to per-group totals via gene2og
+    # (left join so groups with zero hits in this sample still contribute a
+    # true zero to the per-group average, not an excluded/missing value).
+    hits_per_seq <- hits[, .(n_hits = .N), by = og_seq_id]
+    group_totals <- gene2og[hits_per_seq, on = "og_seq_id"][
+      , .(total_hits = sum(n_hits, na.rm = TRUE)), by = og_id]
+    # Join direction matters: og_sizes must control the row count (the FULL
+    # universe of ~1000-1500 OGs), with total_hits looked up and defaulting
+    # to NA (then 0 below) for OGs with no hits in this sample. Getting this
+    # backwards would silently drop zero-hit OGs from the average.
+    group_totals <- group_totals[og_sizes, on = "og_id"]
+    group_totals[is.na(total_hits), total_hits := 0]
+    group_totals[, group_avg := total_hits / n_members]
+
+    stats <- geometric_mean_se(group_totals$group_avg, pseudocount)
+    data.table(sample = s, orthodb_geo_mean = stats$geo_mean,
+              orthodb_se_log = stats$se_log, orthodb_n_orthologs = stats$n)
+  })
+
+  orthodb_dt <- rbindlist(orthodb_rows)
+
+  near_zero_orthodb <- orthodb_dt[is.na(orthodb_geo_mean) | orthodb_geo_mean <= pseudocount]
+  if (nrow(near_zero_orthodb) > 0) {
+    cat("  WARNING: samples with missing/near-zero OrthoDB genome-equivalent",
+        "estimate (normalization unreliable for these):\n")
+    print(near_zero_orthodb)
+  }
+
+  orthodb_denom_vec <- setNames(orthodb_dt$orthodb_geo_mean, orthodb_dt$sample)
+
+  cat("  Normalizing KO, CAZy, PHI, and Pfam matrices against OrthoDB genome equivalents...\n")
+  ko_matrix_normalized_orthodb   <- alr_normalize(ko_matrix,   orthodb_denom_vec, pseudocount)
+  cazy_matrix_normalized_orthodb <- alr_normalize(cazy_matrix, orthodb_denom_vec, pseudocount)
+  phi_matrix_normalized_orthodb  <- alr_normalize(phi_matrix,  orthodb_denom_vec, pseudocount)
+  pfam_matrix_normalized_orthodb <- alr_normalize(pfam_matrix, orthodb_denom_vec, pseudocount)
+}
+cat("\n")
+
+# =============================================================================
 # SECTION 7: Per-sample QC summary
 # =============================================================================
 
@@ -893,11 +993,27 @@ write_tsv(phi_matrix_normalized,  file.path(out_dir, "phi_count_matrix_normalize
 write_tsv(pfam_matrix_normalized, file.path(out_dir, "pfam_count_matrix_normalized.tsv"))
 write_tsv(asparaginase_dt,        file.path(out_dir, "asparaginase_pseudogenome_counts.tsv"))
 
+# OrthoDB-normalized matrices — additive alongside the Asparaginase-normalized
+# ones above (Section 6c). Only written if gene2og.tsv / hit tables were
+# available; otherwise this is silently skipped (optional/additive method).
+if (!is.null(orthodb_dt)) {
+  write_tsv(ko_matrix_normalized_orthodb,   file.path(out_dir, "ko_count_matrix_normalized_orthodb.tsv"))
+  write_tsv(cazy_matrix_normalized_orthodb, file.path(out_dir, "cazy_count_matrix_normalized_orthodb.tsv"))
+  write_tsv(phi_matrix_normalized_orthodb,  file.path(out_dir, "phi_count_matrix_normalized_orthodb.tsv"))
+  write_tsv(pfam_matrix_normalized_orthodb, file.path(out_dir, "pfam_count_matrix_normalized_orthodb.tsv"))
+  write_tsv(orthodb_dt,                     file.path(out_dir, "orthodb_genome_equivalents.tsv"))
+}
+
 # Also save as R objects for direct use in downstream analysis
-save(base_dt, count_matrix, ko_matrix, cazy_matrix, phi_matrix, pfam_matrix,
-     ko_matrix_normalized, cazy_matrix_normalized, phi_matrix_normalized,
-     pfam_matrix_normalized, asparaginase_dt, summary_dt,
-     file = file.path(out_dir, "integrated_data.RData"))
+save_objects <- c("base_dt", "count_matrix", "ko_matrix", "cazy_matrix", "phi_matrix",
+                  "pfam_matrix", "ko_matrix_normalized", "cazy_matrix_normalized",
+                  "phi_matrix_normalized", "pfam_matrix_normalized",
+                  "asparaginase_dt", "summary_dt", "orthodb_dt")
+if (!is.null(orthodb_dt)) {
+  save_objects <- c(save_objects, "ko_matrix_normalized_orthodb", "cazy_matrix_normalized_orthodb",
+                    "phi_matrix_normalized_orthodb", "pfam_matrix_normalized_orthodb")
+}
+save(list = save_objects, file = file.path(out_dir, "integrated_data.RData"))
 cat("  Wrote:", file.path(out_dir, "integrated_data.RData"), "(all objects)\n")
 
 cat("\n============================================================\n")
@@ -906,11 +1022,13 @@ cat("Outputs in:", out_dir, "\n")
 cat("\nTo load in R:\n")
 cat("  load('", file.path(out_dir, "integrated_data.RData"), "')\n", sep = "")
 cat("\nKey analysis tables:\n")
-cat("  ko_matrix / ko_matrix_normalized       — KO × sample (raw / ALR)      → DESeq2 / vegan\n")
-cat("  cazy_matrix / cazy_matrix_normalized   — CAZy family × sample (raw / ALR)\n")
-cat("  phi_matrix / phi_matrix_normalized     — PHI phenotype × sample (raw / ALR)\n")
-cat("  pfam_matrix / pfam_matrix_normalized   — Pfam family × sample (raw / ALR)\n")
+cat("  ko_matrix / ko_matrix_normalized       — KO × sample (raw / ALR vs Asparaginase) → DESeq2 / vegan\n")
+cat("  cazy_matrix / cazy_matrix_normalized   — CAZy family × sample (raw / ALR vs Asparaginase)\n")
+cat("  phi_matrix / phi_matrix_normalized     — PHI phenotype × sample (raw / ALR vs Asparaginase)\n")
+cat("  pfam_matrix / pfam_matrix_normalized   — Pfam family × sample (raw / ALR vs Asparaginase)\n")
+cat("  *_matrix_normalized_orthodb            — same four matrices, ALR vs OrthoDB genome equivalents (if available)\n")
 cat("  asparaginase_dt                        — per-sample ALR denominator (PF01112 reads)\n")
+cat("  orthodb_dt                             — per-sample ALR denominator (OrthoDB geometric mean + SE, if available)\n")
 cat("  base_dt                                — full gene annotation table  → custom queries\n")
 cat("  NOTE: *_normalized matrices are already log-transformed — do not feed\n")
 cat("        them into DESeq2/vegan, which expect raw counts.\n")
