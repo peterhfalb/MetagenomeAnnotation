@@ -1,18 +1,19 @@
 #!/bin/bash
 # =============================================================================
 # 01b_orthodb_genecount.sh
-# Slurm array job: genome-equivalent estimation via DIAMOND vs OrthoDB Dikarya
+# Slurm array job: genome-equivalent estimation via DIAMOND vs OrthoDB Fungi
 # near-single-copy orthologs.
 #
 # Provides an ADDITIVE alternative to the Asparaginase (Pfam PF01112)
 # pseudo-genome normalization already computed in 08_integrate.R: instead of
-# one marker gene, this maps raw QC'd reads directly against ~1000-1500
-# near-single-copy Dikaryotic (Ascomycota+Basidiomycota) orthologs from
-# OrthoDB v12. 08_integrate.R later averages read counts per ortholog group
-# (to avoid double-counting from within-group sequence redundancy) and takes
-# the geometric mean across all groups — far more robust than relying on a
-# single marker gene, since any one ortholog's noise/absence is washed out
-# by averaging over many.
+# one marker gene, this maps raw QC'd reads directly against near-single-copy
+# Fungi-level orthologs from OrthoDB v12 (NCBI taxid 4751 — broader than
+# Dikarya, which OrthoDB doesn't compute orthologous groups for at all; see
+# 00_setup_databases.sh Section 9). 08_integrate.R later averages read counts
+# per ortholog group (to avoid double-counting from within-group sequence
+# redundancy) and takes the geometric mean across all groups — far more
+# robust than relying on a single marker gene, since any one ortholog's
+# noise/absence is washed out by averaging over many.
 #
 # UNLIKE every other step in this pipeline, this one operates on raw QC'd
 # reads, PRE-ASSEMBLY — it does not need Tiara, MetaEuk, or any assembled
@@ -25,7 +26,7 @@
 #
 # Outputs:
 #   ${ANNOTATION_DIR}/orthodb_genecount/${SAMPLE}_hits.tsv
-#     Merged DIAMOND blastx hits (R1 + R2) vs the OrthoDB Dikarya database.
+#     Merged DIAMOND blastx hits (R1 + R2) vs the OrthoDB Fungi database.
 #     Columns: qseqid, sseqid, pident, length, mismatch, gapopen, qstart,
 #     qend, sstart, send, evalue, bitscore. sseqid is the OrthoDB sequence
 #     ID — 08_integrate.R maps this to an ortholog group via gene2og.tsv
@@ -58,7 +59,7 @@ module load diamond/2.0.15-gcc-8.2.0-gkldzx7
 # ── Parameters ────────────────────────────────────────────────────────────────
 THREADS=16
 DB_DIR="/projects/standard/kennedyp/shared/databases/metaG_annotation"
-ORTHODB_DB="${DB_DIR}/orthodb/dikarya_orthologs"
+ORTHODB_DB="${DB_DIR}/orthodb/fungi_orthologs"
 
 # E-value cutoff and sensitivity matching this pipeline's existing DIAMOND
 # convention (05_phibase.sh). --max-target-seqs 1: best hit per read only,
@@ -90,7 +91,7 @@ if [[ ! -f "${R1_FASTQ}" || ! -f "${R2_FASTQ}" ]]; then
     exit 1
 fi
 if [[ ! -f "${ORTHODB_DB}.dmnd" ]]; then
-    echo "ERROR: OrthoDB Dikarya database not found: ${ORTHODB_DB}.dmnd" >&2
+    echo "ERROR: OrthoDB Fungi database not found: ${ORTHODB_DB}.dmnd" >&2
     echo "  Run 00_setup_databases.sh first (Section 9)." >&2
     exit 1
 fi
@@ -98,7 +99,7 @@ fi
 mkdir -p "${OUT_DIR}"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STEP 1: DIAMOND blastx vs OrthoDB Dikarya orthologs, R1 and R2 separately
+# STEP 1: DIAMOND blastx vs OrthoDB Fungi orthologs, R1 and R2 separately
 # (matching the source paper's "forward and reverse reads were mapped"),
 # then merge. blastx (not blastp) because the input is raw nucleotide reads,
 # not predicted proteins.

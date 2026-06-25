@@ -161,15 +161,15 @@ check_databases() {
         # absence should not block the rest of the pipeline from running.
     fi
 
-    # OrthoDB Dikarya orthologs: fetched automatically (00_setup_databases.sh
-    # Section 9), but WARNING-only here, not a hard failure — this is an
-    # additive normalization method (alongside Asparaginase), the rest of the
-    # pipeline runs fine without it.
-    if [[ -f "${DB_DIR}/orthodb/dikarya_orthologs.dmnd" ]]; then
-        echo "    [OK]      OrthoDB Dikarya orthologs"
+    # OrthoDB Fungi orthologs: built by a SEPARATE script (00b_setup_orthodb.sh),
+    # not 00_setup_databases.sh — WARNING-only here, not a hard failure — this
+    # is an additive normalization method (alongside Asparaginase), the rest
+    # of the pipeline runs fine without it.
+    if [[ -f "${DB_DIR}/orthodb/fungi_orthologs.dmnd" ]]; then
+        echo "    [OK]      OrthoDB Fungi orthologs"
     else
-        echo "    [MISSING] OrthoDB Dikarya orthologs  (fetched automatically by setup job — optional, additive normalization layer)"
-        echo "              See Section 9 in 00_setup_databases.sh for details."
+        echo "    [MISSING] OrthoDB Fungi orthologs  (optional, additive normalization layer)"
+        echo "              Run separately: sbatch 00b_setup_orthodb.sh"
     fi
 
     ${all_present}
@@ -506,6 +506,7 @@ echo ""
 #
 # Step 1b (OrthoDB genome-equivalent normalization) has the loosest
 # dependency of anything in this pipeline — it needs only QC_DIR and the
-# OrthoDB database (Section 9), not assembly/Tiara/MetaEuk at all. It's
-# additive/optional like step 6c: missing QC_DIR or database just skips this
-# one step, the rest of the pipeline is unaffected.
+# OrthoDB database (built separately: sbatch 00b_setup_orthodb.sh), not
+# assembly/Tiara/MetaEuk at all. It's additive/optional like step 6c:
+# missing QC_DIR or database just skips this one step, the rest of the
+# pipeline is unaffected.

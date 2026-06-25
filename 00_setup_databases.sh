@@ -16,7 +16,7 @@
 #   pfam/         Pfam-A HMM profiles (domain annotation via hmmscan)
 #   mmseqs_taxonomy/mycocosm_phytozome/  Custom MMseqs2 taxonomy DB built from
 #                 user-supplied Mycocosm (fungal) + Phytozome (plant) proteins
-#   orthodb/      Dikarya near-single-copy ortholog DIAMOND DB (genome-equivalent
+#   orthodb/      Fungi near-single-copy ortholog DIAMOND DB (genome-equivalent
 #                 normalization, additive alternative to the Asparaginase method)
 #
 # NOTE — PHI-base requires a manual download step before this job runs.
@@ -25,8 +25,10 @@
 # NOTE — Mycocosm/Phytozome requires a manual download + taxid mapping step
 #        before this job runs. See SECTION 8 below for instructions.
 #
-# NOTE — OrthoDB Dikarya orthologs are fetched automatically from the OrthoDB
-#        v12 REST API (rate-limited, takes ~30-60 min, one-time). See SECTION 9.
+# NOTE — OrthoDB Fungi orthologs are built by a SEPARATE script,
+#        00b_setup_orthodb.sh (sbatch 00b_setup_orthodb.sh), not this one —
+#        a large (~44 GB), not-yet-fully-verified download/filter chain kept
+#        isolated for easier debugging. See SECTION 9 below.
 #
 # NOTE — DIAMOND NR build requires the BLAST+ module for blastdbcmd.
 #        Find the correct module name: module spider blast
@@ -447,139 +449,27 @@ else
 fi
 
 # =============================================================================
-# SECTION 9: OrthoDB Dikarya near-single-copy orthologs
+# SECTION 9: OrthoDB Fungi near-single-copy orthologs
 # Provides a genome-equivalent normalization denominator as an ADDITIVE
-# alternative to the Asparaginase (Pfam PF01112) method — instead of one
-# marker gene, averages read counts across ~1000-1500 near-single-copy
-# Dikaryotic (Ascomycota+Basidiomycota) orthologs, then takes the geometric
-# mean across all of them (computed in 08_integrate.R). Statistically more
-# robust than a single marker, since any one ortholog's noise/absence is
-# washed out by averaging over many. Does NOT replace Asparaginase
-# normalization — both are kept side by side (see README).
+# alternative to the Asparaginase (Pfam PF01112) method (see 08_integrate.R
+# Section 6c and the README). Pulled out into its own standalone script,
+# 00b_setup_orthodb.sh — NOT run automatically as part of this job — because
+# it's a large (~44 GB), not-yet-fully-verified download/filter chain that's
+# easier to debug and re-run in isolation than bundled into this 72-hour job.
 #
-# Fetched automatically from the OrthoDB v12 REST API (data.orthodb.org):
-#   1. /search with level=451864 (Dikarya NCBI taxid), singlecopy=0.9,
-#      universal=0.9 — this directly replicates the web "Advanced" panel's
-#      Phyloprofile filter (present in >90% of species AND single-copy in
-#      >90% of species) programmatically, returning a list of ortholog
-#      group (OG) IDs.
-#   2. For each OG ID, /fasta?id=<OG>&species=451864&seqtype=protein fetches
-#      that group's representative protein sequences. Rate-limited to
-#      1 request/second by OrthoDB — fetching ~1000-1500 OGs takes ~20-30 min.
-#   3. The gene(sequence)-to-OG mapping needed later (08_integrate.R) for
-#      per-group read-count averaging is built locally from this same loop
-#      (each fetched sequence is tagged with the OG ID it was fetched under)
-#      rather than depending on the /tab endpoint's exact output schema.
-#
-# NOTE — exact OrthoDB v12 JSON response schema for /search was not fully
-# confirmed ahead of time; the parsing step below is defensive (tries common
-# key names, errors with diagnostic output rather than silently mis-parsing)
-# but should be spot-checked against the actual response on first run.
+# Submit separately:
+#   sbatch 00b_setup_orthodb.sh
+# Optional/additive — run_annotation_pipeline.sh's check_databases() warns
+# (does not fail) if this hasn't been run; Step 1b (01b_orthodb_genecount.sh)
+# is simply skipped until it has.
 # =============================================================================
 
-DIKARYA_TAXID=451864
-ORTHODB_FASTA="${DB_DIR}/orthodb/dikarya_orthologs.faa"
-ORTHODB_GENE2OG="${DB_DIR}/orthodb/gene2og.tsv"
-ORTHODB_DB="${DB_DIR}/orthodb/dikarya_orthologs"
-
+ORTHODB_DB="${DB_DIR}/orthodb/fungi_orthologs"
 if [[ -f "${ORTHODB_DB}.dmnd" ]]; then
-    echo "[SKIP] OrthoDB Dikarya database already exists"
+    echo "[OK] OrthoDB Fungi database already built: ${ORTHODB_DB}.dmnd"
 else
-    echo "--- [9a] Fetching Dikarya near-single-copy OG list from OrthoDB v12 ---"
-    OG_LIST_JSON="${SCRATCH_DIR}/orthodb_og_list.json"
-    curl -s "https://data.orthodb.org/v12/search?level=${DIKARYA_TAXID}&singlecopy=0.9&universal=0.9&take=10000" \
-        -o "${OG_LIST_JSON}"
-
-    OG_IDS_FILE="${SCRATCH_DIR}/orthodb_og_ids.txt"
-    python3 - "${OG_LIST_JSON}" "${OG_IDS_FILE}" <<'PYEOF'
-import json, sys
-
-with open(sys.argv[1]) as f:
-    payload = json.load(f)
-
-# Defensive parsing — exact v12 schema wasn't confirmed ahead of time.
-# Try common shapes: {"data": [...]}, {"results": [...]}, or a bare list.
-ids = None
-if isinstance(payload, list):
-    ids = payload
-elif isinstance(payload, dict):
-    for key in ("data", "results", "ogs", "orthologs"):
-        if key in payload and isinstance(payload[key], list):
-            ids = payload[key]
-            break
-
-if ids is None:
-    sys.stderr.write(
-        "ERROR: could not find an OG ID list in the OrthoDB /search response.\n"
-        "Top-level keys present: %s\n"
-        "Inspect %s by hand and adjust the parsing logic in 00_setup_databases.sh.\n"
-        % (list(payload.keys()) if isinstance(payload, dict) else type(payload), sys.argv[1])
-    )
-    sys.exit(1)
-
-# Entries may be bare ID strings or dicts containing an "id"/"og_id" field.
-clean_ids = []
-for entry in ids:
-    if isinstance(entry, str):
-        clean_ids.append(entry)
-    elif isinstance(entry, dict):
-        for key in ("id", "og_id", "group_id"):
-            if key in entry:
-                clean_ids.append(entry[key])
-                break
-
-with open(sys.argv[2], "w") as out:
-    out.write("\n".join(clean_ids) + "\n")
-
-sys.stderr.write("Parsed %d OG IDs\n" % len(clean_ids))
-PYEOF
-
-    N_OGS=$(wc -l < "${OG_IDS_FILE}")
-    echo "  OG IDs retrieved: ${N_OGS}"
-    if [[ "${N_OGS}" -lt 100 ]]; then
-        echo "ERROR: suspiciously few OG IDs (${N_OGS}) — check ${OG_LIST_JSON} by hand," >&2
-        echo "  the /search response may be paginated differently than expected." >&2
-        exit 1
-    fi
-
-    echo "--- [9b] Fetching per-OG FASTA sequences (rate-limited, ~1 req/sec) ---"
-    > "${ORTHODB_FASTA}"
-    > "${ORTHODB_GENE2OG}"
-    N_FETCHED=0
-    while IFS= read -r og; do
-        [[ -z "${og}" ]] && continue
-        OG_FASTA_TMP="${SCRATCH_DIR}/orthodb_og_tmp.faa"
-        curl -s "https://data.orthodb.org/v12/fasta?id=${og}&species=${DIKARYA_TAXID}&seqtype=protein" \
-            -o "${OG_FASTA_TMP}"
-
-        if [[ -s "${OG_FASTA_TMP}" ]]; then
-            cat "${OG_FASTA_TMP}" >> "${ORTHODB_FASTA}"
-            # Tag each sequence header from this OG's FASTA with its OG ID —
-            # builds the gene->OG mapping locally rather than relying on /tab.
-            grep '^>' "${OG_FASTA_TMP}" | sed 's/^>//' | awk -v og="${og}" -F' ' \
-                '{print $1 "\t" og}' >> "${ORTHODB_GENE2OG}"
-        fi
-
-        N_FETCHED=$(( N_FETCHED + 1 ))
-        if (( N_FETCHED % 100 == 0 )); then
-            echo "  Fetched ${N_FETCHED} / ${N_OGS} OGs..."
-        fi
-        sleep 1
-    done < "${OG_IDS_FILE}"
-    rm -f "${SCRATCH_DIR}/orthodb_og_tmp.faa"
-
-    echo "  Total OGs fetched     : ${N_FETCHED}"
-    echo "  Total sequences in DB : $(grep -c '^>' "${ORTHODB_FASTA}" || echo 0)"
-
-    if [[ ! -s "${ORTHODB_FASTA}" ]]; then
-        echo "ERROR: no sequences retrieved — check network access and the OG IDs file." >&2
-        exit 1
-    fi
-
-    echo "--- [9c] Building DIAMOND database ---"
-    diamond makedb --in "${ORTHODB_FASTA}" --db "${ORTHODB_DB}" --threads ${THREADS}
-
-    echo "OrthoDB Dikarya database done: $(date)"
+    echo "[INFO] OrthoDB Fungi database not yet built — optional, additive normalization layer."
+    echo "       Run separately: sbatch 00b_setup_orthodb.sh"
 fi
 
 # =============================================================================
@@ -598,7 +488,7 @@ echo "  KOfam                  : ${DB_DIR}/kofam/"
 echo "  dbCAN3                 : ${DB_DIR}/dbcan/"
 echo "  PHI-base               : ${DB_DIR}/phibase/phi-base.dmnd"
 echo "  Pfam-A                 : ${PFAM_HMM}"
-echo "  OrthoDB Dikarya         : ${ORTHODB_DB} $([[ -f "${ORTHODB_DB}.dmnd" ]] && echo '[OK]' || echo '[MISSING - see SECTION 9]')"
+echo "  OrthoDB Fungi         : ${ORTHODB_DB} $([[ -f "${ORTHODB_DB}.dmnd" ]] && echo '[OK]' || echo '[MISSING - run: sbatch 00b_setup_orthodb.sh]')"
 echo "  MetaEuk target         : ${DB_DIR}/metaeuk/fungi_refseq_db"
 echo "  MetaEuk FASTA          : ${DB_DIR}/metaeuk/fungi_refseq_proteins.faa"
 echo "============================================================"
