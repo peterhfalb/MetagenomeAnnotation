@@ -142,22 +142,34 @@ else
 fi
 
 # =============================================================================
-# SECTION 4: dbCAN3 — CAZyme databases
-# run_dbcan operates in three modes simultaneously:
-#   HMMER  — dbCAN HMM profiles (most sensitive, primary result)
-#   DIAMOND — searched against characterized CAZy proteins (used as evidence)
-# Genes are called CAZymes when ≥2 modes agree (dbCAN3 default).
-# run_dbcan download_db handles downloading and indexing all required files.
+# SECTION 4: dbCAN — CAZyme databases
+# Installed tool is the standalone `dbcan` package v5.2.9, a ground-up
+# rewrite of the older v3/v4 run_dbcan — different CLI, different DB layout.
+# run_dbcan operates in three modes (04_dbcan.sh --methods hmm,diamond,dbCANsub):
+#   hmm       — dbCAN HMM profiles (most sensitive, primary result)
+#   diamond   — searched against characterized CAZy proteins (used as evidence)
+#   dbCANsub  — substrate-annotated CAZy subfamily HMMs (glycan substrate call)
+# Genes are called high-confidence CAZymes when hmm and diamond agree — this
+# version doesn't compute that agreement itself, so 04_dbcan.sh/08_integrate.R
+# do it by comparing gene IDs across the two result files.
+# `run_dbcan database` downloads everything needed, including the CGC/PUL
+# bacterial gene-cluster files (TF.hmm, STP.hmm, dbCAN-PUL.xlsx, etc.) that
+# this pipeline doesn't use — confirmed to download successfully on this
+# version/site without the 403 issues seen on older dbCAN releases, so they
+# are no longer stubbed; the stub fallback below is left in only as a
+# defensive no-op in case that changes.
 # =============================================================================
 
+# NOTE: the substrate HMM file is named "dbCAN-sub.hmm" (hyphen), not
+# "dbCAN_sub.hmm" (underscore) — easy to mis-type; double-check both sides of
+# any future edits here against the actual filename in ${DB_DIR}/dbcan/.
+DBCAN_SUB_HMM="${DB_DIR}/dbcan/dbCAN-sub.hmm"
+
 if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
-    echo "--- [4] Downloading dbCAN3 databases ---"
-    # run_dbcan database may fail with 403 on TF.hmm and dbCAN-PUL.xlsx from some
-    # HPC compute nodes. Those files are only needed for --tools tf/stp substrate
-    # prediction; we use --tools hmmer diamond so we suppress the error and stub them.
+    echo "--- [4] Downloading dbCAN databases ---"
     run_dbcan database --db_dir "${DB_DIR}/dbcan" || true
 
-    # Verify the two files we actually need downloaded successfully
+    # Verify the files we actually need downloaded successfully
     if [[ ! -f "${DB_DIR}/dbcan/CAZy.dmnd" ]]; then
         echo "ERROR: CAZy.dmnd not found after dbCAN download — check network access." >&2
         exit 1
@@ -166,54 +178,42 @@ if [[ ! -f "${DB_DIR}/dbcan/dbCAN.hmm.h3i" ]]; then
         echo "ERROR: dbCAN.hmm not found after dbCAN download — check network access." >&2
         exit 1
     fi
+    if [[ ! -f "${DBCAN_SUB_HMM}" ]]; then
+        echo "ERROR: ${DBCAN_SUB_HMM} not found after dbCAN download — check network access." >&2
+        exit 1
+    fi
 
-    # Press the HMM database (may not have run if download errored after file transfer)
+    # Press both HMM databases (may not have run if download errored after
+    # file transfer, or — for dbCAN-sub specifically — because run_dbcan
+    # database doesn't press it itself, only downloads the raw file).
     hmmpress "${DB_DIR}/dbcan/dbCAN.hmm"
+    hmmpress "${DBCAN_SUB_HMM}"
 
-    # dbCAN_sub.hmm — substrate-annotated CAZy subfamily HMMs. Unlike the
-    # CGC/PUL files stubbed below (bacterial gene-cluster substrate prediction,
-    # not used here), dbCAN_sub gives a per-protein substrate call independent
-    # of genomic context, so it's useful for fungal data. Press it if present.
-    if [[ -f "${DB_DIR}/dbcan/dbCAN_sub.hmm" && ! -f "${DB_DIR}/dbcan/dbCAN_sub.hmm.h3i" ]]; then
-        hmmpress "${DB_DIR}/dbcan/dbCAN_sub.hmm"
-    fi
-    if [[ ! -f "${DB_DIR}/dbcan/dbCAN_sub.hmm" ]]; then
-        echo "WARNING: dbCAN_sub.hmm not found after run_dbcan database — substrate"
-        echo "  prediction (04_dbcan.sh's dbCANsub method) will fail until this is"
-        echo "  resolved. Check network access or download manually from the dbCAN3"
-        echo "  database release and place at ${DB_DIR}/dbcan/dbCAN_sub.hmm"
-    fi
-
-    # Stub optional files that 403 on MSI compute nodes and are ONLY needed for
-    # CGC/PUL substrate prediction (bacterial gene-cluster method, not used here).
+    # Defensive fallback only — confirmed unnecessary on this site/version
+    # (see comment above), kept in case a future environment 403s again.
     for opt_file in TF.hmm STP.hmm dbCAN-PUL.xlsx; do
         [[ -f "${DB_DIR}/dbcan/${opt_file}" ]] || touch "${DB_DIR}/dbcan/${opt_file}"
     done
 
-    # fam-substrate-mapping.tsv is NOT stubbed here — unlike the CGC/PUL files
-    # above, dbCAN_sub's substrate prediction (04_dbcan.sh's dbCANsub method)
-    # may depend on this file to translate raw subfamily hits into substrate
-    # names. Warn loudly rather than silently stubbing, since a 0-byte stub
-    # would silently degrade substrate calls without any error downstream.
     if [[ ! -s "${DB_DIR}/dbcan/fam-substrate-mapping.tsv" ]]; then
         echo "WARNING: fam-substrate-mapping.tsv missing or empty after run_dbcan"
-        echo "  database — dbCAN_sub substrate names may come back blank or as raw"
-        echo "  subfamily IDs instead of substrate names. If this 403'd from the"
-        echo "  compute node (same issue as TF.hmm/dbCAN-PUL.xlsx), download it from"
-        echo "  the login node and place it at ${DB_DIR}/dbcan/fam-substrate-mapping.tsv"
+        echo "  database — dbCAN-sub substrate names may come back blank or as raw"
+        echo "  subfamily IDs instead of substrate names. Download it manually and"
+        echo "  place it at ${DB_DIR}/dbcan/fam-substrate-mapping.tsv"
     fi
 
-    echo "dbCAN3 done: $(date)"
+    echo "dbCAN done: $(date)"
 else
-    echo "[SKIP] dbCAN3 databases already exist"
+    echo "[SKIP] dbCAN databases already exist"
 fi
 
-# dbCAN_sub.hmm may not have been pressed in a previous run of this script
-# (added after the initial dbCAN3 setup) — check independently of the main
-# dbCAN.hmm.h3i sentinel above so re-running this script picks it up.
-if [[ -f "${DB_DIR}/dbcan/dbCAN_sub.hmm" && ! -f "${DB_DIR}/dbcan/dbCAN_sub.hmm.h3i" ]]; then
-    echo "--- [4b] Pressing dbCAN_sub.hmm (substrate prediction) ---"
-    hmmpress "${DB_DIR}/dbcan/dbCAN_sub.hmm"
+# dbCAN-sub.hmm may not have been pressed in a previous run of this script
+# (added after the initial dbCAN setup, and run_dbcan database does not press
+# it itself) — check independently of the main dbCAN.hmm.h3i sentinel above
+# so re-running this script picks it up.
+if [[ -f "${DBCAN_SUB_HMM}" && ! -f "${DBCAN_SUB_HMM}.h3i" ]]; then
+    echo "--- [4b] Pressing dbCAN-sub.hmm (substrate prediction) ---"
+    hmmpress "${DBCAN_SUB_HMM}"
 fi
 
 # =============================================================================

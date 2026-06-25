@@ -151,41 +151,74 @@ read_kofam <- function(file) {
   }
 }
 
-# Read dbCAN3 overview.txt for one sample.
-# Returns data.table: gene_id, CAZy_HMMER, CAZy_DIAMOND, n_tools
-# Strips position suffixes from HMMER calls (e.g. "GH3(1-200)" → "GH3").
-read_dbcan <- function(file) {
-  if (is.null(file) || !file.exists(file) || file.info(file)$size == 0) return(data.table(gene_id = character()))
-  dt <- fread(file, header = TRUE, sep = "\t", quote = "")
-  if (nrow(dt) == 0) return(data.table(gene_id = character()))
-  # Column names vary slightly by version; normalise
-  setnames(dt, c("Gene.ID", "Gene ID"), c("gene_id", "gene_id"), skip_absent = TRUE)
-  if (!"gene_id" %in% names(dt)) setnames(dt, 1, "gene_id")
-  dt[, gene_id := normalize_gene_id(gene_id)]
+# Read dbCAN output for one sample.
+# Installed tool is the standalone `dbcan` package v5.2.9 — a ground-up
+# rewrite of the older v3/v4 run_dbcan that this function originally
+# targeted. It does NOT write a unified overview file; each evidence stream
+# (--methods hmm,diamond,dbCANsub in 04_dbcan.sh) writes its own file, and
+# there is no built-in "#ofTools" agreement count. This function reads all
+# three files directly and computes the HMMER∩DIAMOND agreement itself.
+#
+# Returns data.table: gene_id, CAZy_HMMER, CAZy_DIAMOND, CAZy_n_tools,
+#                      CAZy_substrate
+# CAZy_n_tools counts only HMMER/DIAMOND agreement (the two family-calling
+# tools) — dbCAN_sub's substrate call is reported, not voted on.
+read_dbcan <- function(dbcan_dir) {
+  empty <- data.table(gene_id = character(), CAZy_HMMER = character(),
+                      CAZy_DIAMOND = character(), CAZy_n_tools = integer(),
+                      CAZy_substrate = character())
+  if (is.null(dbcan_dir) || !dir.exists(dbcan_dir)) return(empty)
 
-  # Identify columns by name patterns — use ignore.case instead of (?i) inline
-  # flag so it works with R's default regex engine without requiring perl=TRUE.
-  # v3 used "HMMER"; v4 uses "dbCAN_hmm" — both contain "hmm".
-  hmmer_col    <- grep("hmm",       names(dt), value = TRUE, ignore.case = TRUE)[1]
-  diamond_col  <- grep("diamond",   names(dt), value = TRUE, ignore.case = TRUE)[1]
-  tools_col    <- grep("#.*tool|ofTool|n_tool", names(dt), value = TRUE, ignore.case = TRUE)[1]
-  # Substrate column from the dbCAN_sub evidence stream (04_dbcan.sh
-  # --methods hmm,diamond,dbCANsub). Exact column name depends on the
-  # installed run_dbcan version — located dynamically by name pattern, same
-  # approach as the other columns here, rather than by position.
-  substrate_col <- grep("substrate", names(dt), value = TRUE, ignore.case = TRUE)[1]
+  read_one <- function(f) {
+    if (!file.exists(f) || file.info(f)$size == 0) return(NULL)
+    dt <- fread(f, header = TRUE, sep = "\t", quote = "", fill = TRUE)
+    if (nrow(dt) == 0) return(NULL)
+    dt
+  }
 
-  result <- data.table(
-    gene_id       = dt[["gene_id"]],
-    CAZy_HMMER    = if (!is.na(hmmer_col))     str_remove(dt[[hmmer_col]],   "\\(.*\\)") else NA_character_,
-    CAZy_DIAMOND  = if (!is.na(diamond_col))   dt[[diamond_col]] else NA_character_,
-    CAZy_n_tools  = if (!is.na(tools_col))     as.integer(dt[[tools_col]])   else NA_integer_,
-    CAZy_substrate = if (!is.na(substrate_col)) dt[[substrate_col]] else NA_character_
-  )
-  # Normalise no-hit strings to NA — v3 used "N/A", v4 uses "-"
-  result[CAZy_HMMER    %in% c("N/A", "-"), CAZy_HMMER    := NA_character_]
-  result[CAZy_DIAMOND  %in% c("N/A", "-"), CAZy_DIAMOND  := NA_character_]
-  result[CAZy_substrate %in% c("N/A", "-", ""), CAZy_substrate := NA_character_]
+  # HMMER family calls: "HMM Name" (e.g. "AA6.hmm") per "Target Name" (gene).
+  # A gene can have multiple domain hits; collapse to one row per gene,
+  # joining distinct families with ";" (same multi-hit convention used for
+  # KO/Pfam elsewhere in this script).
+  hmm_dt <- read_one(file.path(dbcan_dir, "dbCAN_hmm_results.tsv"))
+  hmm_collapsed <- if (!is.null(hmm_dt) &&
+                        all(c("Target Name", "HMM Name") %in% names(hmm_dt))) {
+    setnames(hmm_dt, c("Target Name", "HMM Name"), c("gene_id", "family"))
+    hmm_dt[, .(gene_id = normalize_gene_id(gene_id),
+               family  = sub("\\.hmm$", "", family))][
+      , .(CAZy_HMMER = paste(unique(family), collapse = ";")), by = gene_id]
+  } else data.table(gene_id = character(), CAZy_HMMER = character())
+
+  # DIAMOND family calls: "CAZy ID" embeds family as "ACCESSION|FAMILY".
+  diamond_dt <- read_one(file.path(dbcan_dir, "diamond.out"))
+  diamond_collapsed <- if (!is.null(diamond_dt) &&
+                            all(c("Gene ID", "CAZy ID") %in% names(diamond_dt))) {
+    setnames(diamond_dt, c("Gene ID", "CAZy ID"), c("gene_id", "family"))
+    diamond_dt[, .(gene_id = normalize_gene_id(gene_id),
+                   family  = sub("^[^|]*\\|", "", family))][
+      , .(CAZy_DIAMOND = paste(unique(family), collapse = ";")), by = gene_id]
+  } else data.table(gene_id = character(), CAZy_DIAMOND = character())
+
+  # dbCAN-sub substrate calls: "Substrate" column, already translated from
+  # raw subfamily hits via fam-substrate-mapping.tsv internally by run_dbcan.
+  sub_dt <- read_one(file.path(dbcan_dir, "dbCANsub_hmm_results.tsv"))
+  sub_collapsed <- if (!is.null(sub_dt) &&
+                        all(c("Target Name", "Substrate") %in% names(sub_dt))) {
+    setnames(sub_dt, "Target Name", "gene_id")
+    sub_dt[, .(gene_id = normalize_gene_id(gene_id), substrate = Substrate)][
+      !is.na(substrate) & !substrate %in% c("", "-", "N/A"),
+      .(CAZy_substrate = paste(unique(substrate), collapse = ";")), by = gene_id]
+  } else data.table(gene_id = character(), CAZy_substrate = character())
+
+  all_ids <- unique(c(hmm_collapsed$gene_id, diamond_collapsed$gene_id, sub_collapsed$gene_id))
+  if (length(all_ids) == 0) return(empty)
+
+  result <- data.table(gene_id = all_ids)
+  result <- hmm_collapsed[result, on = "gene_id"]
+  result <- diamond_collapsed[result, on = "gene_id"]
+  result <- sub_collapsed[result, on = "gene_id"]
+
+  result[, CAZy_n_tools := as.integer(!is.na(CAZy_HMMER)) + as.integer(!is.na(CAZy_DIAMOND))]
   result
 }
 
@@ -322,17 +355,6 @@ normalize_gene_id <- function(ids) {
   result
 }
 
-# Find dbCAN overview file — filename changed across dbCAN v4 sub-versions.
-# Searches the sample's output directory for any known candidate name.
-find_dbcan_overview <- function(dbcan_dir) {
-  candidates <- file.path(dbcan_dir,
-    c("overview.txt", "overview.tsv", "CAZyme_annotation.tsv"))
-  for (f in candidates) {
-    if (file.exists(f) && file.info(f)$size > 0) return(f)
-  }
-  NULL
-}
-
 # =============================================================================
 # SECTION 1: Load sample list
 # =============================================================================
@@ -368,7 +390,7 @@ for (s in samples) {
   kofam_list[[s]] <- read_kofam(file.path(ann_dir, "kofam", paste0(s, "_kofam.tsv")))
 
   # dbCAN3 — find actual overview file (name varies across v4 sub-versions)
-  dbcan_list[[s]] <- read_dbcan(find_dbcan_overview(file.path(ann_dir, "dbcan", s)))
+  dbcan_list[[s]] <- read_dbcan(file.path(ann_dir, "dbcan", s))
 
   # PHI-base
   phi_list[[s]] <- read_phibase(file.path(ann_dir, "phibase", paste0(s, "_phibase.tsv")))
