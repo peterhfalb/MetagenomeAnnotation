@@ -73,6 +73,14 @@
 #SBATCH --time=24:00:00
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=falb0011@umn.edu
+#SBATCH --output=logs/setup/setup_orthodb_%j.out
+#SBATCH --error=logs/setup/setup_orthodb_%j.err
+
+# NOTE: --output/--error above are relative to the directory you run `sbatch`
+# from — that directory must already contain logs/setup/ before submitting:
+#   mkdir -p logs/setup && sbatch 00b_setup_orthodb.sh
+# (SLURM resolves --output/--error before the script body runs, so a mkdir
+# inside this script would be too late to help the very first lines of output.)
 
 set -euo pipefail
 
@@ -214,13 +222,24 @@ fi
 cut -f2 "${ORTHODB_TMP}/kept_og2genes.tab" | sort -u > "${ORTHODB_TMP}/kept_gene_ids.txt"
 
 echo "--- [6] Extracting protein sequences for kept genes (odb12v2_og_aa_fasta, ~35 GB) ---"
-curl -s -o "${ORTHODB_TMP}/og_aa_fasta.gz" "${ORTHODB_DUMP_BASE}/odb12v2_og_aa_fasta.gz"
-# FASTA headers contain "orthodb internal gene id as well as a public id"
-# (exact format not confirmed ahead of time) — match defensively against
-# any whitespace/pipe-delimited token in the header, but record the exact
-# first token (what DIAMOND will use as sseqid) for gene2og.tsv.
-zcat "${ORTHODB_TMP}/og_aa_fasta.gz" | python3 - "${ORTHODB_TMP}/kept_gene_ids.txt" \
-    "${ORTHODB_TMP}/kept_og2genes.tab" "${ORTHODB_FASTA}" "${ORTHODB_GENE2OG}" <<'PYEOF'
+# Idempotency: skip re-downloading if a previous (e.g. interrupted/failed) run
+# already fetched this file — it's the single biggest, slowest download here.
+if [[ -s "${ORTHODB_TMP}/og_aa_fasta.gz" ]]; then
+    echo "  [SKIP] og_aa_fasta.gz already present in scratch, reusing it"
+else
+    curl -s -o "${ORTHODB_TMP}/og_aa_fasta.gz" "${ORTHODB_DUMP_BASE}/odb12v2_og_aa_fasta.gz"
+fi
+
+# Write the extraction script to a real file rather than a heredoc on the same
+# line as the zcat pipe. `zcat f | python3 - <<'EOF' ... EOF` is broken: the
+# heredoc and the pipe both target python3's stdin, and the heredoc wins (it's
+# how `python3 -` gets its source code) — so the piped FASTA data never
+# reaches the script's own `sys.stdin` at all, which is immediately at EOF by
+# the time the for-loop runs. That produced "Wrote 0 matched sequences" with
+# no error, despite the target IDs genuinely being present in the data
+# (confirmed by direct grep during debugging). Writing to a separate .py file
+# and invoking `python3 script.py` keeps stdin free for the actual pipe.
+cat > "${ORTHODB_TMP}/extract_fasta.py" <<'PYEOF'
 import sys, re
 
 gene_ids_file, og2genes_file, fasta_out, gene2og_out = sys.argv[1:5]
@@ -277,6 +296,10 @@ with open(fasta_out, "w") as fasta_f, open(gene2og_out, "w") as map_f:
 
 sys.stderr.write("Wrote %d matched sequences\n" % n_written)
 PYEOF
+
+zcat "${ORTHODB_TMP}/og_aa_fasta.gz" | python3 "${ORTHODB_TMP}/extract_fasta.py" \
+    "${ORTHODB_TMP}/kept_gene_ids.txt" "${ORTHODB_TMP}/kept_og2genes.tab" \
+    "${ORTHODB_FASTA}" "${ORTHODB_GENE2OG}"
 rm -f "${ORTHODB_TMP}/og_aa_fasta.gz"
 
 N_SEQS=$(grep -c '^>' "${ORTHODB_FASTA}" || echo 0)
