@@ -41,15 +41,15 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32gb
-#SBATCH --time=12:00:00
+#SBATCH --time=20:00:00
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=falb0011@umn.edu
 
-# NOTE on resources: first-guess sizing given 3.5-7 GB gzip per R1/R2 file
-# (likely tens of millions of read pairs/sample). DIAMOND's runtime is
-# dominated by query (read) volume, not the small (~1000-1500 seq) target
-# database, so this should be much faster than the time limit suggests —
-# right-size CPU/mem/time after observing actual runtime on one test sample.
+# NOTE on resources: observed runtime on one real test sample — R1 alone took
+# ~4h23m (16 CPU, --sensitive mode), so R1+R2 combined is realistically
+# ~8-9 hours, not the "much faster than 12 hours" originally guessed here.
+# Bumped to 20 hours for safety margin across samples with larger/more
+# complex read sets; tighten this once more samples have actually run.
 
 set -euo pipefail
 
@@ -108,29 +108,41 @@ mkdir -p "${OUT_DIR}"
 if [[ -f "${OUT_HITS}" && -s "${OUT_HITS}" ]]; then
     echo "[SKIP] OrthoDB gene count output already exists"
 else
-    echo "--- Step 1a: DIAMOND blastx vs OrthoDB (R1) ---"
-    diamond blastx \
-        --query "${R1_FASTQ}" \
-        --db "${ORTHODB_DB}" \
-        --out "${OUT_R1}" \
-        --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
-        --evalue ${EVALUE} \
-        --max-target-seqs 1 \
-        --sensitive \
-        --threads ${THREADS}
-    echo "Step 1a done: $(date)"
+    # Per-direction idempotency: R1 alone takes ~4+ hours, so if the job is
+    # killed mid-R2 (timeout, node failure) and resubmitted, don't throw away
+    # R1's already-completed work — only the top-level OUT_HITS check existed
+    # before, which would have silently redone R1 from scratch on resubmit.
+    if [[ -f "${OUT_R1}" && -s "${OUT_R1}" ]]; then
+        echo "--- Step 1a: [SKIP] R1 output already exists ---"
+    else
+        echo "--- Step 1a: DIAMOND blastx vs OrthoDB (R1) ---"
+        diamond blastx \
+            --query "${R1_FASTQ}" \
+            --db "${ORTHODB_DB}" \
+            --out "${OUT_R1}" \
+            --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+            --evalue ${EVALUE} \
+            --max-target-seqs 1 \
+            --sensitive \
+            --threads ${THREADS}
+        echo "Step 1a done: $(date)"
+    fi
 
-    echo "--- Step 1b: DIAMOND blastx vs OrthoDB (R2) ---"
-    diamond blastx \
-        --query "${R2_FASTQ}" \
-        --db "${ORTHODB_DB}" \
-        --out "${OUT_R2}" \
-        --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
-        --evalue ${EVALUE} \
-        --max-target-seqs 1 \
-        --sensitive \
-        --threads ${THREADS}
-    echo "Step 1b done: $(date)"
+    if [[ -f "${OUT_R2}" && -s "${OUT_R2}" ]]; then
+        echo "--- Step 1b: [SKIP] R2 output already exists ---"
+    else
+        echo "--- Step 1b: DIAMOND blastx vs OrthoDB (R2) ---"
+        diamond blastx \
+            --query "${R2_FASTQ}" \
+            --db "${ORTHODB_DB}" \
+            --out "${OUT_R2}" \
+            --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+            --evalue ${EVALUE} \
+            --max-target-seqs 1 \
+            --sensitive \
+            --threads ${THREADS}
+        echo "Step 1b done: $(date)"
+    fi
 
     cat "${OUT_R1}" "${OUT_R2}" > "${OUT_HITS}"
     rm -f "${OUT_R1}" "${OUT_R2}"

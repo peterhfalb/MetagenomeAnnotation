@@ -20,13 +20,17 @@
 #     [--samples "S1,S2,..."]
 #     [--test N]
 #     [--time HH:MM:SS]
+#     [--max-concurrent N]   array %N cap, default 10; use 0 for no cap (every
+#                            sample submitted at once — still subject to
+#                            whatever job/CPU limits your account or the
+#                            partition itself enforces)
 #     [--after JOB_ID]   (not normally needed — this step has no real dependency)
 # =============================================================================
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ANNOTATION_DIR=""; QC_DIR=""; TEST_N=""; SAMPLES_FILTER=""; TIME_OVERRIDE=""; AFTER_JOB=""
+ANNOTATION_DIR=""; QC_DIR=""; TEST_N=""; SAMPLES_FILTER=""; TIME_OVERRIDE=""; AFTER_JOB=""; MAX_CONCURRENT=10
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -35,6 +39,7 @@ while [[ $# -gt 0 ]]; do
         --samples)        SAMPLES_FILTER="$2"; shift 2 ;;
         --test)           TEST_N="${2:-2}";     shift 2 ;;
         --time)           TIME_OVERRIDE="$2";  shift 2 ;;
+        --max-concurrent) MAX_CONCURRENT="$2"; shift 2 ;;
         --after)          AFTER_JOB="$2";      shift 2 ;;
         *) echo "ERROR: Unknown argument: $1" >&2; exit 1 ;;
     esac
@@ -68,9 +73,13 @@ if [[ -n "${TEST_N}" ]]; then
     [[ "${TEST_N}" -gt "${N}" ]] && TEST_N="${N}"
     ARRAY_RANGE="1-${TEST_N}%${TEST_N}"
     echo "TEST MODE: ${TEST_N} of ${N} samples."
+elif [[ "${MAX_CONCURRENT}" -eq 0 ]]; then
+    ARRAY_RANGE="1-${N}"
+    echo "Submitting ${N} samples, no array concurrency cap (--max-concurrent 0)."
+    echo "NOTE: your account/partition's own job or CPU limits may still throttle this."
 else
-    ARRAY_RANGE="1-${N}%10"
-    echo "Submitting ${N} samples."
+    ARRAY_RANGE="1-${N}%${MAX_CONCURRENT}"
+    echo "Submitting ${N} samples, max ${MAX_CONCURRENT} concurrent."
 fi
 
 SBATCH_ARGS=(
