@@ -144,7 +144,10 @@ else
         echo "Step 1b done: $(date)"
     fi
 
-    cat "${OUT_R1}" "${OUT_R2}" > "${OUT_HITS}"
+    # Ensure a trailing newline after R1 before appending R2 — DIAMOND does not
+    # guarantee a terminal newline, so a bare `cat R1 R2` can concatenate the
+    # last R1 line with the first R2 line into one malformed 13-field record.
+    { cat "${OUT_R1}"; echo; cat "${OUT_R2}"; } > "${OUT_HITS}"
     rm -f "${OUT_R1}" "${OUT_R2}"
 fi
 

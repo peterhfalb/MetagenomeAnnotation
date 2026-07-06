@@ -876,7 +876,10 @@ if (!file.exists(gene2og_file)) {
                         orthodb_se_log = NA_real_, orthodb_n_orthologs = 0L))
     }
     # DIAMOND outfmt 6, no header: qseqid, sseqid, ... (only qseqid/sseqid needed)
-    hits <- fread(hits_file, header = FALSE, sep = "\t", quote = "", fill = TRUE,
+    # fill = Inf: never stop early on malformed lines (e.g. a missing newline
+    # between R1 and R2 outputs can create a 13-field line); select = c(1,2)
+    # means only qseqid/sseqid are loaded regardless of extra fields.
+    hits <- fread(hits_file, header = FALSE, sep = "\t", quote = "", fill = Inf,
                   select = c(1, 2), col.names = c("read_id", "og_seq_id"))
     if (nrow(hits) == 0) {
       return(data.table(sample = s, orthodb_geo_mean = NA_real_,
