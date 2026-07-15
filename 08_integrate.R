@@ -975,15 +975,20 @@ summary_dt <- rbindlist(summary_rows)
 # report: GEO-{stake_id}[_Cleaned]_S{N} → stake_id = the NN-NN part.
 if (!is.null(metadata_file) && file.exists(metadata_file)) {
   meta <- fread(metadata_file, colClasses = "character")
-  if (all(c("stake_id", "stand_type") %in% names(meta))) {
-    summary_dt[, stake_id := sub("^GEO-([0-9]+-[0-9]+).*_S[0-9]+$", "\\1", sample)]
-    summary_dt <- merge(summary_dt, meta[, .(stake_id, stand_type)],
+  # stakes.csv uses column "stake" (not "stake_id"); stand_type is the group label.
+  # Regex extracts the NN-NN stake number from names like:
+  #   GEO-00-06_S1, GEO-03-13_Cleaned_S8, GEO-19-17-Cleaned
+  # The .*$ at the end handles any suffix (_Cleaned, _SN, -Cleaned, etc.)
+  if (all(c("stake", "stand_type") %in% names(meta))) {
+    summary_dt[, stake_id := sub("^GEO-([0-9]+-[0-9]+).*$", "\\1", sample)]
+    summary_dt <- merge(summary_dt, meta[, .(stake_id = stake, stand_type)],
                         by = "stake_id", all.x = TRUE, sort = FALSE)
     setcolorder(summary_dt, c("sample", "stake_id", "stand_type"))
     cat("  Merged stand_type for", sum(!is.na(summary_dt$stand_type)), "of",
         nrow(summary_dt), "samples\n")
   } else {
-    cat("  WARNING: --metadata file missing 'stake_id' or 'stand_type' column — skipping metadata join\n")
+    cat("  WARNING: --metadata file missing 'stake' or 'stand_type' column — skipping metadata join\n")
+    cat("  Columns found:", paste(names(meta), collapse = ", "), "\n")
   }
 } else if (!is.null(metadata_file)) {
   cat("  WARNING: --metadata file not found:", metadata_file, "— skipping metadata join\n")
