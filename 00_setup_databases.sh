@@ -534,23 +534,22 @@ else
         awk -F'|' '{print $1"\t"$0}' "${SCRATCH_DIR}/cazy_seqids.txt" \
             > "${SCRATCH_DIR}/cazy_acc2seqid.txt"
 
-        # Filter prot.accession2taxid to only CAZy accessions, then join to full seqid.
-        # awk NR==FNR pass 1: load CAZy accessions into array a[]
-        # pass 2: for each prot.accession2taxid line, if col2 (accession.version) is
-        #         in a[], emit accession.version TAB taxid
-        # Second awk: join back to full seqid → final taxonmap format expected by
-        #   diamond makedb --taxonmap: seqid TAB taxid (no header)
+        # Filter prot.accession2taxid to only CAZy accessions.
+        # diamond makedb --taxonmap expects NCBI accession2taxid format with header:
+        #   accession.version<TAB>taxid
+        # DIAMOND parses accession.version from FASTA seqids like WP_123456.1|GH5
+        # by splitting on '|' — so the sseqid in DIAMOND output still carries the
+        # full WP_123456.1|GH5 string for downstream family extraction in R.
         zcat "${PROT_ACC2TAXID}" | \
             awk 'NR==FNR {a[$1]=1; next} ($2 in a) {print $2"\t"$3}' \
                 <(cut -f1 "${SCRATCH_DIR}/cazy_acc2seqid.txt") - \
             > "${SCRATCH_DIR}/cazy_acc2taxid.txt"
 
-        awk 'NR==FNR {t[$1]=$2; next} ($1 in t) {print $2"\t"t[$1]}' \
-            "${SCRATCH_DIR}/cazy_acc2taxid.txt" \
-            "${SCRATCH_DIR}/cazy_acc2seqid.txt" \
+        { echo -e "accession.version\ttaxid"; \
+          cat "${SCRATCH_DIR}/cazy_acc2taxid.txt"; } \
             > "${CAZY_TAXONMAP}"
 
-        N_MAPPED=$(wc -l < "${CAZY_TAXONMAP}")
+        N_MAPPED=$(( $(wc -l < "${CAZY_TAXONMAP}") - 1 ))  # subtract header line
         echo "  Taxonmap entries: ${N_MAPPED} / ${N_CAZY_SEQS} sequences"
         PCT=$(awk "BEGIN{printf \"%.1f\", ${N_MAPPED}/${N_CAZY_SEQS}*100}")
         echo "  Coverage: ${PCT}%"
