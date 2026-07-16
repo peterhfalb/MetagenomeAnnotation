@@ -473,6 +473,108 @@ else
 fi
 
 # =============================================================================
+# SECTION 10: CAZy read-mapping database with NCBI taxonomy
+# Used by 01c_cazy_readmap.sh for competitive all-kingdom direct read mapping
+# following Bahram 2018 (Nature). Rebuilds CAZy.dmnd with embedded NCBI
+# taxonomy so DIAMOND blastx hits carry staxids, enabling per-read kingdom
+# assignment in 08_integrate.R without a separate taxonomic classifier.
+#
+# Requires:
+#   - CAZy source FASTA (downloaded here from dbCAN browse page)
+#   - prot.accession2taxid.gz (~700 MB, curated RefSeq/GenBank subset)
+#   - nodes.dmp + names.dmp (already downloaded in Section 1)
+# =============================================================================
+
+CAZY_READMAP_DIR="${DB_DIR}/cazy_readmap"
+CAZY_TAXONOMY_DB="${CAZY_READMAP_DIR}/CAZy_taxonomy"
+CAZY_FASTA="${SCRATCH_DIR}/CAZyDB.fa"
+PROT_ACC2TAXID="${DB_DIR}/taxonomy/prot.accession2taxid.gz"
+
+mkdir -p "${CAZY_READMAP_DIR}"
+
+if [[ -f "${CAZY_TAXONOMY_DB}.dmnd" ]]; then
+    echo "[SKIP] CAZy taxonomy DIAMOND database already exists: ${CAZY_TAXONOMY_DB}.dmnd"
+else
+    # --- Download CAZy source FASTA ---
+    if [[ -f "${CAZY_FASTA}" ]]; then
+        echo "[SKIP] CAZy source FASTA already downloaded"
+    else
+        echo "--- [10a] Downloading CAZy source FASTA from dbCAN (~2 GB) ---"
+        wget -c -q -O "${CAZY_FASTA}" \
+            "https://pro.unl.edu/dbCAN2/download/CAZyDB.07242025.fa"
+        echo "CAZy FASTA download done: $(date)"
+    fi
+
+    N_CAZY_SEQS=$(grep -c '^>' "${CAZY_FASTA}" || true)
+    echo "  CAZy sequences in FASTA: ${N_CAZY_SEQS}"
+
+    # --- Download prot.accession2taxid (curated subset, ~700 MB compressed) ---
+    if [[ -f "${PROT_ACC2TAXID}" ]]; then
+        echo "[SKIP] prot.accession2taxid.gz already exists"
+    else
+        echo "--- [10b] Downloading prot.accession2taxid.gz from NCBI (~700 MB) ---"
+        wget -c -q -O "${PROT_ACC2TAXID}" \
+            "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz"
+        echo "prot.accession2taxid download done: $(date)"
+    fi
+
+    # --- Build taxonmap: full seqid (ACCESSION|FAMILY) → NCBI taxid ---
+    # CAZy FASTA headers are: >ACCESSION|FAMILY description
+    # prot.accession2taxid columns: accession, accession.version, taxid, gi
+    # We match on accession.version (col 2) since CAZy uses versioned accessions.
+    CAZY_TAXONMAP="${CAZY_READMAP_DIR}/cazy_taxonmap.tsv"
+    if [[ -f "${CAZY_TAXONMAP}" ]]; then
+        echo "[SKIP] CAZy taxonmap already built"
+    else
+        echo "--- [10c] Building CAZy taxonmap (seqid → taxid) ---"
+
+        # Extract full seqids (ACCESSION|FAMILY) and accession part (before |)
+        grep '^>' "${CAZY_FASTA}" | sed 's/^>//' | awk '{print $1}' \
+            > "${SCRATCH_DIR}/cazy_seqids.txt"
+        awk -F'|' '{print $1"\t"$0}' "${SCRATCH_DIR}/cazy_seqids.txt" \
+            > "${SCRATCH_DIR}/cazy_acc2seqid.txt"
+
+        # Filter prot.accession2taxid to only CAZy accessions, then join to full seqid.
+        # awk NR==FNR pass 1: load CAZy accessions into array a[]
+        # pass 2: for each prot.accession2taxid line, if col2 (accession.version) is
+        #         in a[], emit accession.version TAB taxid
+        # Second awk: join back to full seqid → final taxonmap format expected by
+        #   diamond makedb --taxonmap: seqid TAB taxid (no header)
+        zcat "${PROT_ACC2TAXID}" | \
+            awk 'NR==FNR {a[$1]=1; next} ($2 in a) {print $2"\t"$3}' \
+                <(cut -f1 "${SCRATCH_DIR}/cazy_acc2seqid.txt") - \
+            > "${SCRATCH_DIR}/cazy_acc2taxid.txt"
+
+        awk 'NR==FNR {t[$1]=$2; next} ($1 in t) {print $2"\t"t[$1]}' \
+            "${SCRATCH_DIR}/cazy_acc2taxid.txt" \
+            "${SCRATCH_DIR}/cazy_acc2seqid.txt" \
+            > "${CAZY_TAXONMAP}"
+
+        N_MAPPED=$(wc -l < "${CAZY_TAXONMAP}")
+        echo "  Taxonmap entries: ${N_MAPPED} / ${N_CAZY_SEQS} sequences"
+        PCT=$(awk "BEGIN{printf \"%.1f\", ${N_MAPPED}/${N_CAZY_SEQS}*100}")
+        echo "  Coverage: ${PCT}%"
+        if (( $(echo "${PCT} < 80" | awk '{print ($1 < 80)}') )); then
+            echo "  WARNING: taxonmap coverage < 80% — some CAZy sequences may use"
+            echo "  non-NCBI accessions (e.g., UniProtKB). Kingdom assignment for"
+            echo "  unmapped sequences will be 'unclassified' in 08_integrate.R."
+        fi
+        echo "CAZy taxonmap done: $(date)"
+    fi
+
+    # --- Build DIAMOND database with taxonomy ---
+    echo "--- [10d] Building CAZy DIAMOND database with NCBI taxonomy ---"
+    diamond makedb \
+        --in "${CAZY_FASTA}" \
+        --db "${CAZY_TAXONOMY_DB}" \
+        --taxonmap "${CAZY_READMAP_DIR}/cazy_taxonmap.tsv" \
+        --taxonnodes "${DB_DIR}/taxonomy/nodes.dmp" \
+        --taxonnames "${DB_DIR}/taxonomy/names.dmp" \
+        --threads ${THREADS}
+    echo "CAZy taxonomy DIAMOND database done: $(date)"
+fi
+
+# =============================================================================
 # Completion
 # =============================================================================
 
@@ -489,6 +591,7 @@ echo "  dbCAN3                 : ${DB_DIR}/dbcan/"
 echo "  PHI-base               : ${DB_DIR}/phibase/phi-base.dmnd"
 echo "  Pfam-A                 : ${PFAM_HMM}"
 echo "  OrthoDB Fungi         : ${ORTHODB_DB} $([[ -f "${ORTHODB_DB}.dmnd" ]] && echo '[OK]' || echo '[MISSING - run: sbatch 00b_setup_orthodb.sh]')"
+echo "  CAZy readmap (taxonomy): ${CAZY_TAXONOMY_DB}.dmnd $([[ -f "${CAZY_TAXONOMY_DB}.dmnd" ]] && echo '[OK]' || echo '[MISSING - check Section 10]')"
 echo "  MetaEuk target         : ${DB_DIR}/metaeuk/fungi_refseq_db"
 echo "  MetaEuk FASTA          : ${DB_DIR}/metaeuk/fungi_refseq_proteins.faa"
 echo "============================================================"

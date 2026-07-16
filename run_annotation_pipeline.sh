@@ -172,6 +172,14 @@ check_databases() {
         echo "              Run separately: sbatch 00b_setup_orthodb.sh"
     fi
 
+    # CAZy readmap taxonomy DB: built in Section 10 of 00_setup_databases.sh —
+    # WARNING-only, not a hard failure. Step 1c is skipped if not present.
+    if [[ -f "${DB_DIR}/cazy_readmap/CAZy_taxonomy.dmnd" ]]; then
+        echo "    [OK]      CAZy taxonomy DB (readmap)"
+    else
+        echo "    [MISSING] CAZy taxonomy DB (readmap)  (optional — run 00_setup_databases.sh Section 10)"
+    fi
+
     ${all_present}
 }
 
@@ -298,6 +306,37 @@ if [[ "${QC_DIR_OK}" == true ]]; then
 fi
 
 # =============================================================================
+# STEP 1c: CAZy direct read mapping — competitive all-kingdom (Bahram 2018)
+# Like Step 1b, no dependency on assembly/Tiara/MetaEuk. Depends only on
+# Step 0 (specifically Section 10 of 00_setup_databases.sh — CAZy_taxonomy.dmnd).
+# Skipped if CAZy_taxonomy.dmnd does not exist yet.
+# =============================================================================
+
+STEP1C_ID=""
+if [[ "${QC_DIR_OK}" == true ]]; then
+    if [[ -f "${DB_DIR}/cazy_readmap/CAZy_taxonomy.dmnd" ]]; then
+        echo "Step 1c: CAZy direct read mapping — competitive all-kingdom (Bahram 2018)"
+        if ! step_complete "CAZy readmap" "${ANN_DIR}/cazy_readmap/SAMPLE_hits.tsv"; then
+            STEP1C_ARGS=(
+                --annotation-dir "${ANN_DIR}"
+                --qc-dir         "${QC_DIR}"
+            )
+            [[ -n "${TEST_FLAG}" ]] && STEP1C_ARGS+=( ${TEST_FLAG} )
+            [[ -n "${STEP0_ID}"  ]] && STEP1C_ARGS+=( --after "${STEP0_ID}" )
+
+            STEP1C_ID=$(bash "${SCRIPT_DIR}/submit_cazy_readmap.sh" "${STEP1C_ARGS[@]}" \
+                | grep -oP '(?<=job: )\d+')
+            echo "  Job ID: ${STEP1C_ID}"
+        fi
+        echo ""
+    else
+        echo "Step 1c: CAZy readmap — SKIPPED (CAZy_taxonomy.dmnd not found)"
+        echo "  Run 00_setup_databases.sh Section 10 first."
+        echo ""
+    fi
+fi
+
+# =============================================================================
 # STEP 2: MetaEuk gene prediction
 # =============================================================================
 
@@ -414,6 +453,7 @@ SUBMITTED_IDS=()
 [[ -n "${STEP0_ID}"  ]] && SUBMITTED_IDS+=("${STEP0_ID}")
 [[ -n "${STEP1_ID}"  ]] && SUBMITTED_IDS+=("${STEP1_ID}")
 [[ -n "${STEP1B_ID}" ]] && SUBMITTED_IDS+=("${STEP1B_ID}")
+[[ -n "${STEP1C_ID}" ]] && SUBMITTED_IDS+=("${STEP1C_ID}")
 [[ -n "${STEP2_ID}"  ]] && SUBMITTED_IDS+=("${STEP2_ID}")
 [[ -n "${STEP3_ID}"  ]] && SUBMITTED_IDS+=("${STEP3_ID}")
 [[ -n "${STEP3B_ID}" ]] && SUBMITTED_IDS+=("${STEP3B_ID}")
@@ -447,6 +487,7 @@ echo ""
 echo "  Step 0 databases    : ${STEP0_ID:-skipped}"
 echo "  Step 1 Tiara        : ${STEP1_ID:-skipped}"
 echo "  Step 1b OrthoDB     : ${STEP1B_ID:-skipped}"
+echo "  Step 1c CAZy readmap: ${STEP1C_ID:-skipped}"
 echo "  Step 2 MetaEuk      : ${STEP2_ID:-skipped}"
 echo "  Step 3 KOfamScan    : ${STEP3_ID:-skipped}"
 echo "  Step 3b Pfam        : ${STEP3B_ID:-skipped}"

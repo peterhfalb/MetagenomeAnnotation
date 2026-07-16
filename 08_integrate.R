@@ -80,7 +80,11 @@ option_list <- list(
   make_option("--pseudocount",    type = "double",    default = 1.0,
               help = "ALR normalization: pseudocount for numerator/denominator [default: %default]"),
   make_option("--metadata",       type = "character", default = NULL,
-              help = "Path to stakes.csv with stake_id and stand_type columns (optional; merges stand_type into summary_stats.tsv)")
+              help = "Path to stakes.csv with stake_id and stand_type columns (optional; merges stand_type into summary_stats.tsv)"),
+  make_option("--cazy-pident",   type = "double",    default = 50.0,
+              help = "CAZy readmap: minimum % identity for a hit to be counted [default: %default] (Bahram 2018)"),
+  make_option("--cazy-evalue",   type = "double",    default = 1e-9,
+              help = "CAZy readmap: maximum e-value for a hit to be counted [default: %default] (Bahram 2018)")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -97,7 +101,9 @@ min_tools  <- opt[["min-tools"]]
 top_hits   <- opt[["top-hits"]]
 bs_frac    <- opt[["bitscore-frac"]]
 pseudocount   <- opt[["pseudocount"]]
-metadata_file <- opt[["metadata"]]
+metadata_file  <- opt[["metadata"]]
+cazy_pident    <- opt[["cazy-pident"]]
+cazy_evalue    <- opt[["cazy-evalue"]]
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -928,6 +934,181 @@ if (!file.exists(gene2og_file)) {
 cat("\n")
 
 # =============================================================================
+# SECTION 6d: CAZy direct read mapping — competitive all-kingdom with taxonomy
+# Following Bahram 2018 (Nature). Maps raw QC'd reads against CAZy (all
+# kingdoms); staxids from DIAMOND hits are expanded to kingdom using
+# taxonomizr (already loaded). Produces per-kingdom count matrices and a
+# kingdom summary. Normalized by OrthoDB genome equivalents from Section 6c.
+# =============================================================================
+
+cat("--- Section 6d: CAZy direct read mapping (Bahram approach) ---\n")
+
+cazy_readmap_dir <- file.path(ann_dir, "cazy_readmap")
+cazy_readmap_matrix          <- NULL
+cazy_readmap_fungi_matrix    <- NULL
+cazy_readmap_bacteria_matrix <- NULL
+cazy_readmap_kingdom_dt      <- NULL
+
+if (!dir.exists(cazy_readmap_dir) ||
+    length(list.files(cazy_readmap_dir, pattern = "_hits\\.tsv$")) == 0) {
+  cat("  [SKIP] No cazy_readmap/ hits files found — run 01c_cazy_readmap.sh first\n")
+} else {
+  # Reader: load hits, apply Bahram 2018 filters, deduplicate paired reads,
+  # extract CAZy family and staxids for downstream kingdom assignment.
+  read_cazy_readmap <- function(hits_file, pident_min, evalue_max) {
+    if (!file.exists(hits_file) || file.info(hits_file)$size == 0) return(NULL)
+    # outfmt 6: qseqid(1) sseqid(2) pident(3) length(4) mismatch(5) gapopen(6)
+    #           qstart(7) qend(8) sstart(9) send(10) evalue(11) bitscore(12) staxids(13)
+    dt <- fread(hits_file, header = FALSE, sep = "\t", quote = "", fill = Inf,
+                select = c(1L, 2L, 3L, 11L, 12L, 13L),
+                col.names = c("qseqid", "sseqid", "pident", "evalue", "bitscore", "staxids"))
+    if (nrow(dt) == 0) return(NULL)
+
+    # Apply Bahram 2018 final filters (DIAMOND used e-5 at mapping time)
+    dt <- dt[pident >= pident_min & evalue <= evalue_max]
+    if (nrow(dt) == 0) return(NULL)
+
+    # Extract CAZy family from sseqid (format: ACCESSION|FAMILY)
+    dt[, family := sub(".*\\|([A-Za-z]+[0-9]+)$", "\\1", sseqid)]
+
+    # Take first taxid when DIAMOND reports multiple (semicolon-separated ties)
+    dt[, taxid := as.integer(sub(";.*", "", staxids))]
+
+    # Deduplicate paired reads: R1 and R2 from the same insert can both hit
+    # the same family. Strip direction suffixes (/1 /2 .1 .2) to get a shared
+    # read-pair ID, then keep only the best-bitscore hit per (pair, family).
+    dt[, pair_id := sub("[/. ][12]$", "", qseqid)]
+    dt <- dt[dt[, .I[which.max(bitscore)], by = .(pair_id, family)]$V1]
+
+    dt[, .(pair_id, family, taxid, bitscore)]
+  }
+
+  # Load hits for all samples that have output files
+  cazy_readmap_list <- lapply(samples, function(s) {
+    f <- file.path(cazy_readmap_dir, paste0(s, "_hits.tsv"))
+    read_cazy_readmap(f, cazy_pident, cazy_evalue)
+  })
+  names(cazy_readmap_list) <- samples
+
+  n_with_hits <- sum(sapply(cazy_readmap_list, function(x) !is.null(x) && nrow(x) > 0))
+  cat("  Samples with CAZy readmap hits:", n_with_hits, "/", length(samples), "\n")
+
+  if (n_with_hits > 0) {
+    # Collect all unique taxids across all samples for a single taxonomizr call
+    all_taxids <- unique(unlist(lapply(cazy_readmap_list, function(x) {
+      if (is.null(x)) return(integer(0))
+      x$taxid[!is.na(x$taxid) & x$taxid > 0]
+    })))
+    cat("  Expanding", length(all_taxids), "unique taxids to kingdom via taxonomizr...\n")
+
+    # getTaxonomy returns a matrix: rows = taxids, cols = superkingdom/phylum/...
+    # taxonomizr uses names.dmp + nodes.dmp already loaded from db_dir.
+    # The accessionTaxa.sql database path used by getTaxonomy is in db_dir/taxonomy/
+    taxa_sql <- file.path(db_dir, "taxonomy", "accessionTaxa.sql")
+    if (file.exists(taxa_sql)) {
+      taxon_mat <- getTaxonomy(all_taxids, taxa_sql)
+    } else {
+      # Fallback: prepareDatabase path convention used elsewhere in this pipeline
+      taxa_sql2 <- file.path(db_dir, "taxonomy", "nameNode.sqlite")
+      if (file.exists(taxa_sql2)) {
+        taxon_mat <- getTaxonomy(all_taxids, taxa_sql2)
+      } else {
+        cat("  WARNING: taxonomizr database not found in", file.path(db_dir, "taxonomy"),
+            "— kingdom assignment skipped; all hits will be 'unclassified'\n")
+        taxon_mat <- NULL
+      }
+    }
+
+    # Build taxid → kingdom lookup
+    if (!is.null(taxon_mat)) {
+      kingdom_lookup <- data.table(
+        taxid   = as.integer(rownames(taxon_mat)),
+        kingdom = taxon_mat[, "superkingdom"]
+      )
+      # CAZy fungi superkingdom is "Eukaryota"; distinguish Fungi by checking
+      # the "kingdom" rank column where available, else use phylum patterns.
+      if ("kingdom" %in% colnames(taxon_mat)) {
+        kingdom_lookup[, kingdom := ifelse(!is.na(taxon_mat[, "kingdom"]) &
+                                           taxon_mat[, "kingdom"] == "Fungi",
+                                           "Fungi", kingdom)]
+      }
+      kingdom_lookup[is.na(kingdom), kingdom := "unclassified"]
+    } else {
+      kingdom_lookup <- data.table(taxid = all_taxids, kingdom = "unclassified")
+    }
+
+    # Annotate each sample's hits with kingdom, build per-sample family counts
+    annotate_kingdom <- function(hits_dt) {
+      if (is.null(hits_dt) || nrow(hits_dt) == 0) return(NULL)
+      hits_dt[kingdom_lookup, kingdom := i.kingdom, on = "taxid"]
+      hits_dt[is.na(kingdom), kingdom := "unclassified"]
+      hits_dt
+    }
+
+    cazy_readmap_annotated <- lapply(cazy_readmap_list, annotate_kingdom)
+    names(cazy_readmap_annotated) <- samples
+
+    # Kingdom summary per sample
+    cazy_readmap_kingdom_dt <- rbindlist(lapply(samples, function(s) {
+      dt <- cazy_readmap_annotated[[s]]
+      if (is.null(dt) || nrow(dt) == 0) {
+        return(data.table(sample = s, n_total = 0L, n_fungi = 0L,
+                          n_bacteria = 0L, n_unclassified = 0L, pct_fungi = NA_real_))
+      }
+      n_total  <- nrow(dt)
+      n_fungi  <- sum(dt$kingdom == "Fungi", na.rm = TRUE)
+      n_bac    <- sum(dt$kingdom == "Bacteria", na.rm = TRUE)
+      n_unc    <- sum(dt$kingdom == "unclassified", na.rm = TRUE)
+      data.table(sample = s, n_total = n_total, n_fungi = n_fungi,
+                 n_bacteria = n_bac, n_unclassified = n_unc,
+                 pct_fungi = round(100 * n_fungi / max(n_total, 1), 1))
+    }))
+    cat("  Kingdom summary (totals across all samples):\n")
+    cat("    Total hits :", sum(cazy_readmap_kingdom_dt$n_total), "\n")
+    cat("    Fungi      :", sum(cazy_readmap_kingdom_dt$n_fungi), "\n")
+    cat("    Bacteria   :", sum(cazy_readmap_kingdom_dt$n_bacteria), "\n")
+    cat("    Unclassified:", sum(cazy_readmap_kingdom_dt$n_unclassified), "\n")
+
+    # Build family×sample count matrices per kingdom using existing helper
+    make_readmap_input <- function(annotated_list, kingdom_filter) {
+      rbindlist(lapply(names(annotated_list), function(s) {
+        dt <- annotated_list[[s]]
+        if (is.null(dt) || nrow(dt) == 0) return(NULL)
+        sub_dt <- if (is.null(kingdom_filter)) dt else dt[kingdom == kingdom_filter]
+        if (nrow(sub_dt) == 0) return(NULL)
+        sub_dt[, .(sample = s, family, count = 1L)][
+          , .(count = sum(count)), by = .(sample, family)]
+      }))
+    }
+
+    build_readmap_matrix <- function(counts_long) {
+      if (is.null(counts_long) || nrow(counts_long) == 0) return(NULL)
+      mat <- dcast(counts_long, family ~ sample, value.var = "count", fill = 0L)
+      # Add zero columns for samples with no hits
+      for (s in samples) {
+        if (!s %in% names(mat)) mat[[s]] <- 0L
+      }
+      setcolorder(mat, c("family", samples))
+      mat
+    }
+
+    all_long     <- make_readmap_input(cazy_readmap_annotated, NULL)
+    fungi_long   <- make_readmap_input(cazy_readmap_annotated, "Fungi")
+    bac_long     <- make_readmap_input(cazy_readmap_annotated, "Bacteria")
+
+    cazy_readmap_matrix          <- build_readmap_matrix(all_long)
+    cazy_readmap_fungi_matrix    <- build_readmap_matrix(fungi_long)
+    cazy_readmap_bacteria_matrix <- build_readmap_matrix(bac_long)
+
+    if (!is.null(cazy_readmap_fungi_matrix))
+      cat("  cazy_readmap_fungi_matrix    :", nrow(cazy_readmap_fungi_matrix), "families\n")
+    if (!is.null(cazy_readmap_bacteria_matrix))
+      cat("  cazy_readmap_bacteria_matrix :", nrow(cazy_readmap_bacteria_matrix), "families\n")
+  }
+}
+cat("\n")
+
+# =============================================================================
 # SECTION 7: Per-sample QC summary
 # =============================================================================
 
@@ -1001,6 +1182,18 @@ if (!is.null(orthodb_dt)) {
       sum(!is.na(summary_dt$orthodb_geo_mean)), "of", nrow(summary_dt), "samples\n")
 }
 
+# Join CAZy readmap kingdom counts into summary_dt.
+if (!is.null(cazy_readmap_kingdom_dt)) {
+  summary_dt <- merge(summary_dt,
+                      cazy_readmap_kingdom_dt[, .(sample, n_cazy_readmap_total = n_total,
+                                                   n_cazy_readmap_fungi = n_fungi,
+                                                   n_cazy_readmap_bacteria = n_bacteria,
+                                                   pct_cazy_readmap_fungi = pct_fungi)],
+                      by = "sample", all.x = TRUE, sort = FALSE)
+  cat("  Merged CAZy readmap kingdom counts for",
+      sum(!is.na(summary_dt$n_cazy_readmap_total)), "of", nrow(summary_dt), "samples\n")
+}
+
 print(summary_dt)
 cat("\n")
 
@@ -1042,6 +1235,27 @@ if (!is.null(orthodb_dt)) {
   write_tsv(orthodb_dt,                     file.path(out_dir, "orthodb_genome_equivalents.tsv"))
 }
 
+# CAZy readmap matrices (Section 6d) — competitive all-kingdom read mapping
+# following Bahram 2018. Only written if 01c_cazy_readmap.sh has been run.
+if (!is.null(cazy_readmap_kingdom_dt)) {
+  write_tsv(cazy_readmap_kingdom_dt, file.path(out_dir, "cazy_readmap_kingdom_summary.tsv"))
+}
+if (!is.null(cazy_readmap_matrix)) {
+  write_tsv(cazy_readmap_matrix, file.path(out_dir, "cazy_readmap_matrix.tsv"))
+}
+if (!is.null(cazy_readmap_fungi_matrix)) {
+  write_tsv(cazy_readmap_fungi_matrix, file.path(out_dir, "cazy_readmap_fungi_matrix.tsv"))
+  if (!is.null(orthodb_dt)) {
+    cazy_readmap_fungi_normalized <- alr_normalize(cazy_readmap_fungi_matrix,
+                                                   orthodb_denom_vec, pseudocount)
+    write_tsv(cazy_readmap_fungi_normalized,
+              file.path(out_dir, "cazy_readmap_fungi_matrix_normalized_orthodb.tsv"))
+  }
+}
+if (!is.null(cazy_readmap_bacteria_matrix)) {
+  write_tsv(cazy_readmap_bacteria_matrix, file.path(out_dir, "cazy_readmap_bacteria_matrix.tsv"))
+}
+
 # Also save as R objects for direct use in downstream analysis
 save_objects <- c("base_dt", "count_matrix", "ko_matrix", "cazy_matrix", "phi_matrix",
                   "pfam_matrix", "ko_matrix_normalized", "cazy_matrix_normalized",
@@ -1050,6 +1264,10 @@ save_objects <- c("base_dt", "count_matrix", "ko_matrix", "cazy_matrix", "phi_ma
 if (!is.null(orthodb_dt)) {
   save_objects <- c(save_objects, "ko_matrix_normalized_orthodb", "cazy_matrix_normalized_orthodb",
                     "phi_matrix_normalized_orthodb", "pfam_matrix_normalized_orthodb")
+}
+if (!is.null(cazy_readmap_fungi_matrix)) {
+  save_objects <- c(save_objects, "cazy_readmap_matrix", "cazy_readmap_fungi_matrix",
+                    "cazy_readmap_bacteria_matrix", "cazy_readmap_kingdom_dt")
 }
 save(list = save_objects, file = file.path(out_dir, "integrated_data.RData"))
 cat("  Wrote:", file.path(out_dir, "integrated_data.RData"), "(all objects)\n")
