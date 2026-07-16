@@ -562,13 +562,21 @@ else
         echo "CAZy taxonmap done: $(date)"
     fi
 
+    # --- Patch nodes.dmp for DIAMOND 2.0.15 compatibility ---
+    # NCBI added a 'domain' rank to nodes.dmp (2024+); DIAMOND 2.0.15 does not
+    # recognize it and exits with "Invalid taxonomic rank: domain". Remap to
+    # 'superkingdom' (semantically equivalent for our purposes) before makedb.
+    NODES_PATCHED="${CAZY_READMAP_DIR}/nodes_patched.dmp"
+    sed 's/\tdomain\t/\tsuperkingdom\t/g' \
+        "${DB_DIR}/taxonomy/nodes.dmp" > "${NODES_PATCHED}"
+
     # --- Build DIAMOND database with taxonomy ---
     echo "--- [10d] Building CAZy DIAMOND database with NCBI taxonomy ---"
     diamond makedb \
         --in "${CAZY_FASTA}" \
         --db "${CAZY_TAXONOMY_DB}" \
         --taxonmap "${CAZY_READMAP_DIR}/cazy_taxonmap.tsv" \
-        --taxonnodes "${DB_DIR}/taxonomy/nodes.dmp" \
+        --taxonnodes "${NODES_PATCHED}" \
         --taxonnames "${DB_DIR}/taxonomy/names.dmp" \
         --threads ${THREADS}
     echo "CAZy taxonomy DIAMOND database done: $(date)"
