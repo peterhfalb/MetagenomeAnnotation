@@ -563,12 +563,29 @@ else
     fi
 
     # --- Patch nodes.dmp for DIAMOND 2.0.15 compatibility ---
-    # NCBI added a 'domain' rank to nodes.dmp (2024+); DIAMOND 2.0.15 does not
-    # recognize it and exits with "Invalid taxonomic rank: domain". Remap to
-    # 'superkingdom' (semantically equivalent for our purposes) before makedb.
+    # NCBI has added new ranks (domain, acellular root, cellular root, realm,
+    # clade, etc.) that DIAMOND 2.0.15 does not recognize. Rather than patching
+    # one rank at a time, whitelist the ranks DIAMOND knows and replace all others
+    # with 'no rank'. nodes.dmp field layout (tab-delimited):
+    #   $1=taxid  $2=|  $3=parent_taxid  $4=|  $5=rank  $6=|  ...
+    # Special case: 'domain' → 'superkingdom' (semantically correct for Bacteria/
+    # Archaea/Eukaryota nodes that NCBI now labels 'domain').
     NODES_PATCHED="${CAZY_READMAP_DIR}/nodes_patched.dmp"
-    sed 's/\tdomain\t/\tsuperkingdom\t/g' \
-        "${DB_DIR}/taxonomy/nodes.dmp" > "${NODES_PATCHED}"
+    awk -F'\t' 'BEGIN {
+        OFS = "\t"
+        split("superkingdom kingdom subkingdom superphylum phylum subphylum \
+               superclass class subclass infraclass superorder order suborder \
+               infraorder parvorder superfamily family subfamily tribe subtribe \
+               genus subgenus subspecies varietas forma", a, " ")
+        for (i in a) valid[a[i]] = 1
+        valid["no rank"] = 1; valid["species"] = 1
+        valid["species group"] = 1; valid["species subgroup"] = 1
+    }
+    {
+        if ($5 == "domain") $5 = "superkingdom"
+        else if (!($5 in valid)) $5 = "no rank"
+        print
+    }' "${DB_DIR}/taxonomy/nodes.dmp" > "${NODES_PATCHED}"
 
     # --- Build DIAMOND database with taxonomy ---
     echo "--- [10d] Building CAZy DIAMOND database with NCBI taxonomy ---"
