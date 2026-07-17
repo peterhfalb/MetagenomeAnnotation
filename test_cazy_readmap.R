@@ -25,6 +25,13 @@ sample <- readLines(sample_list, n = 1)
 hits_file <- file.path(ANN_DIR, "cazy_readmap", paste0(sample, "_hits.tsv"))
 
 cat("Sample :", sample, "\n")
+
+# Accept partial R1 file if the merged file isn't ready yet
+r1_file <- file.path(ANN_DIR, "cazy_readmap", paste0(sample, "_R1_hits.tsv"))
+if (!file.exists(hits_file) && file.exists(r1_file)) {
+  cat("Note   : merged hits not ready — using partial R1 file for testing\n")
+  hits_file <- r1_file
+}
 cat("Hits   :", hits_file, "\n")
 if (!file.exists(hits_file)) stop("Hits file not found — did the SLURM job finish?")
 cat("Size   :", format(file.info(hits_file)$size, big.mark = ","), "bytes\n\n")
