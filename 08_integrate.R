@@ -953,26 +953,78 @@ if (!dir.exists(cazy_readmap_dir) ||
     length(list.files(cazy_readmap_dir, pattern = "_hits\\.tsv$")) == 0) {
   cat("  [SKIP] No cazy_readmap/ hits files found — run 01c_cazy_readmap.sh first\n")
 } else {
+  # DIAMOND's staxids column is empty when accession2taxid matching fails for
+  # non-standard seqid formats like ACCESSION|FAMILY. We do taxonomy lookup in R:
+  #   - Format 1 (GenBank): ACCESSION.ver|FAMILY — extract accession, join taxonmap
+  #   - Format 2 (JGI MycoCosm): FAMILY|TAXID|PROTEIN_ID — taxid is field 2
+  # Load the cazy_taxonmap.tsv built in 00_setup_databases.sh Section 10.
+  taxonmap_file <- file.path(db_dir, "cazy_readmap", "cazy_taxonmap.tsv")
+  cazy_taxonmap_dt <- if (file.exists(taxonmap_file)) {
+    cat("  Loading CAZy taxonmap for R-side taxonomy lookup...\n")
+    fread(taxonmap_file, header = TRUE, sep = "\t", quote = "",
+          col.names = c("accession", "taxid"),
+          colClasses = c("character", "integer"), key = "accession")
+  } else {
+    cat("  WARNING: cazy_taxonmap.tsv not found — kingdom assignment will be 'unclassified'\n")
+    NULL
+  }
+
   # Reader: load hits, apply Bahram 2018 filters, deduplicate paired reads,
-  # extract CAZy family and staxids for downstream kingdom assignment.
+  # extract CAZy family and accession for downstream kingdom assignment.
   read_cazy_readmap <- function(hits_file, pident_min, evalue_max) {
     if (!file.exists(hits_file) || file.info(hits_file)$size == 0) return(NULL)
     # outfmt 6: qseqid(1) sseqid(2) pident(3) length(4) mismatch(5) gapopen(6)
     #           qstart(7) qend(8) sstart(9) send(10) evalue(11) bitscore(12) staxids(13)
+    # staxids (col 13) is empty when DIAMOND can't match seqid format — we derive
+    # taxids from sseqid directly, so we don't need col 13.
     dt <- fread(hits_file, header = FALSE, sep = "\t", quote = "", fill = Inf,
-                select = c(1L, 2L, 3L, 11L, 12L, 13L),
-                col.names = c("qseqid", "sseqid", "pident", "evalue", "bitscore", "staxids"))
+                select = c(1L, 2L, 3L, 11L, 12L),
+                col.names = c("qseqid", "sseqid", "pident", "evalue", "bitscore"))
     if (nrow(dt) == 0) return(NULL)
 
     # Apply Bahram 2018 final filters (DIAMOND used e-5 at mapping time)
     dt <- dt[pident >= pident_min & evalue <= evalue_max]
     if (nrow(dt) == 0) return(NULL)
 
-    # Extract CAZy family from sseqid (format: ACCESSION|FAMILY)
-    dt[, family := sub(".*\\|([A-Za-z]+[0-9]+)$", "\\1", sseqid)]
+    # CAZy database contains three sseqid formats (determined empirically):
+    #   GenBank:  ACCESSION.ver|FAMILY[|EC]  e.g. WP_123456.1|GH5  or  AGW.1|GH165|3.2.1.23
+    #   JGI simple:   FAMILY|TAXID|PROTEIN   e.g. AA3|452445|Daces1_...
+    #   JGI complex:  FAMILY|FAMILY|TAXID|PROTEIN  or  FAMILY|FAMILY|GT5|TAXID|PROTEIN
+    # Detect GenBank by presence of '.' in field 1 (versioned accession like WP_123456.1).
+    # JGI entries have a CAZy family name as field 1 (no dot).
+    # CAZy family pattern: letters + digits + optional underscore-number (subfamily)
+    FAMILY_PAT <- "([A-Za-z]+[0-9]+(?:_[0-9]+)?)"
+    dt[, field1 := sub("\\|.*$", "", sseqid)]
+    dt[, is_genbank := grepl("\\.", field1)]
 
-    # Take first taxid when DIAMOND reports multiple (semicolon-separated ties)
-    dt[, taxid := as.integer(sub(";.*", "", staxids))]
+    dt[, family := {
+      f <- rep(NA_character_, .N)
+      # GenBank: rightmost field matching family pattern; allow optional trailing
+      #   |EC_number (e.g. |3.2.1.23) which trips up a bare $ anchor.
+      gb <- is_genbank
+      f[gb] <- sub(paste0(".*\\|", FAMILY_PAT, "(?:\\|[^A-Za-z].*)?$"), "\\1", sseqid[gb])
+      f[gb & f == sseqid] <- NA_character_
+      # JGI: family is always field 1
+      jgi <- !is_genbank
+      f[jgi] <- sub(paste0("^", FAMILY_PAT, ".*$"), "\\1", sseqid[jgi])
+      f[jgi & !grepl("^[A-Za-z]+[0-9]", f)] <- NA_character_
+      f
+    }]
+    dt <- dt[!is.na(family)]
+    if (nrow(dt) == 0) return(NULL)
+
+    # Taxid extraction:
+    #   GenBank: need taxonmap join — store accession (field1) for joining below
+    #   JGI: taxid is the last all-numeric pipe-delimited field in the sseqid
+    dt[is_genbank  == TRUE,  accession := field1]
+    dt[is_genbank  == FALSE, taxid := {
+      parts <- strsplit(sseqid[is_genbank == FALSE], "\\|")
+      as.integer(sapply(parts, function(p) {
+        num <- p[grepl("^[0-9]+$", p)]
+        if (length(num) > 0) tail(num, 1L) else NA_character_
+      }))
+    }]
+    dt[, c("field1", "is_genbank") := NULL]
 
     # Deduplicate paired reads: R1 and R2 from the same insert can both hit
     # the same family. Strip direction suffixes (/1 /2 .1 .2) to get a shared
@@ -980,7 +1032,7 @@ if (!dir.exists(cazy_readmap_dir) ||
     dt[, pair_id := sub("[/. ][12]$", "", qseqid)]
     dt <- dt[dt[, .I[which.max(bitscore)], by = .(pair_id, family)]$V1]
 
-    dt[, .(pair_id, family, taxid, bitscore)]
+    dt[, .(pair_id, family, taxid, accession, bitscore)]
   }
 
   # Load hits for all samples that have output files
@@ -989,6 +1041,25 @@ if (!dir.exists(cazy_readmap_dir) ||
     read_cazy_readmap(f, cazy_pident, cazy_evalue)
   })
   names(cazy_readmap_list) <- samples
+
+  # Join GenBank accessions → taxids using cazy_taxonmap_dt (loaded above)
+  if (!is.null(cazy_taxonmap_dt)) {
+    cazy_readmap_list <- lapply(cazy_readmap_list, function(dt) {
+      if (is.null(dt) || nrow(dt) == 0) return(dt)
+      needs <- !is.na(dt$accession)
+      if (any(needs)) {
+        idx <- cazy_taxonmap_dt[dt[needs], on = "accession", which = FALSE]
+        dt[needs, taxid := idx$taxid]
+      }
+      dt[, accession := NULL]
+      dt
+    })
+  } else {
+    cazy_readmap_list <- lapply(cazy_readmap_list, function(dt) {
+      if (!is.null(dt)) dt[, accession := NULL]
+      dt
+    })
+  }
 
   n_with_hits <- sum(sapply(cazy_readmap_list, function(x) !is.null(x) && nrow(x) > 0))
   cat("  Samples with CAZy readmap hits:", n_with_hits, "/", length(samples), "\n")
@@ -1004,19 +1075,18 @@ if (!dir.exists(cazy_readmap_dir) ||
     # getTaxonomy returns a matrix: rows = taxids, cols = superkingdom/phylum/...
     # taxonomizr uses names.dmp + nodes.dmp already loaded from db_dir.
     # The accessionTaxa.sql database path used by getTaxonomy is in db_dir/taxonomy/
-    taxa_sql <- file.path(db_dir, "taxonomy", "accessionTaxa.sql")
+    # Use the same taxonomy.sql built by the rest of 08_integrate.R (Section 5).
+    # That file is created on first run from names.dmp + nodes.dmp; if it exists
+    # we can call getTaxonomy() directly without any additional setup.
+    taxa_sql <- file.path(db_dir, "taxonomy", "taxonomy.sql")
     if (file.exists(taxa_sql)) {
       taxon_mat <- getTaxonomy(all_taxids, taxa_sql)
     } else {
-      # Fallback: prepareDatabase path convention used elsewhere in this pipeline
-      taxa_sql2 <- file.path(db_dir, "taxonomy", "nameNode.sqlite")
-      if (file.exists(taxa_sql2)) {
-        taxon_mat <- getTaxonomy(all_taxids, taxa_sql2)
-      } else {
-        cat("  WARNING: taxonomizr database not found in", file.path(db_dir, "taxonomy"),
-            "— kingdom assignment skipped; all hits will be 'unclassified'\n")
-        taxon_mat <- NULL
-      }
+      cat("  WARNING: taxonomizr database not found at", taxa_sql, "\n")
+      cat("  Run 08_integrate.R once with --annotation-dir and --assembly-dir to build it,\n")
+      cat("  or ensure Section 5 (MMseqs2 taxonomy) has run first.\n")
+      cat("  Kingdom assignment skipped; all hits will be 'unclassified'\n")
+      taxon_mat <- NULL
     }
 
     # Build taxid → kingdom lookup
