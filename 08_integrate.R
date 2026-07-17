@@ -54,6 +54,7 @@ suppressPackageStartupMessages({
   library(stringr)
   library(optparse)
   library(taxonomizr)
+  library(parallel)
 })
 
 # =============================================================================
@@ -84,7 +85,9 @@ option_list <- list(
   make_option("--cazy-pident",   type = "double",    default = 50.0,
               help = "CAZy readmap: minimum % identity for a hit to be counted [default: %default] (Bahram 2018)"),
   make_option("--cazy-evalue",   type = "double",    default = 1e-9,
-              help = "CAZy readmap: maximum e-value for a hit to be counted [default: %default] (Bahram 2018)")
+              help = "CAZy readmap: maximum e-value for a hit to be counted [default: %default] (Bahram 2018)"),
+  make_option("--threads",       type = "integer",   default = 1L,
+              help = "Parallel workers for per-sample processing (mclapply); 1 = sequential [default: %default]")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -104,6 +107,7 @@ pseudocount   <- opt[["pseudocount"]]
 metadata_file  <- opt[["metadata"]]
 cazy_pident    <- opt[["cazy-pident"]]
 cazy_evalue    <- opt[["cazy-evalue"]]
+n_cores        <- max(1L, opt[["threads"]])
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -116,6 +120,13 @@ cat("============================================================\n\n")
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
+# Parallel-aware lapply: uses mclapply when --threads > 1, lapply otherwise.
+# Workers must call setDTthreads(1L) to avoid nested parallelism with data.table.
+plapply <- function(X, FUN, ...) {
+  if (n_cores > 1L) mclapply(X, FUN, ..., mc.cores = n_cores)
+  else lapply(X, FUN, ...)
+}
 
 # Read featureCounts output for one sample.
 # Returns data.table with columns: gene_id, contig, start, end, strand, length, count
@@ -878,7 +889,8 @@ if (!file.exists(gene2og_file)) {
          n         = length(log_x))
   }
 
-  orthodb_rows <- lapply(samples, function(s) {
+  orthodb_rows <- plapply(samples, function(s) {
+    setDTthreads(1L)
     hits_file <- file.path(ann_dir, "orthodb_genecount", paste0(s, "_hits.tsv"))
     if (!file.exists(hits_file) || file.info(hits_file)$size == 0) {
       return(data.table(sample = s, orthodb_geo_mean = NA_real_,
@@ -1036,7 +1048,8 @@ if (!dir.exists(cazy_readmap_dir) ||
   }
 
   # Load hits for all samples that have output files
-  cazy_readmap_list <- lapply(samples, function(s) {
+  cazy_readmap_list <- plapply(samples, function(s) {
+    setDTthreads(1L)
     f <- file.path(cazy_readmap_dir, paste0(s, "_hits.tsv"))
     read_cazy_readmap(f, cazy_pident, cazy_evalue)
   })
@@ -1044,7 +1057,8 @@ if (!dir.exists(cazy_readmap_dir) ||
 
   # Join GenBank accessions → taxids using cazy_taxonmap_dt (loaded above)
   if (!is.null(cazy_taxonmap_dt)) {
-    cazy_readmap_list <- lapply(cazy_readmap_list, function(dt) {
+    cazy_readmap_list <- plapply(cazy_readmap_list, function(dt) {
+      setDTthreads(1L)
       if (is.null(dt) || nrow(dt) == 0) return(dt)
       needs <- !is.na(dt$accession)
       if (any(needs)) {
@@ -1055,7 +1069,7 @@ if (!dir.exists(cazy_readmap_dir) ||
       dt
     })
   } else {
-    cazy_readmap_list <- lapply(cazy_readmap_list, function(dt) {
+    cazy_readmap_list <- plapply(cazy_readmap_list, function(dt) {
       if (!is.null(dt)) dt[, accession := NULL]
       dt
     })
@@ -1136,7 +1150,7 @@ if (!dir.exists(cazy_readmap_dir) ||
       hits_dt
     }
 
-    cazy_readmap_annotated <- lapply(cazy_readmap_list, annotate_kingdom)
+    cazy_readmap_annotated <- plapply(cazy_readmap_list, annotate_kingdom)
     names(cazy_readmap_annotated) <- samples
 
     # Kingdom summary per sample
