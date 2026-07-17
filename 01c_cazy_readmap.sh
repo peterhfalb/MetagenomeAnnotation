@@ -37,14 +37,13 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32gb
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=falb0011@umn.edu
 
-# NOTE on time: CAZy_taxonomy.dmnd is much smaller than the OrthoDB database
-# (~2 GB vs. OrthoDB ~600 MB proteins but full FASTA), so runtime should be
-# well under the OrthoDB step's ~8-9 hours. 12h is a conservative first-run
-# ceiling — tighten after verifying actual runtime on one sample.
+# NOTE on time: CAZy_taxonomy.dmnd has 4M sequences — much larger than OrthoDB.
+# Empirically, R1 alone takes ~3-4 hours per sample; R2 similar. Samples with
+# larger read files (up to 7 GB) can approach 12h total. 24h gives safe buffer.
 
 set -euo pipefail
 
