@@ -1100,16 +1100,28 @@ if (!dir.exists(cazy_readmap_dir) ||
         cat("  All hits will be 'unclassified'\n")
         kingdom_lookup <- data.table(taxid = as.integer(rownames(taxon_mat)), kingdom = "unclassified")
       } else {
-        kingdom_lookup <- data.table(
+        # Phylum-based Fungi detection: used when taxonomy DB lacks a "kingdom"
+      # rank column (NCBI nodes.dmp built after 2024 uses "domain" at the top
+      # level and omits the intermediate "kingdom" rank for most lineages).
+      FUNGAL_PHYLA <- c("Ascomycota", "Basidiomycota", "Chytridiomycota",
+                        "Mucoromycota", "Glomeromycota", "Blastocladiomycota",
+                        "Neocallimastigomycota", "Zoopagomycota",
+                        "Mortierellomycota", "Microsporidia")
+      phylum_col <- if ("phylum" %in% colnames(taxon_mat)) taxon_mat[, "phylum"] else NA_character_
+
+      kingdom_lookup <- data.table(
           taxid   = as.integer(rownames(taxon_mat)),
-          kingdom = taxon_mat[, sk_col]
+          kingdom = taxon_mat[, sk_col],
+          phylum  = phylum_col
         )
-        # Fungi sit under Eukaryota at superkingdom; use the "kingdom" rank column
-        # (when present) to distinguish them from other eukaryotes.
+        # Prefer explicit "kingdom" rank column; fall back to phylum pattern.
         if (!is.na(kk_col)) {
           kingdom_lookup[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
                          kingdom := "Fungi"]
+        } else {
+          kingdom_lookup[phylum %in% FUNGAL_PHYLA, kingdom := "Fungi"]
         }
+        kingdom_lookup[, phylum := NULL]
         kingdom_lookup[is.na(kingdom), kingdom := "unclassified"]
       }
     } else {

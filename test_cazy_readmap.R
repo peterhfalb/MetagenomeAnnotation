@@ -119,13 +119,22 @@ if (!file.exists(taxa_sql)) {
   if (is.na(sk_col)) stop("Cannot find superkingdom column in getTaxonomy() output — columns: ",
                           paste(colnames(taxon_mat), collapse = ", "))
 
+  FUNGAL_PHYLA <- c("Ascomycota", "Basidiomycota", "Chytridiomycota", "Mucoromycota",
+                    "Glomeromycota", "Blastocladiomycota", "Neocallimastigomycota",
+                    "Zoopagomycota", "Mortierellomycota", "Microsporidia")
+
   kingdom_lut <- data.table(
-    taxid   = as.integer(rownames(taxon_mat)),
-    kingdom = taxon_mat[, sk_col]
+    taxid  = as.integer(rownames(taxon_mat)),
+    domain = taxon_mat[, sk_col],
+    phylum = if ("phylum" %in% colnames(taxon_mat)) taxon_mat[, "phylum"] else NA_character_
   )
+  # Assign kingdom: use phylum to distinguish Fungi from other Eukaryota
+  kingdom_lut[, kingdom := domain]
   if (!is.na(kk_col)) {
     kingdom_lut[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
                 kingdom := "Fungi"]
+  } else {
+    kingdom_lut[phylum %in% FUNGAL_PHYLA, kingdom := "Fungi"]
   }
   kingdom_lut[is.na(kingdom), kingdom := "unclassified"]
 
@@ -145,7 +154,9 @@ if (!file.exists(taxa_sql)) {
               formatC(nrow(dt), format = "d", big.mark = ",")))
 
   cat("Top 10 Fungi families:\n")
-  print(dt[kingdom == "Fungi", .N, by = family][order(-N)][1:10])
+  fungi_fam <- dt[kingdom == "Fungi", .N, by = family][order(-N)]
+  if (nrow(fungi_fam) == 0) cat("  (no Fungi hits — check kingdom assignment)\n")
+  else print(fungi_fam[1:min(10, .N)])
 }
 
 cat("\n============================================================\n")
