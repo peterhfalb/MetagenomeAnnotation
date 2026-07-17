@@ -111,12 +111,20 @@ if (!file.exists(taxa_sql)) {
 
   taxon_mat <- getTaxonomy(all_taxids, taxa_sql)
 
+  cat("  Columns returned by getTaxonomy():", paste(colnames(taxon_mat), collapse = ", "), "\n")
+
+  # Pick the superkingdom column — name varies across taxonomizr versions
+  sk_col <- intersect(c("superkingdom", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
+  kk_col <- intersect(c("kingdom",      "Kingdom"),                       colnames(taxon_mat))[1]
+  if (is.na(sk_col)) stop("Cannot find superkingdom column in getTaxonomy() output — columns: ",
+                          paste(colnames(taxon_mat), collapse = ", "))
+
   kingdom_lut <- data.table(
     taxid   = as.integer(rownames(taxon_mat)),
-    kingdom = taxon_mat[, "superkingdom"]
+    kingdom = taxon_mat[, sk_col]
   )
-  if ("kingdom" %in% colnames(taxon_mat)) {
-    kingdom_lut[!is.na(taxon_mat[, "kingdom"]) & taxon_mat[, "kingdom"] == "Fungi",
+  if (!is.na(kk_col)) {
+    kingdom_lut[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
                 kingdom := "Fungi"]
   }
   kingdom_lut[is.na(kingdom), kingdom := "unclassified"]

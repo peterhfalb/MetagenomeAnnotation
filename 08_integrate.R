@@ -1091,18 +1091,27 @@ if (!dir.exists(cazy_readmap_dir) ||
 
     # Build taxid → kingdom lookup
     if (!is.null(taxon_mat)) {
-      kingdom_lookup <- data.table(
-        taxid   = as.integer(rownames(taxon_mat)),
-        kingdom = taxon_mat[, "superkingdom"]
-      )
-      # CAZy fungi superkingdom is "Eukaryota"; distinguish Fungi by checking
-      # the "kingdom" rank column where available, else use phylum patterns.
-      if ("kingdom" %in% colnames(taxon_mat)) {
-        kingdom_lookup[, kingdom := ifelse(!is.na(taxon_mat[, "kingdom"]) &
-                                           taxon_mat[, "kingdom"] == "Fungi",
-                                           "Fungi", kingdom)]
+      # Column names vary across taxonomizr versions
+      sk_col <- intersect(c("superkingdom", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
+      kk_col <- intersect(c("kingdom",      "Kingdom"),                       colnames(taxon_mat))[1]
+      if (is.na(sk_col)) {
+        cat("  WARNING: no superkingdom column in getTaxonomy() output; columns:",
+            paste(colnames(taxon_mat), collapse = ", "), "\n")
+        cat("  All hits will be 'unclassified'\n")
+        kingdom_lookup <- data.table(taxid = as.integer(rownames(taxon_mat)), kingdom = "unclassified")
+      } else {
+        kingdom_lookup <- data.table(
+          taxid   = as.integer(rownames(taxon_mat)),
+          kingdom = taxon_mat[, sk_col]
+        )
+        # Fungi sit under Eukaryota at superkingdom; use the "kingdom" rank column
+        # (when present) to distinguish them from other eukaryotes.
+        if (!is.na(kk_col)) {
+          kingdom_lookup[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
+                         kingdom := "Fungi"]
+        }
+        kingdom_lookup[is.na(kingdom), kingdom := "unclassified"]
       }
-      kingdom_lookup[is.na(kingdom), kingdom := "unclassified"]
     } else {
       kingdom_lookup <- data.table(taxid = all_taxids, kingdom = "unclassified")
     }
