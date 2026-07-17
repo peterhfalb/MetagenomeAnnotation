@@ -1092,8 +1092,8 @@ if (!dir.exists(cazy_readmap_dir) ||
     # Build taxid → kingdom lookup
     if (!is.null(taxon_mat)) {
       # Column names vary across taxonomizr versions
-      sk_col <- intersect(c("superkingdom", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
-      kk_col <- intersect(c("kingdom",      "Kingdom"),                       colnames(taxon_mat))[1]
+      sk_col <- intersect(c("superkingdom", "domain", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
+      kk_col <- intersect(c("kingdom",      "Kingdom"),                                colnames(taxon_mat))[1]
       if (is.na(sk_col)) {
         cat("  WARNING: no superkingdom column in getTaxonomy() output; columns:",
             paste(colnames(taxon_mat), collapse = ", "), "\n")

@@ -114,8 +114,8 @@ if (!file.exists(taxa_sql)) {
   cat("  Columns returned by getTaxonomy():", paste(colnames(taxon_mat), collapse = ", "), "\n")
 
   # Pick the superkingdom column — name varies across taxonomizr versions
-  sk_col <- intersect(c("superkingdom", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
-  kk_col <- intersect(c("kingdom",      "Kingdom"),                       colnames(taxon_mat))[1]
+  sk_col <- intersect(c("superkingdom", "domain", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
+  kk_col <- intersect(c("kingdom",      "Kingdom"),                                colnames(taxon_mat))[1]
   if (is.na(sk_col)) stop("Cannot find superkingdom column in getTaxonomy() output — columns: ",
                           paste(colnames(taxon_mat), collapse = ", "))
 
