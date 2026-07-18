@@ -148,32 +148,35 @@ cat("  Metadata rows   :", nrow(meta_raw), "\n")
 if (!"stake"      %in% names(meta_raw)) stop("metadata must have a 'stake' column",      call. = FALSE)
 if (!"stand_type" %in% names(meta_raw)) stop("metadata must have a 'stand_type' column", call. = FALSE)
 
-meta <- meta_raw[, .(sample = as.character(stake), stand_type = as.character(stand_type))]
+meta <- meta_raw[, .(stake = as.character(stake), stand_type = as.character(stand_type))]
 
-# Diagnostic: show sample name formats on both sides before joining
+# Matrix sample IDs have the form GEO-{row}-{stake}_[Cleaned_]S{n}.
+# Extract the row-stake portion (e.g. "GEO-00-06_S1" -> "00-06") so it
+# matches the stake column in the metadata.
+hits[, stake := sub("^GEO-([0-9]+-[0-9]+)_.*$", "\\1", sample)]
+
 matrix_samples <- sort(unique(hits$sample))
-meta_samples   <- sort(meta$sample)
+meta_stakes    <- sort(meta$stake)
+extracted      <- sort(unique(hits$stake))
+n_matched      <- sum(extracted %in% meta_stakes)
 cat("  Matrix sample IDs (first 5) :", paste(head(matrix_samples, 5), collapse = ", "), "\n")
-cat("  Metadata stake IDs (first 5):", paste(head(meta_samples,   5), collapse = ", "), "\n")
-n_matched <- sum(matrix_samples %in% meta_samples)
-cat("  Overlap                      :", n_matched, "/", length(matrix_samples), "matrix samples found in metadata\n")
+cat("  Extracted stake IDs (first 5):", paste(head(extracted, 5), collapse = ", "), "\n")
+cat("  Metadata stake IDs (first 5) :", paste(head(meta_stakes,  5), collapse = ", "), "\n")
+cat("  Overlap                       :", n_matched, "/", length(extracted), "stakes matched\n")
 
 if (n_matched == 0) {
-  cat("\n  ERROR: No sample IDs match between the matrix and metadata.\n")
-  cat("  Check that the 'stake' column in stakes.csv contains the same sample\n")
-  cat("  identifiers as the column headers in the readmap matrices.\n")
-  cat("  All matrix sample IDs:\n")
-  cat("   ", paste(matrix_samples, collapse = "\n  "), "\n")
-  cat("  All metadata stake IDs:\n")
-  cat("   ", paste(meta_samples, collapse = "\n  "), "\n")
-  stop("Metadata join failed — no matching sample IDs.", call. = FALSE)
+  cat("\n  ERROR: Stake extraction failed — no overlap between extracted stakes and metadata.\n")
+  cat("  Extracted stakes  :", paste(extracted,   collapse = ", "), "\n")
+  cat("  Metadata stakes   :", paste(meta_stakes, collapse = ", "), "\n")
+  stop("Metadata join failed.", call. = FALSE)
 }
 
 n_before <- nrow(hits)
-hits <- hits[meta, on = "sample", nomatch = 0]
-n_dropped <- length(matrix_samples) - n_matched
+hits <- hits[meta, on = "stake", nomatch = 0]
+n_dropped <- length(extracted) - n_matched
 if (n_dropped > 0)
-  cat("  WARNING:", n_dropped, "matrix samples had no metadata match and were dropped\n")
+  cat("  WARNING:", n_dropped, "samples had no metadata stake match and were dropped\n")
+hits[, stake := NULL]
 cat("  Samples matched:", uniqueN(hits$sample), "\n")
 cat("  Stand types    :", paste(sort(unique(hits$stand_type)), collapse = ", "), "\n\n")
 
