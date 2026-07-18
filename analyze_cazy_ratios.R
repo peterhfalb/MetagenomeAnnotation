@@ -74,6 +74,7 @@ write_tsv <- function(dt, path) {
 # Wilcoxon summary across stand_type groups for a given grouping column.
 # Returns one row per group with n, median, and p-value for each stand_type pair.
 summarize_ratio <- function(dt, group_col) {
+  if (nrow(dt) == 0) return(data.table())
   stand_types <- sort(unique(dt$stand_type))
   groups      <- sort(unique(dt[[group_col]]))
 
@@ -140,17 +141,39 @@ cat("  Combined hits :", nrow(hits), "family × sample rows\n\n")
 
 # Load metadata
 cat("--- Loading metadata ---\n")
-meta <- fread(metadata_file)
-if (!"stake"      %in% names(meta)) stop("metadata must have a 'stake' column",      call. = FALSE)
-if (!"stand_type" %in% names(meta)) stop("metadata must have a 'stand_type' column", call. = FALSE)
-meta <- meta[, .(sample = as.character(stake), stand_type = as.character(stand_type))]
+meta_raw <- fread(metadata_file)
+cat("  Metadata columns:", paste(names(meta_raw), collapse = ", "), "\n")
+cat("  Metadata rows   :", nrow(meta_raw), "\n")
+
+if (!"stake"      %in% names(meta_raw)) stop("metadata must have a 'stake' column",      call. = FALSE)
+if (!"stand_type" %in% names(meta_raw)) stop("metadata must have a 'stand_type' column", call. = FALSE)
+
+meta <- meta_raw[, .(sample = as.character(stake), stand_type = as.character(stand_type))]
+
+# Diagnostic: show sample name formats on both sides before joining
+matrix_samples <- sort(unique(hits$sample))
+meta_samples   <- sort(meta$sample)
+cat("  Matrix sample IDs (first 5) :", paste(head(matrix_samples, 5), collapse = ", "), "\n")
+cat("  Metadata stake IDs (first 5):", paste(head(meta_samples,   5), collapse = ", "), "\n")
+n_matched <- sum(matrix_samples %in% meta_samples)
+cat("  Overlap                      :", n_matched, "/", length(matrix_samples), "matrix samples found in metadata\n")
+
+if (n_matched == 0) {
+  cat("\n  ERROR: No sample IDs match between the matrix and metadata.\n")
+  cat("  Check that the 'stake' column in stakes.csv contains the same sample\n")
+  cat("  identifiers as the column headers in the readmap matrices.\n")
+  cat("  All matrix sample IDs:\n")
+  cat("   ", paste(matrix_samples, collapse = "\n  "), "\n")
+  cat("  All metadata stake IDs:\n")
+  cat("   ", paste(meta_samples, collapse = "\n  "), "\n")
+  stop("Metadata join failed — no matching sample IDs.", call. = FALSE)
+}
 
 n_before <- nrow(hits)
 hits <- hits[meta, on = "sample", nomatch = 0]
-n_after  <- nrow(hits)
-if (n_before != n_after)
-  cat("  WARNING:", (n_before - n_after) / length(unique(fung_long$family)),
-      "samples dropped (no metadata match)\n")
+n_dropped <- length(matrix_samples) - n_matched
+if (n_dropped > 0)
+  cat("  WARNING:", n_dropped, "matrix samples had no metadata match and were dropped\n")
 cat("  Samples matched:", uniqueN(hits$sample), "\n")
 cat("  Stand types    :", paste(sort(unique(hits$stand_type)), collapse = ", "), "\n\n")
 
