@@ -71,8 +71,14 @@ check_hits <- function(hits_file) {
     n_bases  = sapply(labs, function(x) length(unique(base_family(x)))),
     first    = sapply(labs, function(x) if (length(x)) x[1] else NA_character_),
     last     = sapply(labs, function(x) if (length(x)) x[length(x)] else NA_character_),
-    has_cat  = sapply(labs, function(x) any(!grepl("^CBM", x))),
-    has_ec   = sapply(fields, function(p) any(grepl(EC_PAT, p))),
+    # The label 08_integrate.R keeps
+    used     = sapply(labs, function(x) {
+      if (length(x) == 0) return(NA_character_)
+      is_bin <- grepl(BIN_PAT, x)
+      is_cbm <- grepl("^CBM", x)
+      c(x[!is_bin & !is_cbm], x[!is_bin & is_cbm], x[is_bin])[1]
+    }),
+    has_ec  = sapply(fields, function(p) any(grepl(EC_PAT, p))),
     # Last all-numeric field, as 08_integrate.R reads it for JGI headers
     num_id   = sapply(fields, function(p) {
       num <- p[grepl("^[0-9]+$", p)]
@@ -82,8 +88,8 @@ check_hits <- function(hits_file) {
   )
   lu[, genbank := grepl(".", field1, fixed = TRUE)]
   lu[, jgi := !genbank & grepl(LABEL_PAT, field1)]
-  # The label 08_integrate.R keeps: last for GenBank headers, first otherwise
-  lu[, used := fifelse(genbank, last, first)]
+  # The earlier parser kept the last label for GenBank headers, the first otherwise
+  lu[, old_used := fifelse(genbank, last, first)]
   dt <- lu[dt, on = "sseqid"]
 
   # ── 1. Multi-family headers ────────────────────────────────────────────────
@@ -91,9 +97,9 @@ check_hits <- function(hits_file) {
   print(dt[, .N, by = n_bases][order(n_bases)][, pct := round(100 * N / sum(N), 2)][])
   cat("\nMulti-family hits by header format:\n")
   print(dt[n_bases > 1, .N, by = .(format = fifelse(genbank, "GenBank", "JGI/other"))])
-  n_cbm <- dt[grepl("^CBM", used) & has_cat == TRUE, .N]
-  cat(sprintf("\nHits kept as CBM although the header has a catalytic family: %d (%.2f%%)\n",
-              n_cbm, 100 * n_cbm / nrow(dt)))
+  n_changed <- dt[!is.na(used) & !is.na(old_used) & base_family(used) != base_family(old_used), .N]
+  cat(sprintf("\nHits whose family changed from the earlier parser: %d (%.2f%%)\n",
+              n_changed, 100 * n_changed / nrow(dt)))
   cat("Example multi-family headers:\n")
   print(head(lu[n_bases > 1, sseqid], 10))
 

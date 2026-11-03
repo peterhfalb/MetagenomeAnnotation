@@ -53,20 +53,19 @@ cat("  Total hits (raw)          :", formatC(nrow(dt), format = "d", big.mark = 
 dt <- dt[pident >= 50 & evalue <= 1e-9]
 cat("  After pident>=50 e<=1e-9  :", formatC(nrow(dt), format = "d", big.mark = ","), "\n")
 
-FAMILY_PAT <- "([A-Za-z]+[0-9]+(?:_[0-9]+)?)"
+LABEL_PAT <- "^(GH|GT|PL|CE|AA|CBM)[0-9]+(_[0-9]+)?$"
 dt[, field1     := sub("\\|.*$", "", sseqid)]
-dt[, is_genbank := grepl("\\.", field1)]
+dt[, is_genbank := !grepl(LABEL_PAT, field1)]
 
-dt[, family := {
-  f <- rep(NA_character_, .N)
-  gb  <- is_genbank
-  f[gb]  <- sub(paste0(".*\\|", FAMILY_PAT, "(?:\\|[^A-Za-z].*)?$"), "\\1", sseqid[gb])
-  f[gb & f == sseqid] <- NA_character_
-  jgi <- !is_genbank
-  f[jgi] <- sub(paste0("^", FAMILY_PAT, ".*$"), "\\1", sseqid[jgi])
-  f[jgi & !grepl("^[A-Za-z]+[0-9]", f)] <- NA_character_
-  f
-}]
+sseqids <- unique(dt$sseqid)
+labels  <- vapply(strsplit(sseqids, "|", fixed = TRUE), function(p) {
+  labs <- p[grepl(LABEL_PAT, p)]
+  if (length(labs) == 0) return(NA_character_)
+  is_bin <- grepl("^[A-Z]+0$", labs)
+  is_cbm <- grepl("^CBM", labs)
+  c(labs[!is_bin & !is_cbm], labs[!is_bin & is_cbm], labs[is_bin])[1]
+}, character(1))
+dt[, family := labels[match(sseqid, sseqids)]]
 dt <- dt[!is.na(family)]
 cat("  After family extraction    :", formatC(nrow(dt), format = "d", big.mark = ","), "\n")
 

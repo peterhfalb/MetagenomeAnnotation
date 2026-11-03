@@ -1002,26 +1002,25 @@ if (!dir.exists(cazy_readmap_dir) ||
     #   GenBank:  ACCESSION.ver|FAMILY[|EC]  e.g. WP_123456.1|GH5  or  AGW.1|GH165|3.2.1.23
     #   JGI simple:   FAMILY|TAXID|PROTEIN   e.g. AA3|452445|Daces1_...
     #   JGI complex:  FAMILY|FAMILY|TAXID|PROTEIN  or  FAMILY|FAMILY|GT5|TAXID|PROTEIN
-    # Detect GenBank by presence of '.' in field 1 (versioned accession like WP_123456.1).
-    # JGI entries have a CAZy family name as field 1 (no dot).
-    # CAZy family pattern: letters + digits + optional underscore-number (subfamily)
-    FAMILY_PAT <- "([A-Za-z]+[0-9]+(?:_[0-9]+)?)"
+    # JGI entries have a CAZy label as field 1. Anything else is an accession, with
+    # a version (WP_123456.1) or without one (AFM03407|GT4).
+    # CAZy label pattern: class + digits + optional underscore-number (subfamily)
+    LABEL_PAT <- "^(GH|GT|PL|CE|AA|CBM)[0-9]+(_[0-9]+)?$"
     dt[, field1 := sub("\\|.*$", "", sseqid)]
-    dt[, is_genbank := grepl("\\.", field1)]
+    dt[, is_genbank := !grepl(LABEL_PAT, field1)]
 
-    dt[, family := {
-      f <- rep(NA_character_, .N)
-      # GenBank: rightmost field matching family pattern; allow optional trailing
-      #   |EC_number (e.g. |3.2.1.23) which trips up a bare $ anchor.
-      gb <- is_genbank
-      f[gb] <- sub(paste0(".*\\|", FAMILY_PAT, "(?:\\|[^A-Za-z].*)?$"), "\\1", sseqid[gb])
-      f[gb & f == sseqid] <- NA_character_
-      # JGI: family is always field 1
-      jgi <- !is_genbank
-      f[jgi] <- sub(paste0("^", FAMILY_PAT, ".*$"), "\\1", sseqid[jgi])
-      f[jgi & !grepl("^[A-Za-z]+[0-9]", f)] <- NA_character_
-      f
-    }]
+    # A header can list several families. Keep one label per hit, by the same rule
+    # for every header format: first classified catalytic family, then first
+    # classified CBM, then first unassigned family-0 bin (GH0, CBM0, ...).
+    sseqids <- unique(dt$sseqid)
+    labels  <- vapply(strsplit(sseqids, "|", fixed = TRUE), function(p) {
+      labs <- p[grepl(LABEL_PAT, p)]
+      if (length(labs) == 0) return(NA_character_)
+      is_bin <- grepl("^[A-Z]+0$", labs)
+      is_cbm <- grepl("^CBM", labs)
+      c(labs[!is_bin & !is_cbm], labs[!is_bin & is_cbm], labs[is_bin])[1]
+    }, character(1))
+    dt[, family := labels[match(sseqid, sseqids)]]
     dt <- dt[!is.na(family)]
     if (nrow(dt) == 0) return(NULL)
 
