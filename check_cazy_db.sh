@@ -18,6 +18,7 @@
 # chain reaches Fungi (NCBI taxid 4751).
 #
 # Usage:
+#   module load diamond/2.0.15-gcc-8.2.0-gkldzx7
 #   bash check_cazy_db.sh [output_dir]
 # =============================================================================
 
@@ -41,9 +42,17 @@ if [[ -s "${SOURCE_FASTA}" ]]; then
     LC_ALL=C grep -a '^>' "${SOURCE_FASTA}" | sed 's/^>//' > "${HEADERS}"
 else
     echo "Source FASTA not found; reading headers from the .dmnd"
-    module load diamond/2.0.15-gcc-8.2.0-gkldzx7
+    if ! command -v diamond > /dev/null; then
+        echo "ERROR: diamond not on PATH. Load it first, then re-run:" >&2
+        echo "  module load diamond/2.0.15-gcc-8.2.0-gkldzx7" >&2
+        exit 1
+    fi
     diamond getseq --db "${DB_DIR}/CAZy_taxonomy" --quiet \
         | LC_ALL=C grep -a '^>' | sed 's/^>//' > "${HEADERS}"
+fi
+if [[ ! -s "${HEADERS}" ]]; then
+    echo "ERROR: no headers collected in ${HEADERS}" >&2
+    exit 1
 fi
 
 # ── Summarize ─────────────────────────────────────────────────────────────────
