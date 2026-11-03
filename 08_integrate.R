@@ -70,6 +70,8 @@ option_list <- list(
   make_option("--db-dir",         type = "character",
               default = "/projects/standard/kennedyp/shared/databases/metaG_annotation",
               help = "Path to databases dir [default: %default]"),
+  make_option("--jgi-genomes",    type = "character", default = NULL,
+              help = "CAZy readmap: verified JGI fungal genome table [default: jgi_fungal_genomes.tsv next to this script]"),
   make_option("--out-dir",        type = "character", default = NULL,
               help = "Output directory [default: annotation-dir/integrated]"),
   make_option("--min-tools",      type = "integer",   default = 2L,
@@ -948,9 +950,9 @@ cat("\n")
 # =============================================================================
 # SECTION 6d: CAZy direct read mapping — competitive all-kingdom with taxonomy
 # Following Bahram 2018 (Nature). Maps raw QC'd reads against CAZy (all
-# kingdoms); staxids from DIAMOND hits are expanded to kingdom using
-# taxonomizr (already loaded). Produces per-kingdom count matrices and a
-# kingdom summary. Normalized by OrthoDB genome equivalents from Section 6c.
+# kingdoms); each hit's reference is assigned a kingdom from its full NCBI
+# lineage in nodes.dmp. Produces per-kingdom count matrices and a kingdom
+# summary. Normalized by OrthoDB genome equivalents from Section 6c.
 # =============================================================================
 
 cat("--- Section 6d: CAZy direct read mapping (Bahram approach) ---\n")
@@ -960,6 +962,7 @@ cazy_readmap_matrix          <- NULL
 cazy_readmap_fungi_matrix    <- NULL
 cazy_readmap_bacteria_matrix <- NULL
 cazy_readmap_kingdom_dt      <- NULL
+cazy_readmap_source_dt       <- NULL
 
 if (!dir.exists(cazy_readmap_dir) ||
     length(list.files(cazy_readmap_dir, pattern = "_hits\\.tsv$")) == 0) {
@@ -968,7 +971,26 @@ if (!dir.exists(cazy_readmap_dir) ||
   # DIAMOND's staxids column is empty when accession2taxid matching fails for
   # non-standard seqid formats like ACCESSION|FAMILY. We do taxonomy lookup in R:
   #   - Format 1 (GenBank): ACCESSION.ver|FAMILY — extract accession, join taxonmap
-  #   - Format 2 (JGI MycoCosm): FAMILY|TAXID|PROTEIN_ID — taxid is field 2
+  #   - Format 2 (JGI): FAMILY|PROTEIN_ID|GENOME_FILE — the number is a JGI protein
+  #     ID, unique per sequence, NOT a taxid. Only the genome file identifies the
+  #     organism, so it is looked up in jgi_fungal_genomes.tsv.
+  #
+  # jgi_fungal_genomes.tsv (built 2026-11-03) lists the 1,196 of 1,198 CAZyDB.07242025
+  # JGI genome files found in JGI's MycoCosm fungal catalog whose catalog taxid has
+  # Fungi (4751) in its NCBI lineage. A genome not listed stays unclassified.
+  jgi_genomes_file <- opt[["jgi-genomes"]]
+  if (is.null(jgi_genomes_file)) {
+    script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+    jgi_genomes_file <- file.path(dirname(sub("^--file=", "", script_arg[1])), "jgi_fungal_genomes.tsv")
+  }
+  if (!file.exists(jgi_genomes_file)) {
+    stop("JGI genome table not found: ", jgi_genomes_file, " (set --jgi-genomes)", call. = FALSE)
+  }
+  jgi_genomes <- fread(jgi_genomes_file, sep = "\t", quote = "",
+                       select = c("source_file", "ncbi_taxid"),
+                       colClasses = list(character = "source_file", integer = "ncbi_taxid"))
+  cat("  JGI fungal genomes loaded:", nrow(jgi_genomes), "\n")
+
   # Load the cazy_taxonmap.tsv built in 00_setup_databases.sh Section 10.
   taxonmap_file <- file.path(db_dir, "cazy_readmap", "cazy_taxonmap.tsv")
   cazy_taxonmap_dt <- if (file.exists(taxonmap_file)) {
@@ -1000,8 +1022,8 @@ if (!dir.exists(cazy_readmap_dir) ||
 
     # CAZy database contains three sseqid formats (determined empirically):
     #   GenBank:  ACCESSION.ver|FAMILY[|EC]  e.g. WP_123456.1|GH5  or  AGW.1|GH165|3.2.1.23
-    #   JGI simple:   FAMILY|TAXID|PROTEIN   e.g. AA3|452445|Daces1_...
-    #   JGI complex:  FAMILY|FAMILY|TAXID|PROTEIN  or  FAMILY|FAMILY|GT5|TAXID|PROTEIN
+    #   JGI simple:   FAMILY|PROTEIN_ID|GENOME_FILE   e.g. AA3|452445|Daces1_...
+    #   JGI complex:  FAMILY|FAMILY|PROTEIN_ID|GENOME_FILE  or  FAMILY|FAMILY|GT5|PROTEIN_ID|GENOME_FILE
     # JGI entries have a CAZy label as field 1. Anything else is an accession, with
     # a version (WP_123456.1) or without one (AFM03407|GT4).
     # CAZy label pattern: class + digits + optional underscore-number (subfamily)
@@ -1026,15 +1048,13 @@ if (!dir.exists(cazy_readmap_dir) ||
 
     # Taxid extraction:
     #   GenBank: need taxonmap join — store accession (field1) for joining below
-    #   JGI: taxid is the last all-numeric pipe-delimited field in the sseqid
+    #   JGI: taxid comes from the verified genome table, matched on the exact
+    #   genome file (last field); a genome not in the table gets no taxid
+    dt[, taxid := NA_integer_]
     dt[is_genbank  == TRUE,  accession := field1]
-    dt[is_genbank  == FALSE, taxid := {
-      parts <- strsplit(sseqid[is_genbank == FALSE], "\\|")
-      as.integer(sapply(parts, function(p) {
-        num <- p[grepl("^[0-9]+$", p)]
-        if (length(num) > 0) tail(num, 1L) else NA_character_
-      }))
-    }]
+    dt[is_genbank  == FALSE, taxid := jgi_genomes$ncbi_taxid[
+      match(sub("^.*\\|", "", sseqid), jgi_genomes$source_file)]]
+    dt[, source := fifelse(is_genbank, "NCBI", "JGI")]
     dt[, c("field1", "is_genbank") := NULL]
 
     # Collapse subfamilies to family (GH5_7 -> GH5). Must run before the pair
@@ -1047,7 +1067,7 @@ if (!dir.exists(cazy_readmap_dir) ||
     dt[, pair_id := sub("[/. ][12]$", "", qseqid)]
     dt <- dt[dt[, .I[which.max(bitscore)], by = .(pair_id, family)]$V1]
 
-    dt[, .(pair_id, family, taxid, accession, bitscore)]
+    dt[, .(pair_id, family, taxid, accession, source, bitscore)]
   }
 
   # Load hits for all samples that have output files
@@ -1082,68 +1102,47 @@ if (!dir.exists(cazy_readmap_dir) ||
   cat("  Samples with CAZy readmap hits:", n_with_hits, "/", length(samples), "\n")
 
   if (n_with_hits > 0) {
-    # Collect all unique taxids across all samples for a single taxonomizr call
+    # Collect all unique taxids across all samples for a single lineage lookup
     all_taxids <- unique(unlist(lapply(cazy_readmap_list, function(x) {
       if (is.null(x)) return(integer(0))
       x$taxid[!is.na(x$taxid) & x$taxid > 0]
     })))
-    cat("  Expanding", length(all_taxids), "unique taxids to kingdom via taxonomizr...\n")
+    cat("  Assigning kingdoms to", length(all_taxids), "unique taxids from NCBI lineages...\n")
 
-    # getTaxonomy returns a matrix: rows = taxids, cols = superkingdom/phylum/...
-    # taxonomizr uses names.dmp + nodes.dmp already loaded from db_dir.
-    # The accessionTaxa.sql database path used by getTaxonomy is in db_dir/taxonomy/
-    # Use the same taxonomy.sql built by the rest of 08_integrate.R (Section 5).
-    # That file is created on first run from names.dmp + nodes.dmp; if it exists
-    # we can call getTaxonomy() directly without any additional setup.
-    taxa_sql <- file.path(db_dir, "taxonomy", "taxonomy.sql")
-    if (file.exists(taxa_sql)) {
-      taxon_mat <- getTaxonomy(all_taxids, taxa_sql)
-    } else {
-      cat("  WARNING: taxonomizr database not found at", taxa_sql, "\n")
-      cat("  Run 08_integrate.R once with --annotation-dir and --assembly-dir to build it,\n")
-      cat("  or ensure Section 5 (MMseqs2 taxonomy) has run first.\n")
-      cat("  Kingdom assignment skipped; all hits will be 'unclassified'\n")
-      taxon_mat <- NULL
-    }
-
-    # Build taxid → kingdom lookup
-    if (!is.null(taxon_mat)) {
-      # Column names vary across taxonomizr versions
-      sk_col <- intersect(c("superkingdom", "domain", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
-      kk_col <- intersect(c("kingdom",      "Kingdom"),                                colnames(taxon_mat))[1]
-      if (is.na(sk_col)) {
-        cat("  WARNING: no superkingdom column in getTaxonomy() output; columns:",
-            paste(colnames(taxon_mat), collapse = ", "), "\n")
-        cat("  All hits will be 'unclassified'\n")
-        kingdom_lookup <- data.table(taxid = as.integer(rownames(taxon_mat)), kingdom = "unclassified")
-      } else {
-        # Phylum-based Fungi detection: used when taxonomy DB lacks a "kingdom"
-      # rank column (NCBI nodes.dmp built after 2024 uses "domain" at the top
-      # level and omits the intermediate "kingdom" rank for most lineages).
-      FUNGAL_PHYLA <- c("Ascomycota", "Basidiomycota", "Chytridiomycota",
-                        "Mucoromycota", "Glomeromycota", "Blastocladiomycota",
-                        "Neocallimastigomycota", "Zoopagomycota",
-                        "Mortierellomycota", "Microsporidia")
-      phylum_col <- if ("phylum" %in% colnames(taxon_mat)) taxon_mat[, "phylum"] else NA_character_
-
-      kingdom_lookup <- data.table(
-          taxid   = as.integer(rownames(taxon_mat)),
-          kingdom = taxon_mat[, sk_col],
-          phylum  = phylum_col
-        )
-        # Prefer explicit "kingdom" rank column; fall back to phylum pattern.
-        if (!is.na(kk_col)) {
-          kingdom_lookup[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
-                         kingdom := "Fungi"]
-        } else {
-          kingdom_lookup[phylum %in% FUNGAL_PHYLA, kingdom := "Fungi"]
-        }
-        kingdom_lookup[, phylum := NULL]
-        kingdom_lookup[is.na(kingdom), kingdom := "unclassified"]
+    # Walk each taxid up its parent chain until it reaches a kingdom-level node, so
+    # the result doesn't depend on rank names or a phylum list: a taxid is fungal
+    # only if its lineage contains Fungi (4751). Fungi is below Eukaryota, so it is
+    # always reached first. Taxids absent from nodes.dmp stay unclassified.
+    assign_kingdom <- function(taxids, nodes) {
+      tops <- c("4751" = "Fungi", "2" = "Bacteria", "2157" = "Archaea",
+                "10239" = "Viruses", "2759" = "Eukaryota")
+      kingdom <- rep("unclassified", length(taxids))
+      current <- taxids
+      for (step in seq_len(100L)) {
+        active <- which(!is.na(current))
+        if (length(active) == 0) break
+        hit   <- unname(tops[as.character(current[active])])
+        found <- !is.na(hit)
+        kingdom[active[found]] <- hit[found]
+        current[active[found]] <- NA_integer_
+        rest   <- active[!found]
+        parent <- nodes$parent[match(current[rest], nodes$taxid)]
+        parent[parent == current[rest]] <- NA_integer_  # root is its own parent
+        current[rest] <- parent
       }
-    } else {
-      kingdom_lookup <- data.table(taxid = all_taxids, kingdom = "unclassified")
+      kingdom
     }
+
+    nodes_file <- file.path(db_dir, "taxonomy", "nodes.dmp")
+    if (!file.exists(nodes_file)) {
+      stop("NCBI taxonomy not found: ", nodes_file, call. = FALSE)
+    }
+    # nodes.dmp fields are tab-|-tab delimited: taxid(1) |(2) parent(3) ...
+    ncbi_nodes <- fread(nodes_file, sep = "\t", header = FALSE, quote = "",
+                        select = c(1L, 3L), col.names = c("taxid", "parent"))
+    kingdom_lookup <- data.table(taxid = all_taxids,
+                                 kingdom = assign_kingdom(all_taxids, ncbi_nodes))
+    rm(ncbi_nodes)
 
     # Annotate each sample's hits with kingdom, build per-sample family counts
     annotate_kingdom <- function(hits_dt) {
@@ -1176,6 +1175,19 @@ if (!dir.exists(cazy_readmap_dir) ||
     cat("    Fungi      :", sum(cazy_readmap_kingdom_dt$n_fungi), "\n")
     cat("    Bacteria   :", sum(cazy_readmap_kingdom_dt$n_bacteria), "\n")
     cat("    Unclassified:", sum(cazy_readmap_kingdom_dt$n_unclassified), "\n")
+
+    # Counts by reference source and kingdom. Every JGI count should be Fungi or,
+    # for genomes not in the verified table, unclassified.
+    cazy_readmap_source_dt <- rbindlist(lapply(cazy_readmap_annotated, function(dt) {
+      if (is.null(dt) || nrow(dt) == 0) return(NULL)
+      dt[, .(n = .N), by = .(source, kingdom)]
+    }))[, .(n = sum(n)), by = .(source, kingdom)][order(source, -n)]
+    cat("  Counts by reference source and kingdom:\n")
+    print(cazy_readmap_source_dt)
+    n_jgi_bad <- cazy_readmap_source_dt[source == "JGI" & !kingdom %in% c("Fungi", "unclassified"), sum(n)]
+    if (n_jgi_bad > 0) {
+      cat("  WARNING:", n_jgi_bad, "JGI counts assigned to a non-fungal kingdom; check jgi_fungal_genomes.tsv\n")
+    }
 
     # Build family×sample count matrices per kingdom using existing helper
     make_readmap_input <- function(annotated_list, kingdom_filter) {
@@ -1347,6 +1359,9 @@ if (!is.null(orthodb_dt)) {
 # following Bahram 2018. Only written if 01c_cazy_readmap.sh has been run.
 if (!is.null(cazy_readmap_kingdom_dt)) {
   write_tsv(cazy_readmap_kingdom_dt, file.path(out_dir, "cazy_readmap_kingdom_summary.tsv"))
+}
+if (!is.null(cazy_readmap_source_dt)) {
+  write_tsv(cazy_readmap_source_dt, file.path(out_dir, "cazy_readmap_source_summary.tsv"))
 }
 if (!is.null(cazy_readmap_matrix)) {
   write_tsv(cazy_readmap_matrix, file.path(out_dir, "cazy_readmap_matrix.tsv"))

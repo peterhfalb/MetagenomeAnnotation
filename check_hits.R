@@ -6,9 +6,7 @@
 #   2. Unassigned "family 0" bins (GH0, AA0, ...)
 #   3. Headers whose first field is neither a CAZy label nor a versioned accession
 #   4. Paired-read double counts removed by merging to family before dedup
-#   5. Kingdoms assigned to JGI-format references, whose numeric header field
-#      08_integrate.R treats as an NCBI taxid. Writes {SAMPLE}_jgi_codes.tsv to
-#      the working directory; everything else only prints.
+# Counts by reference source and kingdom are reported by 08_integrate.R.
 #
 # Usage (on a compute node; hits files can be large):
 #   module load R
@@ -23,31 +21,7 @@ LABEL_PAT  <- "^(GH|GT|PL|CE|AA|CBM)[0-9]+(_[0-9]+)?$"
 BIN_PAT    <- "^(GH|GT|PL|CE|AA|CBM)0$"
 EC_PAT     <- "^[0-9]+\\.[0-9-]+"
 
-DB_DIR        <- "/projects/standard/kennedyp/shared/databases/metaG_annotation"
-TAXONMAP_FILE <- file.path(DB_DIR, "cazy_readmap", "cazy_taxonmap.tsv")
-TAXA_SQL      <- file.path(DB_DIR, "taxonomy", "taxonomy.sql")
-FUNGAL_PHYLA  <- c("Ascomycota", "Basidiomycota", "Chytridiomycota", "Mucoromycota",
-                   "Glomeromycota", "Blastocladiomycota", "Neocallimastigomycota",
-                   "Zoopagomycota", "Mortierellomycota", "Microsporidia")
-
 base_family <- function(x) sub("_[0-9]+$", "", x)
-
-# Same taxid -> kingdom logic as 08_integrate.R
-kingdom_lookup <- function(taxids) {
-  if (!requireNamespace("taxonomizr", quietly = TRUE)) return(NULL)
-  mat <- taxonomizr::getTaxonomy(taxids, TAXA_SQL)
-  sk  <- intersect(c("superkingdom", "domain", "Superkingdom", "super kingdom"), colnames(mat))[1]
-  kk  <- intersect(c("kingdom", "Kingdom"), colnames(mat))[1]
-  if (is.na(sk)) return(NULL)
-  out <- data.table(taxid = as.integer(rownames(mat)), kingdom = mat[, sk])
-  if (!is.na(kk)) {
-    out[!is.na(mat[, kk]) & mat[, kk] == "Fungi", kingdom := "Fungi"]
-  } else if ("phylum" %in% colnames(mat)) {
-    out[mat[, "phylum"] %in% FUNGAL_PHYLA, kingdom := "Fungi"]
-  }
-  out[is.na(kingdom), kingdom := "unclassified"]
-  out
-}
 
 check_hits <- function(hits_file) {
   cat("============================================================\n")
@@ -78,16 +52,9 @@ check_hits <- function(hits_file) {
       is_cbm <- grepl("^CBM", x)
       c(x[!is_bin & !is_cbm], x[!is_bin & is_cbm], x[is_bin])[1]
     }),
-    has_ec  = sapply(fields, function(p) any(grepl(EC_PAT, p))),
-    # Last all-numeric field, as 08_integrate.R reads it for JGI headers
-    num_id   = sapply(fields, function(p) {
-      num <- p[grepl("^[0-9]+$", p)]
-      if (length(num)) num[length(num)] else NA_character_
-    }),
-    last_fld = sapply(fields, function(p) p[length(p)])
+    has_ec   = sapply(fields, function(p) any(grepl(EC_PAT, p)))
   )
   lu[, genbank := grepl(".", field1, fixed = TRUE)]
-  lu[, jgi := !genbank & grepl(LABEL_PAT, field1)]
   # The earlier parser kept the last label for GenBank headers, the first otherwise
   lu[, old_used := fifelse(genbank, last, first)]
   dt <- lu[dt, on = "sseqid"]
@@ -141,66 +108,6 @@ check_hits <- function(hits_file) {
   cat(sprintf("Distinct read pairs             : %d\n", pairs))
   cat(sprintf("Pairs still in >1 family        : %d (%.2f%% of pairs)\n\n",
               merged - pairs, 100 * (merged - pairs) / pairs))
-
-  # ── 5. Kingdoms assigned to JGI references ─────────────────────────────────
-  cat("--- 5. Kingdom assignment by reference source ---\n")
-  counted[, family := base_family(used)]
-  k <- counted[counted[, .I[which.max(bitscore)], by = .(pair_id, family)]$V1]
-  k[, source := fifelse(jgi, "JGI", fifelse(genbank, "GenBank", "other"))]
-
-  codes <- k[jgi == TRUE, .(hits = .N, file_field = last_fld[1]),
-             by = .(code = sub("_.*$", "", last_fld))][order(-hits)]
-  codes_file <- paste0(sub("_hits\\.tsv$", "", basename(hits_file)), "_jgi_codes.tsv")
-  fwrite(codes, codes_file, sep = "\t")
-  cat("JGI counts:", sum(codes$hits), " distinct genome codes:", nrow(codes),
-      " written to:", codes_file, "\n")
-  cat("Most-hit JGI genomes:\n")
-  print(head(codes[, .(code, hits)], 15))
-  cat("Share of JGI counts from GeneCatalog files:",
-      round(100 * k[jgi == TRUE, mean(grepl("GeneCatalog", last_fld))], 1), "%\n")
-
-  if (!file.exists(TAXONMAP_FILE) || !file.exists(TAXA_SQL)) {
-    cat("\n[SKIP] taxonmap or taxonomy.sql not found; kingdom comparison not run.\n\n")
-    return(invisible(NULL))
-  }
-  tm <- fread(TAXONMAP_FILE, header = TRUE, col.names = c("accession", "taxid"),
-              colClasses = c("character", "integer"), key = "accession")
-  k[, taxid := NA_integer_]
-  k[jgi == TRUE, taxid := as.integer(num_id)]
-  k[genbank == TRUE, taxid := tm[.SD, on = c(accession = "field1"), x.taxid]]
-
-  ids <- unique(k$taxid[!is.na(k$taxid) & k$taxid > 0])
-  kl  <- kingdom_lookup(ids)
-  if (is.null(kl)) {
-    cat("\n[SKIP] Could not resolve kingdoms; is taxonomizr installed?\n\n")
-    return(invisible(NULL))
-  }
-  k[kl, kingdom := i.kingdom, on = "taxid"]
-  k[is.na(kingdom), kingdom := "unclassified"]
-
-  cat("\nCounts by reference source and assigned kingdom:\n")
-  print(dcast(k, source ~ kingdom, value.var = "pair_id", fun.aggregate = length))
-
-  # Upper bound: treats every JGI reference as fungal, which needs confirming
-  # against the genome codes above before it is used for anything.
-  fb <- function(d) {
-    f <- d[kingdom == "Fungi", .N]; b <- d[kingdom == "Bacteria", .N]
-    data.table(fungi = f, bacteria = b, log_ratio = round(log((f + 1) / (b + 1)), 3))
-  }
-  all_jgi_fungal <- copy(k)[jgi == TRUE, kingdom := "Fungi"]
-  cat("\nF:B as parsed now vs. if every JGI reference were fungal:\n")
-  print(rbind(cbind(scenario = "as parsed", fb(k)),
-              cbind(scenario = "JGI = Fungi", fb(all_jgi_fungal))))
-  focus <- c("AA0", "AA1", "AA3", "AA5", "AA9", "GH5", "GH43", "GH16")
-  cat("\nSame comparison for selected families:\n")
-  print(rbindlist(lapply(focus, function(fam) {
-    cbind(family = fam,
-          as_parsed = fb(k[family == fam]),
-          jgi_fungi = fb(all_jgi_fungal[family == fam]))
-  })))
-  cat("\nFamilies with the most JGI counts assigned to Bacteria:\n")
-  print(head(k[jgi == TRUE & kingdom == "Bacteria", .N, by = family][order(-N)], 15))
-  cat("\n")
   invisible(NULL)
 }
 

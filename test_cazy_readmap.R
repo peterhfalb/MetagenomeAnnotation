@@ -9,7 +9,6 @@
 
 suppressPackageStartupMessages({
   library(data.table)
-  library(taxonomizr)
 })
 
 DB_DIR  <- "/projects/standard/kennedyp/shared/databases/metaG_annotation"
@@ -38,10 +37,10 @@ cat("Size   :", format(file.info(hits_file)$size, big.mark = ","), "bytes\n\n")
 
 # --- 2. Check supporting files ---
 taxonmap_file <- file.path(DB_DIR, "cazy_readmap", "cazy_taxonmap.tsv")
-taxa_sql      <- file.path(DB_DIR, "taxonomy", "taxonomy.sql")
+nodes_file    <- file.path(DB_DIR, "taxonomy", "nodes.dmp")
 
 cat("Taxonmap  :", ifelse(file.exists(taxonmap_file), "[OK]", "[MISSING]"), taxonmap_file, "\n")
-cat("Taxonomy  :", ifelse(file.exists(taxa_sql),      "[OK]", "[MISSING — will be built on first full 08_integrate.R run]"), "\n\n")
+cat("Taxonomy  :", ifelse(file.exists(nodes_file),    "[OK]", "[MISSING]"), nodes_file, "\n\n")
 
 # --- 3. Parse hits ---
 cat("Parsing hits...\n")
@@ -69,14 +68,16 @@ dt[, family := labels[match(sseqid, sseqids)]]
 dt <- dt[!is.na(family)]
 cat("  After family extraction    :", formatC(nrow(dt), format = "d", big.mark = ","), "\n")
 
+# JGI numbers are protein IDs, not taxids: the genome file identifies the organism
+script_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+jgi_genomes <- fread(file.path(dirname(sub("^--file=", "", script_arg[1])), "jgi_fungal_genomes.tsv"),
+                     sep = "\t", quote = "", select = c("source_file", "ncbi_taxid"),
+                     colClasses = list(character = "source_file", integer = "ncbi_taxid"))
+dt[, taxid := NA_integer_]
 dt[is_genbank == TRUE,  accession := field1]
-dt[is_genbank == FALSE, taxid := {
-  parts <- strsplit(sseqid[is_genbank == FALSE], "\\|")
-  as.integer(sapply(parts, function(p) {
-    num <- p[grepl("^[0-9]+$", p)]
-    if (length(num) > 0) tail(num, 1L) else NA_character_
-  }))
-}]
+dt[is_genbank == FALSE, taxid := jgi_genomes$ncbi_taxid[
+  match(sub("^.*\\|", "", sseqid), jgi_genomes$source_file)]]
+dt[, source := fifelse(is_genbank, "NCBI", "JGI")]
 dt[, c("field1", "is_genbank") := NULL]
 
 dt[, family := sub("_[0-9]+$", "", family)]
@@ -101,45 +102,38 @@ cat("  Taxids assigned            :", formatC(sum(!is.na(dt$taxid)), format = "d
 cat("  No taxid (unclassified)   :", formatC(sum(is.na(dt$taxid)), format = "d", big.mark = ","), "\n\n")
 
 # --- 5. Kingdom expansion ---
-if (!file.exists(taxa_sql)) {
-  cat("taxonomy.sql not yet built — skipping kingdom expansion.\n")
-  cat("It will be built automatically on the first full run of 08_integrate.R.\n\n")
+if (!file.exists(nodes_file)) {
+  cat("nodes.dmp not found — skipping kingdom assignment.\n\n")
 } else {
-  cat("Expanding taxids to kingdom via taxonomizr...\n")
+  cat("Assigning kingdoms from NCBI lineages...\n")
   all_taxids <- unique(dt$taxid[!is.na(dt$taxid) & dt$taxid > 0])
   cat("  Unique taxids:", length(all_taxids), "\n")
 
-  taxon_mat <- getTaxonomy(all_taxids, taxa_sql)
-
-  cat("  Columns returned by getTaxonomy():", paste(colnames(taxon_mat), collapse = ", "), "\n")
-
-  # Pick the superkingdom column — name varies across taxonomizr versions
-  sk_col <- intersect(c("superkingdom", "domain", "Superkingdom", "super kingdom"), colnames(taxon_mat))[1]
-  kk_col <- intersect(c("kingdom",      "Kingdom"),                                colnames(taxon_mat))[1]
-  if (is.na(sk_col)) stop("Cannot find superkingdom column in getTaxonomy() output — columns: ",
-                          paste(colnames(taxon_mat), collapse = ", "))
-
-  FUNGAL_PHYLA <- c("Ascomycota", "Basidiomycota", "Chytridiomycota", "Mucoromycota",
-                    "Glomeromycota", "Blastocladiomycota", "Neocallimastigomycota",
-                    "Zoopagomycota", "Mortierellomycota", "Microsporidia")
-
-  kingdom_lut <- data.table(
-    taxid  = as.integer(rownames(taxon_mat)),
-    domain = taxon_mat[, sk_col],
-    phylum = if ("phylum" %in% colnames(taxon_mat)) taxon_mat[, "phylum"] else NA_character_
-  )
-  # Assign kingdom: use phylum to distinguish Fungi from other Eukaryota
-  kingdom_lut[, kingdom := domain]
-  if (!is.na(kk_col)) {
-    kingdom_lut[!is.na(taxon_mat[, kk_col]) & taxon_mat[, kk_col] == "Fungi",
-                kingdom := "Fungi"]
-  } else {
-    kingdom_lut[phylum %in% FUNGAL_PHYLA, kingdom := "Fungi"]
+  nodes <- fread(nodes_file, sep = "\t", header = FALSE, quote = "",
+                 select = c(1L, 3L), col.names = c("taxid", "parent"))
+  tops <- c("4751" = "Fungi", "2" = "Bacteria", "2157" = "Archaea",
+            "10239" = "Viruses", "2759" = "Eukaryota")
+  kingdoms <- rep("unclassified", length(all_taxids))
+  current  <- all_taxids
+  for (step in seq_len(100L)) {
+    active <- which(!is.na(current))
+    if (length(active) == 0) break
+    hit   <- unname(tops[as.character(current[active])])
+    found <- !is.na(hit)
+    kingdoms[active[found]] <- hit[found]
+    current[active[found]]  <- NA_integer_
+    rest   <- active[!found]
+    parent <- nodes$parent[match(current[rest], nodes$taxid)]
+    parent[parent == current[rest]] <- NA_integer_
+    current[rest] <- parent
   }
-  kingdom_lut[is.na(kingdom), kingdom := "unclassified"]
+  kingdom_lut <- data.table(taxid = all_taxids, kingdom = kingdoms)
 
   dt[kingdom_lut, kingdom := i.kingdom, on = "taxid"]
   dt[is.na(kingdom), kingdom := "unclassified"]
+
+  cat("\nCounts by reference source and kingdom:\n")
+  print(dt[, .N, by = .(source, kingdom)][order(source, -N)])
 
   cat("\nKingdom breakdown:\n")
   ks <- dt[, .N, by = kingdom][order(-N)]

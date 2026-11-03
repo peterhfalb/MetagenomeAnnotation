@@ -1,0 +1,1197 @@
+source_file	portal	catalog_name	catalog_taxid	ncbi_taxid	ncbi_name	n_sequences
+Aaoar1_GeneCatalog_proteins_20140429.aa.fasta	Aaoar1	Aaosphaeria arxii CBS 175.79 v1.0	1450171	1450171	Aaosphaeria arxii	614
+Abobie1_GeneCatalog_proteins_20170621.aa.fasta	Abobie1	Abortiporus biennis ?CIRM-BRFM 1778 v1.0	137743	137743	Abortiporus biennis	396
+Absrep1_GeneCatalog_proteins_20160129.aa.fasta	Absrep1	Absidia repens NRRL 1336 v1.0	90262	90262	Absidia repens	343
+Acain1_GeneCatalog_proteins_20150309.aa.fasta	Acain1	Acaromyces ingoldii MCA 4198 v1.0	215250	215250	Acaromyces ingoldii	246
+Acastr1_GeneCatalog_proteins_20160720.aa.fasta	Acastr1	Acarospora strigata CBS 132363	1307806	1307806	Acarospora strigata	226
+Acema1_GeneCatalog_proteins_20150224.aa.fasta	Acema1	Acephala macrosclerotiorum EW76-UTF0540 v1.0	886606	886606	Acephala macrosclerotiorum	777
+Achma1_GeneCatalog_proteins_20220407.aa.fasta	Achma1	Achaetomium macrosporum CBS 532.94 v1.0	79813	79813	Achaetomium macrosporum	493
+Achstr1_GeneCatalog_proteins_20171031.aa.fasta	Achstr1	Achaetomium strumarium CBS333.67 v1.0	79814	1170767	Chaetomium strumarium	458
+Aciri1_iso_GeneCatalog_proteins_20111207.aa.fasta	Aciri1_iso	Acidomyces richmondensis BFW	245562	245562	Acidomyces sp. 'richmondensis'	424
+Acral2_GeneCatalog_proteins_20110414.aa.fasta	Acral2	Sodiomyces alcalophilus v2.0	591952	591952	Sodiomyces alcalophilus JCM 7366	334
+AcreTS7_1_GeneCatalog_proteins_20190328.aa.fasta	AcreTS7_1	Emericellopsis sp. TS7 v1.0	2614577	2614577	Emericellopsis atlantica	454
+Acrst1_GeneCatalog_proteins_20141022.aa.fasta	Acrst1	Acremonium strictum DS1bioAY4a v1.0	5046	5046	Sarocladium strictum	669
+Acrth1_GeneCatalog_proteins_20220321.aa.fasta	Acrth1	Phialemonium thermophilum ATCC 24622	223376	223376	Phialemonium thermophilum	385
+Agrped1_GeneCatalog_proteins_20151110.aa.fasta	Agrped1	Agrocybe pediades AH 40210 v1.0	84607	84607	Agrocybe pediades	549
+Allma1_GeneCatalog_proteins_20131203.aa.fasta	Allma1	Allomyces macrogynus ATCC 38327	578462	578462	Allomyces macrogynus ATCC 38327	300
+Altal1_GeneCatalog_proteins_20141010.aa.fasta	Altal1	Alternaria alternata SRC1lrK2f v1.0	5599	5599	Alternaria alternata	615
+Altalt1_GeneCatalog_proteins_20170627.aa.fasta	Altalt1	Alternaria alternata MPI-PUGE-AT-0064 v1.0	5599	5599	Alternaria alternata	608
+Altro1_GeneCatalog_proteins_20180320.aa.fasta	Altro1	Alternaria rosae MPI-PUGE-AT-0040 v1.0	1187941	1187941	Alternaria rosae	571
+Amamu1_GeneCatalog_proteins_20120806.aa.fasta	Amamu1	Amanita muscaria Koide v1.0	41956	41956	Amanita muscaria	292
+Amarub1_GeneCatalog_proteins_20190322.aa.fasta	Amarub1	Amanita rubescens P?ilba v1.0	71933	71933	Amanita rubescens	347
+Ambph1_GeneCatalog_proteins_20181206.aa.fasta	Ambph1	Ambrosiozyma philentoma NRRL Y-7523	43984	43984	Ambrosiozyma philentoma	211
+Amnli1_GeneCatalog_proteins_20140304.aa.fasta	Amnli1	Amniculicola lignicola CBS 123094 v1.0	1392246	1392246	Amniculicola lignicola CBS 123094	576
+Amore1_GeneCatalog_proteins_20110719.aa.fasta	Amore1	Amorphotheca resinae v1.0	5101	5101	Amorphotheca resinae	294
+Ampqui1_GeneCatalog_proteins_20160127.aa.fasta	Ampqui1	Ampelomyces quisqualis HMLAC05119 v1.0	50730	50730	Ampelomyces quisqualis	418
+Amycha1_GeneCatalog_proteins_20170615.aa.fasta	Amycha1	Amylostereum chailletii DWAch2 v1.0	55340	55340	Amylostereum chailletii	467
+Amyenc1_GeneCatalog_proteins_20190204.aa.fasta	Amyenc1	Amylocarpus encephaloides TRa018bII v1.0	45428	45428	Amylocarpus encephaloides	434
+Amylap1_1_GeneCatalog_proteins_20171107.aa.fasta	Amylap1_1	Amylocystis lapponica SKaAmylap13 v1.0	202700	202700	Amylocystis lapponica	278
+Amyrou1_GeneCatalog_proteins_20181016.aa.fasta	Amyrou1	Amylomyces rouxii NRRL 5866 v1.0	29923	29923	Amylomyces rouxii	385
+Anasp1_GeneCatalog_proteins_20160330.aa.fasta	Anasp1	Anaeromyces robustus v1.0	1754192	1754192	Anaeromyces robustus	711
+Annbov1_GeneCatalog_proteins_20190619.aa.fasta	Annbov1	Annulohypoxylon bovei var. microspora CBS 124037 v1.0	326617	326617	Annulohypoxylon bovei var. microspora	502
+Annmae1_GeneCatalog_proteins_20190718.aa.fasta	Annmae1	Annulohypoxylon maeteangense CBS 123835 v1.0	1927788	1927788	Annulohypoxylon maeteangense	487
+Annmin1_GeneCatalog_proteins_20190615.aa.fasta	Annmin1	Annulohypoxylon minutellum CBS 135445 v1.0	326621	1955266	Jackrogersella minutella	476
+Annmor1_GeneCatalog_proteins_20190622.aa.fasta	Annmor1	Annulohypoxylon moriforme CBS 123579 v1.0	326622	326622	Annulohypoxylon moriforme	504
+Annnit1_GeneCatalog_proteins_20190623.aa.fasta	Annnit1	Annulohypoxylon nitens CBS 120705 v1.0	326626	326626	Annulohypoxylon nitens	506
+Annsty1_GeneCatalog_proteins_20190620.aa.fasta	Annsty1	Annulohypoxylon stygium FL0470 v1.0	326628	326628	Annulohypoxylon stygium	508
+Anntru1_GeneCatalog_proteins_20190615.aa.fasta	Anntru1	Annulohypoxylon truncatum CBS 140777 v1.0	327061	327061	Annulohypoxylon truncatum	486
+Antlo1_GeneCatalog_proteins_20130909.aa.fasta	Antlo1	Antonospora locustae HM-2013	1284279	1284279	Antonospora locustae HM-2013	14
+Antser1_GeneCatalog_proteins_20170404.aa.fasta	Antser1	Antrodia serialis Sig1Antser10 v1.0	139415	139415	Fomitopsis serialis	391
+Apibac1_GeneCatalog_proteins_20170729.aa.fasta	Apibac1	Apiosordaria backusii CBS 540.89 v1.0	314023	314023	Apiosordaria backusii	484
+Apiver1_GeneCatalog_proteins_20220223.aa.fasta	Apiver1	Apiosordaria verruculosa CBS 315.58 v1.0	192815	192815	Apiosordaria	493
+Apope1_GeneCatalog_proteins_20171021.aa.fasta	Apope1	Apodospora peruviana CBS 118394 v1.0	516989	516989	Apodospora peruviana	593
+Armbor1_GeneCatalog_proteins_20181102.aa.fasta	Armbor1	Armillaria borealis FPL87.14 v1.0	47425	47425	Armillaria borealis	664
+Armcep1_GeneCatalog_proteins_20170112.aa.fasta	Armcep1	Armillaria cepistipes B5	47426	47426	Armillaria cepistipes	675
+Armfum1_GeneCatalog_proteins_20200406.aa.fasta	Armfum1	Armillaria fumosa CBS 122221 v1.0	153910	153910	Armillaria fumosa	630
+Armga1_GeneCatalog_proteins_20141028.aa.fasta	Armga1	Armillaria gallica 21-2 v1.0	47427	47427	Armillaria gallica	688
+Armlut1_GeneCatalog_proteins_20180531.aa.fasta	Armlut1	Armillaria luteobubalina HWK02 v1.0	153913	153913	Armillaria luteobubalina	713
+Armme1_1_GeneCatalog_proteins_20140802.aa.fasta	Armme1_1	Armillaria mellea DSM 3731	1314977	1314977	Armillaria mellea DSM 3731	631
+Armmel1_GeneCatalog_proteins_20190531.aa.fasta	Armmel1	Armillaria mellea ELDO17 v1.0	47429	47429	Armillaria mellea	627
+Armnab1_GeneCatalog_proteins_20180526.aa.fasta	Armnab1	Armillaria nabsnona CMW6904 v1.0	64368	64368	Armillaria nabsnona	652
+Armnov1_GeneCatalog_proteins_20200623.aa.fasta	Armnov1	Armillaria novae-zelandiae 2840 v1.0	153914	153914	Armillaria novae-zelandiae	634
+Armosto1_GeneCatalog_proteins_20170112.aa.fasta	Armosto1	Armillaria ostoyae C18/9	47428	47428	Armillaria ostoyae	635
+Armtab1_GeneCatalog_proteins_20180816.aa.fasta	Armtab1	Armillaria tabescens CCBAS 213 v1.0	47431	1929756	Desarmillaria tabescens	682
+Artele1122_1_GeneCatalog_proteins_20160227.aa.fasta	Artele1122_1	Artolenzites elegans CIRM-BRFM 1122 v1.0	526244	526244	Trametes elegans	416
+Artol1_GeneCatalog_proteins_20131209.aa.fasta	Artol1	Arthrobotrys oligospora ATCC 24927	756982	756982	Orbilia oligospora ATCC 24927	434
+Arxad1_GeneCatalog_proteins_20141211.aa.fasta	Arxad1	Blastobotrys (Arxula) adeninivorans	1401090	1401090	Blastobotrys adeninivorans LR3	178
+Ascap1_GeneCatalog_proteins_20210318.aa.fasta	Ascap1	Ascosphaera apis ARSEF 7405	392613	392613	Ascosphaera apis ARSEF 7405	182
+Ascni1_GeneCatalog_proteins_20141120.aa.fasta	Ascni1	Ascodesmis nigricans CBS 389.68 v1.0	341454	341454	Ascodesmis nigricans	187
+Ascsa1_GeneCatalog_proteins_20140116.aa.fasta	Ascsa1	Ascocoryne sarcoides NRRL50072	1016881	1016881	Ascocoryne sarcoides NRRL 50072	437
+Ashgo1_1_GeneCatalog_proteins_20140830.aa.fasta	Ashgo1_1	Eremothecium gossypii ATCC 10895	284811	284811	Eremothecium gossypii ATCC 10895	112
+Aspac1_filtered_proteins.FilteredModels6.fasta	Aspac1	Aspergillus aculeatus ATCC16872 v1.1	5053	5053	Aspergillus aculeatus	486
+Aspacri1_GeneCatalog_proteins_20160412.aa.fasta	Aspacri1	Aspergillus acristatulus CBS 119.55 v1.0	286159	286159	Aspergillus nidulans var. acristatus	537
+Aspala1_GeneCatalog_proteins_20160910.aa.fasta	Aspala1	Aspergillus alabamensis v1.0	657433	657433	Aspergillus alabamensis	538
+Aspalbe1_GeneCatalog_proteins_20160720.aa.fasta	Aspalbe1	Aspergillus albertensis v1.0	41046	209559	Aspergillus alliaceus	551
+Aspall1_GeneCatalog_proteins_20160910.aa.fasta	Aspall1	Aspergillus allahabadii v1.0	1612426	1612426	Aspergillus allahabadii	544
+Aspalli1_GeneCatalog_proteins_20161018.aa.fasta	Aspalli1	Aspergillus alliaceus CBS 536.65 v1.0	209559	209559	Aspergillus alliaceus	549
+Aspamb1_GeneCatalog_proteins_20160910.aa.fasta	Aspamb1	Aspergillus ambiguus v1.0	176160	176160	Aspergillus ambiguus	486
+Aspamy1_GeneCatalog_proteins_20160516.aa.fasta	Aspamy1	Aspergillus amylovorus CBS 600.67 v1.0	176166	176166	Aspergillus cavernicola	581
+Aspara19utr_GeneCatalog_proteins_20160816.aa.fasta	Aspara19utr	Aspergillus arachidicola v1.0	656916	656916	Aspergillus arachidicola	619
+Aspaur1_GeneCatalog_proteins_20160910.aa.fasta	Aspaur1	Aspergillus aureoterreus v1.0	41288	41288	Aspergillus aureoterreus	530
+Aspaura1_GeneCatalog_proteins_20160412.aa.fasta	Aspaura1	Aspergillus aurantiobrunneus CBS 465.65 v1.0	41725	41725	Aspergillus aurantiobrunneus	454
+Aspave1_GeneCatalog_proteins_20160920.aa.fasta	Aspave1	Aspergillus avenaceus IBT 18842 v1.0	36643	36643	Aspergillus avenaceus	478
+Aspber1_GeneCatalog_proteins_20160916.aa.fasta	Aspber1	Aspergillus bertholletius IBT 29228 v1.0	1226010	1226010	Aspergillus bertholletiae	540
+Aspbom1_GeneCatalog_proteins_20170529.aa.fasta	Aspbom1	Aspergillus bombycis NRRL 26010	109264	109264	Aspergillus bombycis	563
+Aspbr1_GeneCatalog_proteins_20120615.aa.fasta	Aspbr1	Aspergillus brasiliensis v1.0	767769	767769	Aspergillus brasiliensis CBS 101740	503
+Aspcae1_GeneCatalog_proteins_20160916.aa.fasta	Aspcae1	Aspergillus caelatus CBS 763.97 v1.0	61420	61420	Aspergillus caelatus	612
+Aspcal1_GeneCatalog_proteins_20160920.aa.fasta	Aspcal1	Aspergillus calidoustus	454130	454130	Aspergillus calidoustus	700
+Aspcalif1_GeneCatalog_proteins_20170407.aa.fasta	Aspcalif1	Aspergillus californicus CBS 123895 v1.0	1810905	1810905	Aspergillus californicus	589
+Aspcam1_GeneCatalog_proteins_20140128.aa.fasta	Aspcam1	Aspergillus campestris IBT 28561 v1.0	1392248	1392248	Aspergillus campestris IBT 28561	349
+Aspcand1_GeneCatalog_proteins_20161018.aa.fasta	Aspcand1	Aspergillus candidus CBS 102.13 v1.0	41067	41067	Aspergillus candidus	349
+Aspcar1_GeneCatalog_proteins_20170323.aa.fasta	Aspcar1	Aspergillus carlsbadensis CBS 123894 v1.0	1810906	1810906	Aspergillus carlsbadensis	638
+Aspcor1_GeneCatalog_proteins_20160916.aa.fasta	Aspcor1	Aspergillus coremiiformis CBS 553.77 v1.0	138285	138285	Aspergillus coremiiformis	360
+Aspcri1_GeneCatalog_proteins_20170529.aa.fasta	Aspcri1	Aspergillus cristatus GZAAS20.1005	573508	573508	Aspergillus cristatus	318
+Aspcru1_GeneCatalog_proteins_20170323.aa.fasta	Aspcru1	Aspergillus crustosus CBS 478.65 v1.0	41757	41757	Aspergillus crustosus	502
+Aspdese1_GeneCatalog_proteins_20160412.aa.fasta	Aspdese1	Aspergillus desertorum CBS 653.73 v1.0	1810909	1810909	Aspergillus desertorum	443
+Aspegy1_GeneCatalog_proteins_20170324.aa.fasta	Aspegy1	Aspergillus egyptiacus CBS 656.73 v1.0	41743	41743	Aspergillus egyptiacus	389
+Aspeuc1_GeneCatalog_proteins_20140626.aa.fasta	Aspeuc1	Aspergillus eucalypticola CBS 122712 v1.0	1340029	1340029	Aspergillus eucalypticola	461
+Aspfalc1_GeneCatalog_proteins_20160412.aa.fasta	Aspfalc1	Aspergillus falconensis CBS 271.91 v1.0	1810910	1810910	Aspergillus falconensis	560
+Aspfili1_GeneCatalog_proteins_20160412.aa.fasta	Aspfili1	Aspergillus filifera CBS 114510 v1.0	447248	447248	Aspergillus filifer	499
+Aspfl2_3_GeneCatalog_proteins_20200207.aa.fasta	Aspfl2_3	Aspergillus flavus NRRL3357 v1.0	332952	332952	Aspergillus flavus NRRL3357	585
+Aspflo1_GeneCatalog_proteins_20170325.aa.fasta	Aspflo1	Aspergillus floccosus CBS 116.37 v1.0	658358	658358	Aspergillus floccosus	538
+Aspfo1_GeneCatalog_proteins_20120615.aa.fasta	Aspfo1	Aspergillus luchuensis CBS 106.47 v1.0	1137211	1137211	Aspergillus luchuensis CBS 106.47	478
+Aspfove1_GeneCatalog_proteins_20160412.aa.fasta	Aspfove1	Aspergillus foveolata CBS 279.81 v1.0	210207	210207	Aspergillus foveolatus	518
+Aspfru1_GeneCatalog_proteins_20160309.aa.fasta	Aspfru1	Aspergillus fructiculosus v1.0	1250369	1250369	Aspergillus fruticulosus	552
+Aspfu1_GeneCatalog_proteins_20120808.aa.fasta	Aspfu1	Aspergillus fumigatus Af293 from AspGD	330879	330879	Aspergillus fumigatus Af293	477
+Aspfu_A1163_1_GeneCatalog_proteins_20140107.aa.fasta	Aspfu_A1163_1	Aspergillus fumigatus A1163	451804	451804	Aspergillus fumigatus A1163	473
+Aspger1_GeneCatalog_proteins_20170324.aa.fasta	Aspger1	Aspergillus germanicus CBS 123887 v1.0	1506149	1506149	Aspergillus germanicus	708
+Aspgl1_GeneCatalog_proteins_20121005.aa.fasta	Aspgl1	Aspergillus glaucus v1.0	1160497	1160497	Aspergillus glaucus CBS 516.65	334
+Aspgra1_GeneCatalog_proteins_20170405.aa.fasta	Aspgra1	Aspergillus granulosus CBS 588.65 v1.0	176169	176169	Aspergillus granulosus	599
+Asphet1_GeneCatalog_proteins_20140624.aa.fasta	Asphet1	Aspergillus heteromorphus CBS 117.55 v1.0	51019	51019	Aspergillus heteromorphus	393
+Asphethal1_GeneCatalog_proteins_20170404.aa.fasta	Asphethal1	Aspergillus heterothallicus CBS 489.65 v1.0	41742	41742	Aspergillus heterothallicus	594
+Aspind2_1_GeneCatalog_proteins_20160309.aa.fasta	Aspind2_1	Aspergillus indicus v2.0	138288	138288	Aspergillus terricola var. indicus	531
+Aspins1_GeneCatalog_proteins_20170324.aa.fasta	Aspins1	Aspergillus insuetus CBS 107.25 v1.0	469274	469274	Aspergillus insuetus	720
+Aspkar1_GeneCatalog_proteins_20170325.aa.fasta	Aspkar1	Aspergillus karnatakaensis CBS 102800 v1.0	1810916	1810916	Aspergillus karnatakaensis	578
+Aspkev1_GeneCatalog_proteins_20170406.aa.fasta	Aspkev1	Aspergillus keveii CBS 209.92 v1.0	714993	714993	Aspergillus keveii	733
+Asplac1_GeneCatalog_proteins_20140612.aa.fasta	Asplac1	Aspergillus niger (lacticoffeatus) CBS 101883 v1.0	1450533	1450533	Aspergillus niger CBS 101883	492
+Asplep1_GeneCatalog_proteins_20161018.aa.fasta	Asplep1	Aspergillus leporis CBS 151.66 v1.0	41062	41062	Aspergillus leporis	555
+Aspluc1_GeneCatalog_proteins_20170325.aa.fasta	Aspluc1	Aspergillus lucknowensis CBS 449.75 v1.0	176173	176173	Aspergillus lucknowensis	513
+Aspmic1_GeneCatalog_proteins_20170325.aa.fasta	Aspmic1	Aspergillus microcysticus v1.0	176174	176174	Aspergillus microcysticus	406
+Aspmin1_GeneCatalog_proteins_20160910.aa.fasta	Aspmin1	Aspergillus minisclerotigenes CBS 117635 v1.0	656917	656917	Aspergillus minisclerotigenes	592
+Aspmul1_1_GeneCatalog_proteins_20160309.aa.fasta	Aspmul1_1	Aspergillus multicolor v1.0	41759	41759	Aspergillus multicolor	545
+Aspnav1_1_GeneCatalog_proteins_20160309.aa.fasta	Aspnav1_1	Aspergillus navahoensis v1.0	91484	91484	Aspergillus navahoensis	512
+Aspne1_GeneCatalog_proteins_20160629.aa.fasta	Aspne1	Aspergillus neoechinulatus CBS120.55 v1.0	2184044	2184044	Aspergillus sp. JGI-2018a	500
+Aspneo1_GeneCatalog_proteins_20140612.aa.fasta	Aspneo1	Aspergillus neoniger CBS 115656 v1.0	1196635	1196635	Aspergillus neoniger	471
+Aspneoi1_GeneCatalog_proteins_20170406.aa.fasta	Aspneoi1	Aspergillus neoindicus CBS 444.75 v1.0	1641034	1641034	Aspergillus neoindicus	540
+Aspni7_GeneCatalog_proteins_20131226.aa.fasta	Aspni7	Aspergillus niger ATCC 1015 v4.0	380704	380704	Aspergillus niger ATCC 1015	486
+Aspni_bvT_1_GeneCatalog_proteins_20140302.aa.fasta	Aspni_bvT_1	Aspergillus niger van Tieghem ATCC 13496 v1.0	1353008	1353008	Aspergillus niger ATCC 13496	489
+Aspnid1_GeneCatalog_proteins_20110130.aa.fasta	Aspnid1	Aspergillus nidulans	162425	162425	Aspergillus nidulans	509
+Aspnom1_GeneCatalog_proteins_20160910.aa.fasta	Aspnom1	Aspergillus nomius IBT 12657 v1.0	41061	41061	Aspergillus nomiae	557
+Aspnom13137_1_GeneCatalog_proteins_20160919.aa.fasta	Aspnom13137_1	Aspergillus nomius NRRL 13137	1509407	1509407	Aspergillus nomiae NRRL 13137	555
+Aspnov1_GeneCatalog_proteins_20140201.aa.fasta	Aspnov1	Aspergillus novofumigatus IBT 16806 v1.0	1392255	1392255	Aspergillus novofumigatus IBT 16806	536
+Aspnovo1_GeneCatalog_proteins_20160816.aa.fasta	Aspnovo1	Aspergillus novoparasiticus CBS 126849 v1.0	986946	986946	Aspergillus novoparasiticus	626
+Aspoch1_GeneCatalog_proteins_20140127.aa.fasta	Aspoch1	Aspergillus ochraceoroseus IBT 24754 v1.0	1392256	1392256	Aspergillus ochraceoroseus IBT 24754	357
+Aspoli1_1_GeneCatalog_proteins_20160309.aa.fasta	Aspoli1_1	Aspergillus olivicola v1.0	1250372	1250372	Aspergillus oleicola	521
+Aspor1_GeneCatalog_proteins_20120808.aa.fasta	Aspor1	Aspergillus oryzae RIB40	510516	510516	Aspergillus oryzae RIB40	567
+Asppar1_GeneCatalog_proteins_20160724.aa.fasta	Asppar1	Aspergillus parasiticus CBS 117618 v1.0	5067	5067	Aspergillus parasiticus	602
+Asppari1_GeneCatalog_proteins_20161018.aa.fasta	Asppari1	Aspergillus parvisclerotigenus CBS 121.62 v1.0	422207	5059	Aspergillus flavus	586
+Asppdef1_GeneCatalog_proteins_20170320.aa.fasta	Asppdef1	Aspergillus pseudodeflectus v1.0	176178	176178	Aspergillus pseudodeflectus	692
+Aspph1_GeneCatalog_proteins_20140307.aa.fasta	Aspph1	Aspergillus niger (phoenicis Corda) Thom ATCC 13157 v1.0	1353007	1353007	Aspergillus phoenicis ATCC 13157	490
+Asppsec1_GeneCatalog_proteins_20160915.aa.fasta	Asppsec1	Aspergillus pseudocaelatus CBS 117616 v1.0	1825620	1825620	Aspergillus pseudocaelatus	613
+Asppsen1_GeneCatalog_proteins_20160914.aa.fasta	Asppsen1	Aspergillus pseudonomius CBS 119388 v1.0	1506151	1506151	Aspergillus pseudonomiae	568
+Asppset1_GeneCatalog_proteins_20160915.aa.fasta	Asppset1	Aspergillus pseudotamarii CBS 117625 v1.0	132259	132259	Aspergillus pseudotamarii	597
+Asppust1_GeneCatalog_proteins_20170320.aa.fasta	Asppust1	Aspergillus pseudoustus CBS 123904 v1.0	1810923	1810923	Aspergillus pseudoustus	715
+Aspquaf1_GeneCatalog_proteins_20170616.aa.fasta	Aspquaf1	Aspergillus quadrilineatus (floriformis) CBS 937.73 v1.0	41735	41735	Aspergillus quadrilineatus	533
+Aspquag1_GeneCatalog_proteins_20170616.aa.fasta	Aspquag1	Aspergillus quadrilineatus (gemmatus) CBS 853.96 v1.0	41735	41735	Aspergillus quadrilineatus	515
+Asprec1_1_GeneCatalog_proteins_20160405.aa.fasta	Asprec1_1	Aspergillus recurvatus v1.0	41761	41761	Aspergillus recurvatus	500
+Aspsac1_GeneCatalog_proteins_20140605.aa.fasta	Aspsac1	Aspergillus saccharolyticus JOP 1030-1 v1.0	979771	979771	Aspergillus saccharolyticus	407
+Aspscl1_GeneCatalog_proteins_20140623.aa.fasta	Aspscl1	Aspergillus sclerotioniger CBS115572 v1.0	319627	319627	Aspergillus sclerotioniger	457
+Aspser1_GeneCatalog_proteins_20160915.aa.fasta	Aspser1	Aspergillus sergii CBS 130017 v1.0	1034303	1034303	Aspergillus sergii	622
+Aspsim1_1_GeneCatalog_proteins_20160404.aa.fasta	Aspsim1_1	Aspergillus similis v1.0	1810925	1810925	Aspergillus similis	537
+Aspste1_GeneCatalog_proteins_20140201.aa.fasta	Aspste1	Aspergillus steynii IBT 23096 v1.0	1392250	1392250	Aspergillus steynii IBT 23096	536
+Aspstec1_1_GeneCatalog_proteins_20160404.aa.fasta	Aspstec1_1	Aspergillus stercoraria CBS 428.93 v1.0	1883081	1810892	Aspergillus stercorarius	455
+Aspstel1_1_GeneCatalog_proteins_20160404.aa.fasta	Aspstel1_1	Aspergillus stella-maris CBS 113639 v1.0	1810926	1810926	Aspergillus stella-maris	512
+Aspsy1_GeneCatalog_proteins_20120625.aa.fasta	Aspsy1	Aspergillus sydowii CBS 593.65 v1.0	1036612	1036612	Aspergillus sydowii CBS 593.65	572
+Asptaic1_GeneCatalog_proteins_20160414.aa.fasta	Asptaic1	Aspergillus taichungensis IBT 19404 v1.0	482145	482145	Aspergillus taichungensis	338
+Asptam1_GeneCatalog_proteins_20160914.aa.fasta	Asptam1	Aspergillus tamarii CBS 117626 v1.0	41984	41984	Aspergillus tamarii	588
+Asptetr1_GeneCatalog_proteins_20160413.aa.fasta	Asptetr1	Aspergillus tetrazonus CBS 591.65A v1.0	1883080	1883080	Aspergillus tetrazonus	517
+Asptra1_GeneCatalog_proteins_20160915.aa.fasta	Asptra1	Aspergillus transmontanensis CBS 130015 v1.0	1034304	1034304	Aspergillus transmontanensis	595
+Asptu1_GeneCatalog_proteins_20120711.aa.fasta	Asptu1	Aspergillus tubingensis v1.0	767770	767770	Aspergillus tubingensis CBS 134.48	481
+Aspuda1_GeneCatalog_proteins_20160920.aa.fasta	Aspuda1	Aspergillus udagawae IFM 46973	91492	91492	Aspergillus udagawae	546
+Aspund1_1_GeneCatalog_proteins_20160404.aa.fasta	Aspund1_1	Aspergillus undulatus CBS 261.88 v1.0	1810928	1810928	Aspergillus undulatus	498
+Aspung1_GeneCatalog_proteins_20160614.aa.fasta	Aspung1	Aspergillus unguis CBS132.55 v1.0	40381	40381	Aspergillus unguis	403
+Aspuva1_GeneCatalog_proteins_20140531.aa.fasta	Aspuva1	Aspergillus uvarum CBS 121591 v1.0	446911	446911	Aspergillus uvarum	491
+Aspvad1_GeneCatalog_proteins_20140612.aa.fasta	Aspvad1	Aspergillus vadensis CBS 113365 v1.0	288669	288669	Aspergillus vadensis	475
+Aspvar1_GeneCatalog_proteins_20170320.aa.fasta	Aspvar1	Aspergillus varians CBS 505.65 v1.0	176181	176181	Aspergillus varians	383
+Aspve1_GeneCatalog_proteins_20120621.aa.fasta	Aspve1	Aspergillus versicolor v1.0	1036611	1036611	Aspergillus versicolor CBS 583.65	581
+Aspven1_GeneCatalog_proteins_20160614.aa.fasta	Aspven1	Aspergillus venezuelensis CBS 868.97 v1.0	1810929	1810929	Aspergillus venezuelensis	548
+Aspwe1_GeneCatalog_proteins_20120711.aa.fasta	Aspwe1	Aspergillus wentii v1.0	1073089	1073089	Aspergillus wentii DTO 134E9	458
+Aspwel1_GeneCatalog_proteins_20160629.aa.fasta	Aspwel1	Aspergillus welwitschiae CBS139.54b v1.0	1341132	1341132	Aspergillus welwitschiae	509
+Aspzo1_GeneCatalog_proteins_20121010.aa.fasta	Aspzo1	Aspergillus zonatus v1.0	1073090	1073090	Penicilliopsis zonata CBS 506.65	359
+Astsub1_GeneCatalog_proteins_20190325.aa.fasta	Astsub1	Astrocystis sublimbata CBS 130006 v1.0	743114	743114	Astrocystis sublimbata	500
+Aulhe2_GeneCatalog_proteins_20130401.aa.fasta	Aulhe2	Aulographum hederae v2.0	1176130	1176130	Aulographum hederae	375
+Auramp1_GeneCatalog_proteins_20160719.aa.fasta	Auramp1	Auriculariopsis ampla NL-1724 v1.0	97359	97359	Schizophyllum amplum	516
+Aurde3_1_GeneCatalog_proteins_20130729.aa.fasta	Aurde3_1	Auricularia subglabra v2.0	717982	717982	Auricularia subglabra TFB-10046 SS5	738
+Aurpu1_GeneCatalog_proteins_20220323.aa.fasta	Aurpu1	Aureobasidium pullulans ATCC 62921	5580	5580	Aureobasidium pullulans	512
+Aurpu_var_mel1_GeneCatalog_proteins_20130418.aa.fasta	Aurpu_var_mel1	Aureobasidium pullulans var. melanogenum CBS 110374	1043003	1043003	Aureobasidium melanogenum CBS 110374	455
+Aurpu_var_nam1_GeneCatalog_proteins_20130418.aa.fasta	Aurpu_var_nam1	Aureobasidium pullulans var. namibiae CBS 147.97	1043004	1043004	Aureobasidium namibiae CBS 147.97	490
+Aurpu_var_pul1_GeneCatalog_proteins_20130219.aa.fasta	Aurpu_var_pul1	Aureobasidium pullulans var. pullulans EXF-150	5580	5580	Aureobasidium pullulans	513
+Aurpu_var_sub1_GeneCatalog_proteins_20120515.aa.fasta	Aurpu_var_sub1	Aureobasidium pullulans var. subglaciale EXF-2481	1043005	1043005	Aureobasidium subglaciale EXF-2481	467
+AurpulNBB1_GeneCatalog_proteins_20190122.aa.fasta	AurpulNBB1	Aureobasidium pullulans NBB 7.2.1 v1.0	5580	5580	Aureobasidium pullulans	521
+Aurvu1_GeneCatalog_proteins_20140723.aa.fasta	Aurvu1	Auriscalpium vulgare FP105234-Sp v1.0	40419	40419	Auriscalpium vulgare	407
+Bacci1_GeneCatalog_proteins_20130730.aa.fasta	Bacci1	Backusella circina FSU 941 v1.0	64653	64653	Backusella circina	454
+Basme2finSC_GeneCatalog_proteins_20150701.aa.fasta	Basme2finSC	Basidiobolus meristosporus CBS 931.73 v1.0	423460	423460	Basidiobolus meristosporus	582
+Batsa1_GeneCatalog_proteins_20210224.aa.fasta	Batsa1	Batrachochytrium salamandrivorans BS	1357716	1357716	Batrachochytrium salamandrivorans	217
+Bauco1_GeneCatalog_proteins_20110511.aa.fasta	Bauco1	Baudoinia compniacensis UAMH 10762 (4089826) v1.0	717646	717646	Baudoinia panamericana UAMH 10762	317
+Beaba1_GeneCatalog_proteins_20130926.aa.fasta	Beaba1	Beauveria bassiana ARSEF 2860	655819	655819	Beauveria bassiana ARSEF 2860	369
+Benpoi1_GeneCatalog_proteins_20180911.aa.fasta	Benpoi1	Benjaminiella poitrasii RSA 903 v1.0	64631	64631	Benjaminiella poitrasii	303
+Bimnz1_GeneCatalog_proteins_20150128.aa.fasta	Bimnz1	Bimuria novae-zelandiae CBS 107.79 v1.0	147497	147497	Bimuria novae-zelandiae	623
+Biscog1_GeneCatalog_proteins_20190325.aa.fasta	Biscog1	Biscogniauxia sp. FL1348 v1.0	2614606	2614606	Biscogniauxia sp. FL1348	491
+Bisma1_GeneCatalog_proteins_20190619.aa.fasta	Bisma1	Biscogniauxia marginata CBS 124505 v1.0	110534	110534	Biscogniauxia marginata	494
+Bisme1_GeneCatalog_proteins_20190612.aa.fasta	Bisme1	Biscogniauxia mediterranea AZ0048 v1.0	97377	97377	Biscogniauxia mediterranea	481
+Bismed1_GeneCatalog_proteins_20190620.aa.fasta	Bismed1	Biscogniauxia mediterranea CBS 129072 v1.0	97377	97377	Biscogniauxia mediterranea	488
+Bjead1_1_GeneCatalog_proteins_20110614.aa.fasta	Bjead1_1	Bjerkandera adusta v1.0	5331	5331	Bjerkandera adusta	439
+Blabri1_GeneCatalog_proteins_20160901.aa.fasta	Blabri1	Blastocladiella britannica v1.0	64508	64508	Blastocladiella britannica	127
+Blade1_GeneCatalog_proteins_20130826.aa.fasta	Blade1	Blastomyces dermatitidis SLH14081	559298	559298	Blastomyces gilchristii SLH14081	210
+Blatri1_GeneCatalog_proteins_20160404.aa.fasta	Blatri1	Blakeslea trispora NRRL 2456 v1.0	4850	4850	Blakeslea trispora	295
+Blugr2_GeneCatalog_proteins_20180405.aa.fasta	Blugr2	Blumeria graminis f. sp. hordei DH14	546991	546991	Blumeria hordei DH14	162
+BlugrR1_1_GeneCatalog_proteins_20180503.aa.fasta	BlugrR1_1	Blumeria graminis f. sp. hordei Race1	62688	2867405	Blumeria hordei	160
+Blugra3_16_GeneCatalog_proteins_20200602.aa.fasta	Blugra3_16	Blumeria graminis f. sp. tritici 96224 v3.16	62690	62690	Blumeria graminis f. sp. tritici	156
+Blyhe1_GeneCatalog_proteins_20160509.aa.fasta	Blyhe1	Blyttiomyces helicus single-cell v1.0	388810	388810	Blyttiomyces helicus	216
+Boeex1_GeneCatalog_proteins_20171129.aa.fasta	Boeex1	Boeremia exigua MPI-SDFR-AT-0100 v1.0	749465	749465	Boeremia exigua	612
+Boled5_GeneCatalog_proteins_20170707.aa.fasta	Boled5	Boletus edulis BED1 v4.0	1328754	1328754	Boletus edulis BED1	351
+Boledp1_GeneCatalog_proteins_20181129.aa.fasta	Boledp1	Boletus edulis P?ilba v1.0	36056	36056	Boletus edulis	383
+Bombom1_GeneCatalog_proteins_20170616.aa.fasta	Bombom1	Bombardia bombarda SMH3391-2 v1.0	252184	252184	Bombardia bombarda	476
+Botbo1_GeneCatalog_proteins_20110803.aa.fasta	Botbo1	Botryobasidium botryosum v1.0	264124	264124	Botryobasidium botryosum	416
+Botcin1_GeneCatalog_proteins_20210304.aa.fasta	Botcin1	Botrytis cinerea T4	999810	999810	Botrytis cinerea T4	492
+Botdo1_1_GeneCatalog_proteins_20150128.aa.fasta	Botdo1_1	Botryosphaeria dothidea	55169	55169	Botryosphaeria dothidea	631
+Brefa1_GeneCatalog_proteins_20200715.aa.fasta	Brefa1	Bretziella fagacearum C519 v1.0	1836592	1836592	Bretziella fagacearum	230
+Butyri1_GeneCatalog_proteins_20200504.aa.fasta	Butyri1	Butyriboletus roseoflavus v1.0	1325616	1325616	Butyriboletus roseoflavus	254
+Bysci1_GeneCatalog_proteins_20140627.aa.fasta	Bysci1	Byssothecium circinans CBS 675.92 v1.0	147558	147558	Byssothecium circinans	638
+Bysni1_GeneCatalog_proteins_20180319.aa.fasta	Bysni1	Paecilomyces niveus CO7 v1.0	5093	5093	Paecilomyces niveus	380
+Byssp1_GeneCatalog_proteins_20170705.aa.fasta	Byssp1	Byssochlamys spectabilis No. 5	1356009	1356009	Paecilomyces variotii No. 5	324
+CadmalM221_1_GeneCatalog_proteins_20220609.aa.fasta	CadmalM221_1	Cadophora sp. M221	2774352	2774352	Cadophora sp. M221	863
+Cadsp1_GeneCatalog_proteins_20140317.aa.fasta	Cadsp1	Cadophora sp. DSE1049 v1.0	1485229	1485229	Cadophora sp. DSE1049	969
+Caecom1_GeneCatalog_proteins_20171213.aa.fasta	Caecom1	Caecomyces churrovis A v1.0	2019372	2019372	Caecomyces churrovis	819
+Calco1_GeneCatalog_proteins_20130417.aa.fasta	Calco1	Calocera cornea v1.0	1353952	1353952	Calocera cornea HHB12733	338
+Calmar1_GeneCatalog_proteins_20190202.aa.fasta	Calmar1	Calycina marina TRa3180A v1.0	1763456	1763456	Calycina marina	312
+Calth1_GeneCatalog_proteins_20220616.aa.fasta	Calth1	Calcarisporiella thermophila CBS 279.70	911321	911321	Calcarisporiella thermophila	292
+Calvi1_GeneCatalog_proteins_20130829.aa.fasta	Calvi1	Calocera viscosa v1.0	1330018	1330018	Calocera viscosa TUFC12733	343
+Canalb1_GeneCatalog_proteins_20161025.aa.fasta	Canalb1	Candida albicans SC5314	237561	237561	Candida albicans SC5314	154
+Cananz1_GeneCatalog_proteins_20160317.aa.fasta	Cananz1	Cantharellus anzutake C23 v1.0	36065	36065	Cantharellus	311
+Canbo1_GeneCatalog_proteins_20181210.aa.fasta	Canbo1	Candida boidinii NRRL Y-2332	5477	5477	[Candida] boidinii	136
+Canca1_GeneCatalog_proteins_20110525.aa.fasta	Canca1	Tortispora caseinolytica Y-17796 v1.0	767744	767744	Tortispora caseinolytica NRRL Y-17796	116
+Canta1_GeneCatalog_proteins_20120131.aa.fasta	Canta1	Candida tanzawaensis NRRL Y-17324  v1.0	984487	984487	Suhomyces tanzawaensis NRRL Y-17324	139
+Cante1_filtered_proteins_v1_1.fasta	Cante1	Candida tenuis NRRL Y-1498 v1.0	590646	590646	Yamadazyma tenuis ATCC 10573	162
+Capse1_GeneCatalog_proteins_20160902.aa.fasta	Capse1	Capronia semiimmersa CBS27337	5601	5601	Capronia americana	311
+Catan2_GeneCatalog_proteins_20160412.aa.fasta	Catan2	Catenaria anguillulae PL171 v2.0	109876	109876	Catenaria anguillulae	168
+Caupr1_GeneCatalog_proteins_20150107.aa.fasta	Caupr1	Caulochytrium protostelioides ATCC 52028 v1.0	1555241	1555241	Caulochytrium protostelioides	113
+Caupr_SCcomb_GeneCatalog_proteins_20140821.aa.fasta	Caupr_SCcomb	Caulochytrium protostelioides ATCC 52028 single-cell v1.0	1555241	1555241	Caulochytrium protostelioides	55
+Cenge3_GeneCatalog_proteins_20130403.aa.fasta	Cenge3	Cenococcum geophilum 1.58 v2.0	794803	794803	Cenococcum geophilum 1.58	354
+CerAGI_GeneCatalog_proteins_20150524.aa.fasta	CerAGI	Ceratobasidium sp. anastomosis group I; DN8442 v1.0	305860	305860	Ceratobasidium sp. AG-I	743
+Cercau1_GeneCatalog_proteins_20170822.aa.fasta	Cercau1	Cercophora caudata CBS 606.72 v1.0	314043	314043	Immersiella caudata	608
+Cernew1_GeneCatalog_proteins_20170729.aa.fasta	Cernew1	Cercophora newfieldiana SMH2532-1 v1.0	92897	92897	Cercophora newfieldiana	577
+Cersam1_GeneCatalog_proteins_20220222.aa.fasta	Cersam1	Cercophora samala CBS 307.81 v1.0	330535	330535	Cercophora samala	485
+Cersc1_GeneCatalog_proteins_20171129.aa.fasta	Cersc1	Cercophora scortea SMH4131-1 v1.0	314031	314031	Cercophora scortea	512
+Cersp1_GeneCatalog_proteins_20150406.aa.fasta	Cersp1	Ceraceosorus guamensis MCA 4658 v1.0	1522189	1522189	Ceraceosorus guamensis	197
+Chafi1_GeneCatalog_proteins_20180308.aa.fasta	Chafi1	Chaetomidium fimeti CBS 168.71 v1.0	1854472	1854472	Chaetomium fimeti	537
+Chafu1_GeneCatalog_proteins_20190111.aa.fasta	Chafu1	Chaetomium funicola MPI-SDFR-AT-0129 v1.0	1769349	1769349	Chaetomium sp.	452
+Chafun1_GeneCatalog_proteins_20220403.aa.fasta	Chafun1	Chaetomium funicola CBS 141.50 v1.0	1934379	1934379	Dichotomopilus funicola	449
+Chagl1_GeneCatalog_proteins_20190501.aa.fasta	Chagl1	Chaetomium tenue MPI-SDFR-AT-0079 v1.0	38033	38033	Chaetomium globosum	535
+Chale1_GeneCatalog_proteins_20220405.aa.fasta	Chale1	Chaetomidium leptoderma CBS 538.74 v1.0	669021	669021	Chaetomidium leptoderma	510
+Chalo1_GeneCatalog_proteins_20130611.aa.fasta	Chalo1	Chalara longipes BDJ v1.0	1379296	1379296	Stipitochalara longipes BDJ	804
+Chame1_GeneCatalog_proteins_20190111.aa.fasta	Chame1	Chaetomium sp. MPI-CAGE-AT-0009 v1.0	1769349	1769349	Chaetomium sp.	553
+Chaol1_GeneCatalog_proteins_20220618.aa.fasta	Chaol1	Chaetomium olivicolor CBS 102434	1485946	1485946	Chaetomium olivicolor	471
+Chathe1_GeneCatalog_proteins_20190529.aa.fasta	Chathe1	Chaetomium thermophilum var thermophilum DSM 1495	759272	759272	Thermochaetoides thermophila DSM 1495	290
+ChetHAW225_4_GeneCatalog_proteins_20220426.aa.fasta	ChetHAW225_4	Cochliobolus heterostrophus HAW225 v4.0	5016	5016	Bipolaris maydis	581
+ChetHm540_1_GeneCatalog_proteins_20210514.aa.fasta	ChetHm540_1	Cochliobolus heterostrophus Hm540	665073	665073	Bipolaris maydis Hm540	555
+ChetPR9b_4_GeneCatalog_proteins_20220623.aa.fasta	ChetPR9b_4	Cochliobolus heterostrophus PR9b v4.0	5016	5016	Bipolaris maydis	553
+Chlpad1_GeneCatalog_proteins_20160815.aa.fasta	Chlpad1	Absidia padenii NRRL 2977 v1.0	90267	90267	Chlamydoabsidia padenii	338
+Chocucu1_GeneCatalog_proteins_20180614.aa.fasta	Chocucu1	Choanephora cucurbitarum NRRL2744 (50) v1.0	101091	101091	Choanephora cucurbitarum	293
+Chove1_GeneCatalog_proteins_20131210.aa.fasta	Chove1	Choiromyces venosus 120613-1 v1.0	1336337	1336337	Choiromyces venosus 120613-1	328
+Chyhya1_GeneCatalog_proteins_20180531.aa.fasta	Chyhya1	Chytriomyces hyalinus JEL632 v1.0	4814	4814	Chytriomyces hyalinus	414
+Chylag1_GeneCatalog_proteins_20170110.aa.fasta	Chylag1	Chytridium lagenaria Arg66 v1.0	64509	64509	Chytridium lagenaria	264
+Chytri1_GeneCatalog_proteins_20161010.aa.fasta	Chytri1	Chytriomyces sp. MP 71 v1.0	1882861	1882861	Chytriomyces sp. MP71	460
+Cirumb1_GeneCatalog_proteins_20170119.aa.fasta	Cirumb1	Circinella umbellata NRRL1351 v1.0	101103	101103	Circinella umbellata	316
+ClaPMI390_GeneCatalog_proteins_20140716.aa.fasta	ClaPMI390	Sistotrema sp. PMI_390 v1.0	1486700	1486700	Clavulina sp. PMI_390	600
+Claba1_GeneCatalog_proteins_20160826.aa.fasta	Claba1	Cladophialophora bantiana CBS 173.52	1442370	1442370	Cladophialophora bantiana CBS 173.52	332
+Claca1_GeneCatalog_proteins_20160902.aa.fasta	Claca1	Cladophialophora carrionii CBS 160.54	1279043	1279043	Cladophialophora carrionii CBS 160.54	300
+Clael1_GeneCatalog_proteins_20140828.aa.fasta	Clael1	Clathrospora elynae CBS 161.51 v1.0	706981	706981	Clathrospora elynae	493
+Clafu1_GeneCatalog_proteins_20110826.aa.fasta	Clafu1	Cladosporium fulvum v1.0	5499	5499	Fulvia fulva	524
+Clagr3_GeneCatalog_proteins_20111121.aa.fasta	Clagr3	Cladonia grayi Cgr/DA2myc/ss v2.0	27339	27339	Cladonia grayi	259
+Claim1_GeneCatalog_proteins_20160902.aa.fasta	Claim1	Cladophialophora immunda CBS83496	569365	569365	Cladophialophora immunda	332
+Clalu1_2_GeneCatalog_proteins_20150216.aa.fasta	Clalu1_2	Clavispora lusitaniae ATCC 42720	306902	306902	Clavispora lusitaniae ATCC 42720	142
+Clapol1_1_GeneCatalog_proteins_20180327.aa.fasta	Clapol1_1	Cladochytrium polystomum WB228 v1.0	2211651	2211651	Zopfochytrium polystomum	470
+Clapu1_GeneCatalog_proteins_20210223.aa.fasta	Clapu1	Claviceps purpurea 20.1	1111077	1111077	Claviceps purpurea 20.1	265
+Clapy1_GeneCatalog_proteins_20140612.aa.fasta	Clapy1	Artomyces pyxidatus HHB10654 v1.0	48021	48021	Artomyces pyxidatus	387
+Clarep1_1_GeneCatalog_proteins_20200121.aa.fasta	Clarep1_1	Cladochytrium replicatum JEL 714 v1.0	109936	109936	Cladochytrium replicatum	483
+Clasam1_GeneCatalog_proteins_20220224.aa.fasta	Clasam1	Cladorrhinum samala PSN324 v1.0	585594	585594	Cladorrhinum samala	486
+Clasp259_1_GeneCatalog_proteins_20220224.aa.fasta	Clasp259_1	Cladorrhinum sp. PSN259 v1.0	2040734	2040734	Cladorrhinum sp.	530
+Clasp332_1_GeneCatalog_proteins_20220224.aa.fasta	Clasp332_1	Cladorrhinum sp. PSN332 v1.0	2040734	2040734	Cladorrhinum sp.	496
+Clasph1_GeneCatalog_proteins_20160727.aa.fasta	Clasph1	Cladosporium sphaerospermum UM 843	92950	92950	Cladosporium sphaerospermum	475
+Claye1_GeneCatalog_proteins_20160828.aa.fasta	Claye1	Cladophialophora yegresii CBS 114405	1182544	1182544	Cladophialophora yegresii CBS 114405	282
+Cligib1_GeneCatalog_proteins_20161107.aa.fasta	Cligib1	Clitocybe gibba IJFM A808 v1.0	378275	378275	Infundibulicybe gibba	583
+Cloaq1_GeneCatalog_proteins_20160307.aa.fasta	Cloaq1	Clohesyomyces aquaticus v1.0	1231657	1231657	Clohesyomyces aquaticus	657
+CocheC4_6_GeneCatalog_proteins_20220427.aa.fasta	CocheC4_6	Cochliobolus heterostrophus C4 v6.0	5016	5016	Bipolaris maydis	555
+Cocim1_GeneCatalog_proteins_20130907.aa.fasta	Cocim1	Coccidioides immitis RS	246410	246410	Coccidioides immitis RS	175
+Cocsa1_GeneCatalog_proteins_20110610.aa.fasta	Cocsa1	Cochliobolus sativus ND90Pr v1.0	665912	665912	Bipolaris sorokiniana ND90Pr	525
+Cocvi2_GeneCatalog_proteins_20221119.aa.fasta	Cocvi2	Cochliobolus victoriae FI3 v2.0	930091	930091	Bipolaris victoriae FI3	557
+Coemoj1_GeneCatalog_proteins_20180326.aa.fasta	Coemoj1	Coemansia mojavensis RSA 71 v1.0	4864	4864	Coemansia mojavensis	223
+Coere1_GeneCatalog_proteins_20110909.aa.fasta	Coere1	Coemansia reversa NRRL 1564 v1.0	61392	61392	Coemansia reversa	179
+Coespi1_GeneCatalog_proteins_20170411.aa.fasta	Coespi1	Coemansia spiralis RSA 1278 v1.0	417178	417178	Coemansia spiralis	214
+Cokrec1_GeneCatalog_proteins_20170123.aa.fasta	Cokrec1	Cokeromyces recurvatus NRRL 2243 v1.0	90255	90255	Cokeromyces recurvatus	266
+Colab1_GeneCatalog_proteins_20180729.aa.fasta	Colab1	Colletotrichum abscissum IMI 504890	1671311	1671311	Colletotrichum abscissum	767
+Colac2_GeneCatalog_proteins_20170414.aa.fasta	Colac2	Colletotrichum acutatum CBS 112980 v2.0	27357	27357	Colletotrichum acutatum	721
+Colca1_GeneCatalog_proteins_20150403.aa.fasta	Colca1	Colletotrichum caudatum CBS131602 v1.0	5460	5460	Colletotrichum caudatum	601
+Colce1_GeneCatalog_proteins_20161230.aa.fasta	Colce1	Colletotrichum cereale CBS 129662 v1.0	343994	343994	Colletotrichum cereale	654
+Colch1_GeneCatalog_proteins_20180729.aa.fasta	Colch1	Colletotrichum chlorophyti NTL11	708187	708187	Colletotrichum chlorophyti	631
+Colco1_GeneCatalog_proteins_20180729.aa.fasta	Colco1	Colletotrichum costaricense IMI 309622	1209916	1209916	Colletotrichum costaricense	761
+Colcu1_GeneCatalog_proteins_20180803.aa.fasta	Colcu1	Colletotrichum cuscutae IMI 304802	1209917	1209917	Colletotrichum cuscutae	739
+Coler1_GeneCatalog_proteins_20141231.aa.fasta	Coler1	Colletotrichum eremochloae CBS129661 v1.0	1173702	1173702	Colletotrichum eremochloae	645
+Colfa1_GeneCatalog_proteins_20141228.aa.fasta	Colfa1	Colletotrichum falcatum MAFF306170 v1.0	129314	129314	Colletotrichum falcatum	576
+Colfi1_GeneCatalog_proteins_20160218.aa.fasta	Colfi1	Colletotrichum fioriniae PJ7	1445577	1445577	Colletotrichum fioriniae PJ7	741
+Colgo1_GeneCatalog_proteins_20160414.aa.fasta	Colgo1	Colletotrichum godetiae CBS 193.32 v1.0	1209918	1209918	Colletotrichum godetiae	736
+Colhig2_GeneCatalog_proteins_20170214.aa.fasta	Colhig2	Colletotrichum higginsianum IMI 349063	759273	759273	Colletotrichum higginsianum IMI 349063	714
+Colin1_GeneCatalog_proteins_20180729.aa.fasta	Colin1	Colletotrichum incanum MAFF 238712	1573173	1573173	Colletotrichum incanum	710
+Collu1_GeneCatalog_proteins_20160428.aa.fasta	Collu1	Colletotrichum lupini CBS 109225 v1.0	145971	145971	Colletotrichum lupini	732
+Collup1_GeneCatalog_proteins_20180803.aa.fasta	Collup1	Colletotrichum lupini IMI 504893	145971	145971	Colletotrichum lupini	718
+Colme1_GeneCatalog_proteins_20180731.aa.fasta	Colme1	Colletotrichum melonis CBS 134730	1209925	1209925	Colletotrichum melonis	761
+Colna1_GeneCatalog_proteins_20170406.aa.fasta	Colna1	Colletotrichum navitas CBS125086 v1.0	681940	681940	Colletotrichum navitas	613
+Colny1_GeneCatalog_proteins_20160329.aa.fasta	Colny1	Colletotrichum nymphaeae SA-01	1460502	1460502	Colletotrichum nymphaeae SA-01	743
+ColoR110_1_GeneCatalog_proteins_20210506.aa.fasta	ColoR110_1	Coniochaeta ligniaria R110-5 v1.0	177197	177197	Coniochaeta ligniaria	549
+Color1_GeneCatalog_proteins_20161026.aa.fasta	Color1	Colletotrichum orchidophilum IMI 309357	1209926	1209926	Colletotrichum orchidophilum	656
+Colorb1_GeneCatalog_proteins_20180806.aa.fasta	Colorb1	Colletotrichum orbiculare 104-T	5465	5465	Colletotrichum orbiculare	715
+Colpa1_GeneCatalog_proteins_20180729.aa.fasta	Colpa1	Colletotrichum paranaense IMI 384185	1914294	1914294	Colletotrichum paranaense	753
+Colph1_GeneCatalog_proteins_20160704.aa.fasta	Colph1	Colletotrichum phormii CBS102054 v1.0	359342	359342	Colletotrichum phormii	719
+Colsa1_GeneCatalog_proteins_20160329.aa.fasta	Colsa1	Colletotrichum salicis CBS607.94	1209931	1209931	Colletotrichum salicis	755
+Colsi1_GeneCatalog_proteins_20160329.aa.fasta	Colsi1	Colletotrichum simmondsii CBS122122	703756	703756	Colletotrichum simmondsii	751
+Colso1_GeneCatalog_proteins_20141229.aa.fasta	Colso1	Colletotrichum somersetensis CBS 131599 v1.0	1500509	1500509	Colletotrichum somersetense	651
+Colsp1_GeneCatalog_proteins_20180729.aa.fasta	Colsp1	Colletotrichum filicis CBS 101611	34409	34409	Colletotrichum sp.	763
+Colsu1_GeneCatalog_proteins_20150101.aa.fasta	Colsu1	Colletotrichum sublineola CBS 131301 v1.0	1173701	1173701	Colletotrichum sublineola	645
+Colsub1_GeneCatalog_proteins_20210226.aa.fasta	Colsub1	Colletotrichum sublineola TX430BB	1173701	1173701	Colletotrichum sublineola	631
+Colta1_GeneCatalog_proteins_20180729.aa.fasta	Colta1	Colletotrichum tamarilloi CBS 129955	1209934	1209934	Colletotrichum tamarilloi	758
+Colto1_GeneCatalog_proteins_20170704.aa.fasta	Colto1	Colletotrichum tofieldiae 0861	708197	708197	Colletotrichum tofieldiae	740
+Coltof1_GeneCatalog_proteins_20180803.aa.fasta	Coltof1	Colletotrichum tofieldiae CBS 168.49	708197	708197	Colletotrichum tofieldiae	805
+Colzo1_GeneCatalog_proteins_20150103.aa.fasta	Colzo1	Colletotrichum zoysiae MAFF238573 v1.0	1216348	1216348	Colletotrichum zoysiae	624
+Conap1_GeneCatalog_proteins_20160826.aa.fasta	Conap1	Coniosporium apollinis CBS 100218	1168221	1168221	Coniosporium apollinis CBS 100218	288
+Conioc1_GeneCatalog_proteins_20180327.aa.fasta	Conioc1	Coniochaeta sp. 2T2.1 v1.0	1571157	1571157	Coniochaeta sp. 2T2.1	1210
+Conlig1_GeneCatalog_proteins_20140604.aa.fasta	Conlig1	Coniochaeta ligniaria NRRL 30616 v1.0	177197	177197	Coniochaeta ligniaria	588
+Conol1_GeneCatalog_proteins_20151211.aa.fasta	Conol1	Coniophora olivacea MUCL 20566 v1.0	85977	85977	Coniophora olivacea	382
+Conth1_GeneCatalog_proteins_20141003.aa.fasta	Conth1	Conidiobolus thromboides FSU 785 v1.0	1314799	1314799	Neoconidiobolus thromboides FSU 785	269
+CopCBS38678_1_GeneCatalog_proteins_20220223.aa.fasta	CopCBS38678_1	Copromyces sp. CBS 386.78 v1.0	252197	252197	Copromyces sp. CBS 386.78	362
+Copang1_GeneCatalog_proteins_20180426.aa.fasta	Copang1	Coprinellus angulatus CBS 144469 v1.0	980116	980116	Ephemerocybe angulata	748
+Copci_AmutBmut1_GeneCatalog_proteins_20130522.aa.fasta	Copci_AmutBmut1	Coprinopsis cinerea AmutBmut pab1-1 v1.0	1132390	1132390	Coprinopsis cinerea AmutBmut pab1-1	496
+Copcin2_GeneCatalog_proteins_20230526.aa.fasta	Copcin2	Coprinopsis cinerea AmutBmut v2	5346	5346	Coprinopsis cinerea	494
+Copmic2_GeneCatalog_proteins_20150909.aa.fasta	Copmic2	Coprinellus micaceus FP101781 v2.0	71717	71717	Coprinellus micaceus	589
+Copph3_GeneCatalog_proteins_20190117.aa.fasta	Copph3	Coprinopsis sp. MPI-PUGE-AT-0042 v1.0	2107740	2107740	Coprinus sp.	821
+Corbr1_GeneCatalog_proteins_20210224.aa.fasta	Corbr1	Beauveria brongniartii RCEF 3172	1081107	1081107	Beauveria brongniartii RCEF 3172	349
+Corca1_GeneCatalog_proteins_20140615.aa.fasta	Corca1	Corynespora cassiicola CCP v1.0	59586	59586	Corynespora cassiicola	723
+Corco1_GeneCatalog_proteins_20210223.aa.fasta	Corco1	Lecanicillium lecanii RCEF 1005	1081108	1081108	Akanthomyces lecanii RCEF 1005	375
+Corgl3_GeneCatalog_proteins_20130626.aa.fasta	Corgl3	Phlegmacium glaucopus AT 2004 276 v2.0	1149754	1149754	Phlegmacium glaucopus AT 2004 276	351
+Corin1_GeneCatalog_proteins_20220405.aa.fasta	Corin1	Corynascella inaequalis CBS 284.82 v1.0	2588326	2588326	Parachaetomium inaequale	608
+Cormi1_GeneCatalog_proteins_20131203.aa.fasta	Cormi1	Cordyceps militaris CM01	983644	983644	Cordyceps militaris CM01	338
+Corno1_GeneCatalog_proteins_20220405.aa.fasta	Corno1	Corynascus novoguineensis CBS 359.72 v1.0	1126955	1126955	Corynascus novoguineensis	463
+Corse1_GeneCatalog_proteins_20220626.aa.fasta	Corse1	Corynascus sepedonium ATCC9787	190048	190048	Corynascus sepedonium	445
+Corsim1_GeneCatalog_proteins_20180612.aa.fasta	Corsim1	Myceliophthora similis CBS 632.67 v1.0	1403191	1403191	Corynascus similis CBS 632.67	459
+Crafun1_GeneCatalog_proteins_20170607.aa.fasta	Crafun1	Crassisporium funariophilum CBS 144457 v1.0	1954473	1954473	Crassisporium funariophilum	491
+Crevar1_GeneCatalog_proteins_20151207.aa.fasta	Crevar1	Crepidotus variabilis CBS 506.95 v1.0	179855	179855	Crepidotus variabilis	496
+Croqu1_GeneCatalog_proteins_20120612.aa.fasta	Croqu1	Cronartium quercuum f. sp. fusiforme G11 v1.0	708437	708437	Cronartium quercuum f. sp. fusiforme G11	352
+Crula1_GeneCatalog_proteins_20151130.aa.fasta	Crula1	Crucibulum laeve CBS 166.37 v1.0	68775	68775	Crucibulum laeve	631
+Crycu1_GeneCatalog_proteins_20150820.aa.fasta	Crycu1	Cryptococcus curvatus ATCC 20509 v1.0	57679	57679	Cutaneotrichosporon curvatum	213
+Cryne_JEC21_1_GeneCatalog_proteins_20120305.aa.fasta	Cryne_JEC21_1	Cryptococcus neoformans var neoformans JEC21	214684	214684	Cryptococcus deneoformans JEC21	198
+Cryte1_GeneCatalog_proteins_20150926.aa.fasta	Cryte1	Cryptococcus terricola JCM 24523 v1.0	104414	104414	Solicoccozyma terricola	301
+CtCBS203_1_GeneCatalog_proteins_20190619.aa.fasta	CtCBS203_1	Camillea tinctor CBS 203.56 v1.0	110548	110548	Camillea tinctor	522
+Cunech1_GeneCatalog_proteins_20170119.aa.fasta	Cunech1	Cunninghamella echinulata NRRL 1382 v1.0	76405	76405	Cunninghamella echinulata	262
+Cyapal1_GeneCatalog_proteins_20220714.aa.fasta	Cyapal1	Cyathus pallidus NK-01 v1.0	380665	380665	Cyathus pallidus	1053
+Cyaste1_GeneCatalog_proteins_20220716.aa.fasta	Cyaste1	Cyathus stercoreus NK-82 v1.0	181520	181520	Cyathus stercoreus	1100
+Cyastr2_GeneCatalog_proteins_20160525.aa.fasta	Cyastr2	Cyathus striatus AH 40144 v1.0	68777	68777	Cyathus striatus	729
+Cylol1_GeneCatalog_proteins_20180714.aa.fasta	Cylol1	Cylindrocarpon olidum MPI-CAGE-CH-0241 v1.0	1576542	1576542	Thelonectria olida	657
+Cylto1_GeneCatalog_proteins_20130411.aa.fasta	Cylto1	Cylindrobasidium torrendii FP15055 v1.0	394432	394432	Cylindrobasidium torrendii	489
+Cypeu1_GeneCatalog_proteins_20160902.aa.fasta	Cypeu1	Cyphellophora europaea CBS 101466	1220924	1220924	Cyphellophora europaea CBS 101466	375
+Cytmel1_GeneCatalog_proteins_20170103.aa.fasta	Cytmel1	Cytidiella melzeri FP 102339 v1.0	1883072	1883072	Cytidiella melzeri	344
+DaFL1419_1_GeneCatalog_proteins_20190501.aa.fasta	DaFL1419_1	Daldinia sp. FL1419 v1.0	2614575	2614575	Daldinia sp. FL1419	456
+Daces1_GeneCatalog_proteins_20180402.aa.fasta	Daces1	Dactylonectria estremocensis MPI-CAGE-AT-0021 v1.0	1079267	1079267	Dactylonectria estremocensis	819
+Dacma1_GeneCatalog_proteins_20180621.aa.fasta	Dacma1	Dactylonectria macrodidyma MPI-CAGE-AT-0147 v1.0	307937	307937	Dactylonectria macrodidyma	902
+Dalba1_GeneCatalog_proteins_20190708.aa.fasta	Dalba1	Daldinia bambusicola CBS 122872 v1.0	326643	326643	Daldinia bambusicola	460
+Dalcal1_GeneCatalog_proteins_20190624.aa.fasta	Dalcal1	Daldinia caldariorum CBS 122874 v1.0	326644	326644	Daldinia caldariorum	449
+Daldec1_GeneCatalog_proteins_20190620.aa.fasta	Daldec1	Daldinia decipiens CBS 113046 v1.0	326647	326647	Daldinia decipiens	465
+Dales1_GeneCatalog_proteins_20190708.aa.fasta	Dales1	Daldinia eschscholtzii FL0578 v1.0	292717	292717	Daldinia eschscholtzii	480
+Dalgra1_GeneCatalog_proteins_20190325.aa.fasta	Dalgra1	Daldinia grandis CBS 114736 v1.0	103428	103428	Daldinia grandis	464
+Dalloc1_GeneCatalog_proteins_20190624.aa.fasta	Dalloc1	Daldinia loculata CBS 113971 v1.0	103429	103429	Daldinia loculata	462
+DallocAZ0526_2_GeneCatalog_proteins_20191203.aa.fasta	DallocAZ0526_2	Daldinia loculata AZ0526 v2.0	103429	103429	Daldinia loculata	462
+Dalver1_GeneCatalog_proteins_20190325.aa.fasta	Dalver1	Daldinia vernicosa CBS 139.73 v1.0	114800	114800	Daldinia vernicosa	458
+Debha1_GeneCatalog_proteins_20130209.aa.fasta	Debha1	Debaryomyces hansenii CBS 767	284592	284592	Debaryomyces hansenii CBS767	169
+Decga1_GeneCatalog_proteins_20150425.aa.fasta	Decga1	Decorospora gaudefroyi v1.0	184978	184978	Decorospora gaudefroyi	440
+Dekbr2_GeneCatalog_proteins_20120306.aa.fasta	Dekbr2	Dekkera bruxellensis CBS 2499 v2.0	747657	747657	Brettanomyces bruxellensis CBS 2499	137
+Delco1_GeneCatalog_proteins_20140624.aa.fasta	Delco1	Delitschia confertaspora ATCC 74209 v1.0	1504671	1504671	Delitschia confertaspora	450
+Delst1_GeneCatalog_proteins_20160906.aa.fasta	Delst1	Delphinella strobiligena CBS 735.71 v1.0	147560	147560	Delphinella strobiligena	387
+Denbi1_GeneCatalog_proteins_20131210.aa.fasta	Denbi1	Dendrothele bispora CBS 962.96 v1.0	1314803	1314803	Dendrothele bispora	912
+Denna1_GeneCatalog_proteins_20180321.aa.fasta	Denna1	Dendryphion nanum MPI-CAGE-CH-0243 v1.0	256645	256645	Dendryphion nanum	621
+Diaam1_GeneCatalog_proteins_20150926.aa.fasta	Diaam1	Diaporthe ampelina UCDDA912	1214573	1214573	Diaporthe ampelina	666
+Dicele1_GeneCatalog_proteins_20170425.aa.fasta	Dicele1	Dichotomocladium elegans RSA 919- v1.0	101130	101130	Dichotomocladium elegans	297
+Dicsq1_GeneCatalog_proteins_20101110.aa.fasta	Dicsq1	Dichomitus squalens LYAD-421 SS1 v1.0	114155	114155	Dichomitus squalens	453
+Dicsqu18370_1_GeneCatalog_proteins_20151202.aa.fasta	Dicsqu18370_1	Dichomitus squalens OM18370.1 v1.0	114155	114155	Dichomitus squalens	489
+Dicsqu463_1_GeneCatalog_proteins_20151203.aa.fasta	Dicsqu463_1	Dichomitus squalens CBS463.89 v1.0	114155	114155	Dichomitus squalens	483
+Dicsqu464_1_GeneCatalog_proteins_20151220.aa.fasta	Dicsqu464_1	Dichomitus squalens CBS464.89 v1.0	114155	114155	Dichomitus squalens	487
+Didex1_GeneCatalog_proteins_20120924.aa.fasta	Didex1	Didymella exigua CBS 183.55 v1.0	1150837	1150837	Didymella exigua CBS 183.55	506
+Didma1_GeneCatalog_proteins_20160126.aa.fasta	Didma1	Didymella zeae-maydis 3018	259522	259522	Didymella maydis	525
+DimcrSC1_GeneCatalog_proteins_20151223.aa.fasta	DimcrSC1	Dimargaris cristalligena RSA 468 single-cell v1.0	215637	215637	Dimargaris cristalligena	136
+Dipgro1_GeneCatalog_proteins_20220226.aa.fasta	Dipgro1	Diplogelasinospora grovesii CBS 340.73 v1.0	303347	303347	Diplogelasinospora grovesii	599
+Dipse1_GeneCatalog_proteins_20150930.aa.fasta	Dipse1	Diplodia seriata DS831	420778	420778	Diplodia seriata	494
+Diptot1_FilteredModels1_proteins_2023-09-09.fasta	Diptot1	Dipodascopsis tothii CBS 759.85 v1.0	44089	44089	Neoaidaea tothii	135
+Dipuni1_GeneCatalog_proteins_20220517.aa.fasta	Dipuni1	Dipodascopsis uninucleata Phaff 50-6 v1.0	27313	27313	Dipodascopsis uninucleata	171
+Disac1_GeneCatalog_proteins_20130805.aa.fasta	Disac1	Dissoconium aciculare v1.0	1314786	1314786	Dissoconium aciculare CBS 342.82	264
+Disorn1_GeneCatalog_proteins_20180714.aa.fasta	Disorn1	Dissophora ornata CBS 347.77 v1.0	979620	979620	Dissophora ornata	278
+Dotse1_GeneCatalog_proteins_20100818.aa.fasta	Dotse1	Dothistroma septosporum NZE10 v1.0	64363	64363	Dothistroma septosporum	401
+Dotsy1_GeneCatalog_proteins_20131210.aa.fasta	Dotsy1	Dothidotthia symphoricarpi v1.0	1392245	1392245	Dothidotthia symphoricarpi CBS 119687	441
+Dreco1_GeneCatalog_proteins_20210225.aa.fasta	Dreco1	Drechmeria coniospora ARSEF 6962	98403	98403	Drechmeria coniospora	244
+Durrog2_GeneCatalog_proteins_20191122.aa.fasta	Durrog2	Durotheca rogersii YMJ 92031201 v1.0	419775	419775	Durotheca rogersii	413
+Earsca1_GeneCatalog_proteins_20171018.aa.fasta	Earsca1	Earliella scabrosa CIRM-BRFM 1817 v1.0	2478900	2478900	Earliella scabrosa	530
+Echmac1_GeneCatalog_proteins_20220225.aa.fasta	Echmac1	Echria (Arnium) macrotheca PSN4 v1.0	438768	438768	Echria macrotheca	599
+Elsamp1_GeneCatalog_proteins_20151205.aa.fasta	Elsamp1	Elsinoe ampelina CECT 20119 v1.0	302913	302913	Elsinoe ampelina	483
+Enccu1_GeneCatalog_proteins_20130927.aa.fasta	Enccu1	Encephalitozoon cuniculi GB-M1	284813	284813	Encephalitozoon cuniculi GB-M1	10
+Enche1_GeneCatalog_proteins_20131209.aa.fasta	Enche1	Encephalitozoon hellem ATCC 50504	907965	907965	Encephalitozoon hellem ATCC 50504	10
+Encin1_GeneCatalog_proteins_20131101.aa.fasta	Encin1	Encephalitozoon intestinalis ATCC 50506	876142	876142	Encephalitozoon intestinalis ATCC 50506	10
+Encro1_GeneCatalog_proteins_20131209.aa.fasta	Encro1	Encephalitozoon romaleae SJ-2008	1178016	1178016	Encephalitozoon romaleae SJ-2008	10
+EndpusZ1_GeneCatalog_proteins_20180130.aa.fasta	EndpusZ1	Endocarpon pusillum Z07020	1263415	1263415	Endocarpon pusillum Z07020	224
+Endsp1_GeneCatalog_proteins_20180904.aa.fasta	Endsp1	Endogone sp FLAS 59071	2012134	2012134	Endogone sp.	246
+Entbi1_GeneCatalog_proteins_20140106.aa.fasta	Entbi1	Enterocytozoon bieneusi H348	481877	481877	Enterocytozoon bieneusi H348	34
+Enthel1_GeneCatalog_proteins_20161121.aa.fasta	Enthel1	Entophlyctis helioformis JEL805 v1.0	281842	281842	Entophlyctis helioformis	192
+Epityp1_GeneCatalog_proteins_20180725.aa.fasta	Epityp1	Epithele typhae CBS 203.58 v1.0	378194	378194	Epithele typhae	498
+Erebi1_GeneCatalog_proteins_20150104.aa.fasta	Erebi1	Eremomyces bilateralis CBS 781.70 v1.0	1392243	1392243	Eremomyces bilateralis CBS 781.70	319
+Erynec1_GeneCatalog_proteins_20170914.aa.fasta	Erynec1	Erysiphe necator c	52586	52586	Erysiphe necator	147
+Eurhe1_GeneCatalog_proteins_20120312.aa.fasta	Eurhe1	Eurotium rubrum v1.0	396024	396024	Aspergillus ruber	316
+EurotioJF033F_1_GeneCatalog_proteins_20180719.aa.fasta	EurotioJF033F_1	Exophiala viscosa JF 03-3F Goopy  CBS 148801 v1.0	2486360	2486360	Exophiala viscosa	313
+EurotioJF034F_1_GeneCatalog_proteins_20180726.aa.fasta	EurotioJF034F_1	Exophiala viscosa JF 03-4F Slimy CBS 148802 v1.0	2486360	2486360	Exophiala viscosa	311
+Exigl1_GeneCatalog_proteins_20130529.aa.fasta	Exigl1	Exidia glandulosa v1.0	5219	5219	Exidia glandulosa	919
+Exoaq1_GeneCatalog_proteins_20160901.aa.fasta	Exoaq1	Exophiala aquamarina CBS 119918	1182545	1182545	Exophiala aquamarina CBS 119918	380
+Exode1_GeneCatalog_proteins_20160902.aa.fasta	Exode1	Exophiala dermatitidis UT8656	858893	858893	Exophiala dermatitidis NIH/UT8656	266
+Exome1_GeneCatalog_proteins_20160902.aa.fasta	Exome1	Exophiala mesophila CBS40295	212818	212818	Exophiala mesophila	300
+Exool1_GeneCatalog_proteins_20160902.aa.fasta	Exool1	Exophiala oligosperma CBS72588	215243	215243	Exophiala oligosperma	395
+Exosi1_GeneCatalog_proteins_20160902.aa.fasta	Exosi1	Exophiala sideris CBS121828	1016849	1016849	Exophiala sideris	307
+Exosp1_GeneCatalog_proteins_20160827.aa.fasta	Exosp1	Exophiala spinifera CBS89968	91928	91928	Exophiala spinifera	329
+Exoxe1_GeneCatalog_proteins_20160828.aa.fasta	Exoxe1	Exophiala xenobiotica CBS118157	348802	348802	Exophiala xenobiotica	401
+Favcal1_2_GeneCatalog_proteins_20220405.aa.fasta	Favcal1_2	Favolaschia claudopus CIRM-BRFM 2984 v1.0	2862362	2862362	Favolaschia claudopus	1150
+Fenlin1_GeneCatalog_proteins_20170109.aa.fasta	Fenlin1	Fennellomyces sp. T-0311 v1.0	1329386	1329386	Fennellomyces sp. T-0311	320
+Fibra1_GeneCatalog_proteins_20131030.aa.fasta	Fibra1	Fibroporia radiculosa TFFH 294	1078123	1078123	Fibroporia radiculosa TFFH 294	257
+Fibsp1_GeneCatalog_proteins_20131122.aa.fasta	Fibsp1	Fibulorhizoctonia psychrophila CBS 109695 v1.0	436010	1759441	Athelia psychrophila	851
+Filflo1_GeneCatalog_proteins_20191218.aa.fasta	Filflo1	Filobasidium floriforme CBS 6241 v1.0	5210	5210	Filobasidium floriforme	266
+Fimjon1_GeneCatalog_proteins_20181203.aa.fasta	Fimjon1	Fimicolochytrium jonesii JEL569 v1.0	1396493	1396493	Fimicolochytrium jonesii	245
+Fishe1_GeneCatalog_proteins_20130122.aa.fasta	Fishe1	Fistulina hepatica v1.0	1128425	1128425	Fistulina hepatica ATCC 64428	373
+Fomfom1_GeneCatalog_proteins_20170620.aa.fasta	Fomfom1	Fomes fomentarius CIRM-BRFM 1821 v1.0	40442	40442	Fomes fomentarius	535
+Fomme1_GeneCatalog_proteins_20101122.aa.fasta	Fomme1	Fomitiporia mediterranea v1.0	208960	208960	Fomitiporia mediterranea	409
+Fompi3_GeneCatalog_proteins_20120705.aa.fasta	Fompi3	Fomitopsis schrenkii FP-58527 SS1 v3.0	2126942	2126942	Fomitopsis schrenkii	379
+Fomros1_GeneCatalog_proteins_20171027.aa.fasta	Fomros1	Rhodofomes roseus CIRM-BRFM 1785 v1.0	34475	34475	Rhodofomes roseus	341
+Fonmo1_GeneCatalog_proteins_20170704.aa.fasta	Fonmo1	Fonsecaea monophora CBS 269.37	254056	254056	Fonsecaea monophora	296
+Fonmu1_GeneCatalog_proteins_20160827.aa.fasta	Fonmu1	Fonsecaea multimorphosa CBS 102226	1442371	1442371	Fonsecaea multimorphosa CBS 102226	321
+Fonnu1_GeneCatalog_proteins_20170705.aa.fasta	Fonnu1	Fonsecaea nubica CBS 269.64	856822	856822	Fonsecaea nubica	302
+Fonpe1_GeneCatalog_proteins_20160901.aa.fasta	Fonpe1	Fonsecaea pedrosoi CBS 271.37	1442368	1442368	Fonsecaea pedrosoi CBS 271.37	302
+Fusco1_GeneCatalog_proteins_20180421.aa.fasta	Fusco1	Fusarium commune MPI-SDFR-AT-0072 v1.0	5506	5506	Fusarium	660
+Fuseq1_GeneCatalog_proteins_20180330.aa.fasta	Fuseq1	Fusarium sp. FIESC 12 MPI-CAGE-AA-0113 v1.0	5506	5506	Fusarium	578
+Fusfu1_GeneCatalog_proteins_20130915.aa.fasta	Fusfu1	Fusarium fujikuroi IMI 58289	1279085	1279085	Fusarium fujikuroi IMI 58289	581
+Fusox2_GeneCatalog_proteins_20150720.aa.fasta	Fusox2	Fusarium oxysporum f. sp. lycopersici 4287 v2	426428	426428	Fusarium oxysporum f. sp. lycopersici 4287	762
+Fusox32931_GeneCatalog_proteins_20191005.aa.fasta	Fusox32931	Fusarium oxysporum NRRL 32931	660029	660029	Fusarium oxysporum NRRL 32931	836
+Fusox3_1_GeneCatalog_proteins_20230106.aa.fasta	Fusox3_1	Fusarium oxysporum f. sp. lycopersici 4287 v3.0	426428	426428	Fusarium oxysporum f. sp. lycopersici 4287	738
+FusoxFo47_GeneCatalog_proteins_20191007.aa.fasta	FusoxFo47	Fusarium oxysporum Fo47	660027	660027	Fusarium oxysporum Fo47	888
+Fusoxalb1_GeneCatalog_proteins_20200914.aa.fasta	Fusoxalb1	Fusarium oxysporum f. sp. albedinis isolate 9 v1.0	5507	5507	Fusarium oxysporum	764
+Fusoxcon1_GeneCatalog_proteins_20191007.aa.fasta	Fusoxcon1	Fusarium oxysporum f. sp. conglutinans race 2 54008 (PHW808)	1089457	1089457	Fusarium oxysporum f. sp. conglutinans race 2 54008	891
+Fusoxcub1_GeneCatalog_proteins_20191005.aa.fasta	Fusoxcub1	Fusarium oxysporum f. sp. cubense tropical race 4 54006 (II5)	1089451	1089451	Fusarium odoratissimum NRRL 54006	809
+Fusoxlyc1_GeneCatalog_proteins_20191005.aa.fasta	Fusoxlyc1	Fusarium oxysporum f. sp. lycopersici MN25 (FoMN25) NRRL 54003	1080343	1080343	Fusarium oxysporum f. sp. lycopersici MN25	838
+Fusoxmel1_GeneCatalog_proteins_20191008.aa.fasta	Fusoxmel1	Fusarium oxysporum f. sp. melonis (FoMelon) NRRL 26406	1089452	1089452	Fusarium oxysporum f. sp. melonis 26406	947
+Fusoxpis1_GeneCatalog_proteins_20191008.aa.fasta	Fusoxpis1	Fusarium oxysporum f. sp. pisi HDV247	1080344	1080344	Fusarium oxysporum f. sp. pisi HDV247	918
+Fusoxrad1_GeneCatalog_proteins_20191005.aa.fasta	Fusoxrad1	Fusarium oxysporum f. sp. radicis-lycopersici 26381 (CL57)	1089448	1089448	Fusarium oxysporum f. sp. radicis-lycopersici 26381	857
+Fusoxrap1_GeneCatalog_proteins_20191007.aa.fasta	Fusoxrap1	Fusarium oxysporum f. sp. raphani 54005	1089458	1089458	Fusarium oxysporum f. sp. raphani 54005	882
+Fusoxvas1_GeneCatalog_proteins_20191007.aa.fasta	Fusoxvas1	Fusarium oxysporum f. sp. vasinfectum 25433 (Cotton)	1089449	1089449	Fusarium oxysporum f. sp. vasinfectum 25433	867
+Fusoxy1_GeneCatalog_proteins_20171014.aa.fasta	Fusoxy1	Fusarium oxysporum MPI-SDFR-AT-0094 v1.0	5507	5507	Fusarium oxysporum	703
+Fusoxys1_GeneCatalog_proteins_20180511.aa.fasta	Fusoxys1	Fusarium oxysporum MPI-CAGE-CH-0212 v1.0	5507	5507	Fusarium oxysporum	721
+Fuspo1_GeneCatalog_proteins_20210311.aa.fasta	Fuspo1	Fusarium poae 2516	36050	36050	Fusarium poae	524
+Fuspr1_GeneCatalog_proteins_20210318.aa.fasta	Fuspr1	Fusarium proliferatum NRRL 62905	948311	948311	Fusarium proliferatum	633
+Fuspro1_GeneCatalog_proteins_20210311.aa.fasta	Fuspro1	Fusarium proliferatum ET1	1227346	1227346	Fusarium proliferatum ET1	651
+Fusre1_GeneCatalog_proteins_20170625.aa.fasta	Fusre1	Fusarium redolens MPI-CAGE-AT-0023 v1.0	48865	48865	Fusarium redolens	692
+Fusso1_GeneCatalog_proteins_20180401.aa.fasta	Fusso1	Fusarium solani FSSC 5 v1.0	169388	169388	Fusarium solani	680
+Fustr1_GeneCatalog_proteins_20180511.aa.fasta	Fustr1	Fusarium tricinctum MPI-SDFR-AT-0068 v1.0	61284	61284	Fusarium tricinctum	624
+Fustri1_GeneCatalog_proteins_20180510.aa.fasta	Fustri1	Fusarium avenaceum MPI-SDFR-AT-0044 v1.0	40199	40199	Fusarium avenaceum	611
+Fusve2_GeneCatalog_proteins_20150720.aa.fasta	Fusve2	Fusarium verticillioides 7600 v2	334819	334819	Fusarium verticillioides 7600	725
+Fusven1_GeneCatalog_proteins_20180620.aa.fasta	Fusven1	Fusarium venenatum MPI-CAGE-CH-0201 v1.0	56646	56646	Fusarium venenatum	565
+Gaesem1_GeneCatalog_proteins_20161012.aa.fasta	Gaesem1	Gaertneriomyces semiglobifer Barr 43 v1.0	109897	109897	Gaertneriomyces semiglobifer	159
+Galma1_GeneCatalog_proteins_20110628.aa.fasta	Galma1	Galerina marginata v1.0	685588	685588	Galerina marginata CBS 339.88	610
+Ganbon1_GeneCatalog_proteins_20210118.aa.fasta	Ganbon1	Ganoderma boninense G3 v1.0	34458	34458	Ganoderma boninense	633
+Ganleu1_GeneCatalog_proteins_20210604.aa.fasta	Ganleu1	Ganoderma leucocontextum Dai12418 v1.0	1566825	1566825	Ganoderma leucocontextum	545
+Ganluc1_GeneCatalog_proteins_20200831.aa.fasta	Ganluc1	Ganoderma lucidum G.260125-1 v1.0	1077286	1077286	Ganoderma lucidum G.260125-1	529
+Ganpr1_GeneCatalog_proteins_20111215.aa.fasta	Ganpr1	Gonapodya prolifera v1.0	1123529	1123529	Gonapodya prolifera	324
+Gansi1_GeneCatalog_proteins_20210227.aa.fasta	Gansi1	Ganoderma sinense ZZ0214-1	1077348	1077348	Ganoderma sinense ZZ0214-1	574
+Gansp1_GeneCatalog_proteins_20110326.aa.fasta	Gansp1	Ganoderma sp. 10597 SS1 v1.0	767862	767862	Ganoderma sp. 10597 SS1	530
+Gaumor1_1_GeneCatalog_proteins_20160412.aa.fasta	Gaumor1_1	Gautieria morchelliformis GMNE.BST v1.0	112417	112417	Gautieria morchelliformis	431
+Gelamo1_GeneCatalog_proteins_20220223.aa.fasta	Gelamo1	Pseudoneurospora amorphoporcata CBS626.80 v1.0	29880	29880	Gelasinospora	370
+Gelte1_GeneCatalog_proteins_20171129.aa.fasta	Gelte1	Neurospora tetraspora CBS 560.94 v1.0	94610	94610	Neurospora tetraspora	420
+Geocar1_GeneCatalog_proteins_20180620.aa.fasta	Geocar1	Geopyxis carbonaria CBS 144460 v1.0	49969	49969	Geopyxis carbonaria	389
+Gervar1_GeneCatalog_proteins_20181203.aa.fasta	Gervar1	Geranomyces variabilis JEL559 v1.0	109894	109894	Geranomyces variabilis	208
+Gigro1_GeneCatalog_proteins_20160405.aa.fasta	Gigro1	Gigaspora rosea v1.0	44941	44941	Gigaspora rosea	400
+Gilper1_GeneCatalog_proteins_20161121.aa.fasta	Gilper1	Gilbertella persicaria var. persicaria CBS 190.32-T v1.0	101096	101096	Gilbertella persicaria	314
+Glocon1_GeneCatalog_proteins_20160910.aa.fasta	Glocon1	Gloeopeniophorella convolvens OM19405 v1.0	205761	205761	Gloeopeniophorella convolvens	333
+Glopol1_GeneCatalog_proteins_20160812.aa.fasta	Glopol1	Globomyces pollinis-pini Arg68 v1.0	382532	382532	Globomyces pollinis-pini	267
+Glost2_GeneCatalog_proteins_20140303.aa.fasta	Glost2	Glonium stellatum CBS 207.34 v1.0	574774	574774	Glonium stellatum	546
+Glotr1_1_GeneCatalog_proteins_20100921.aa.fasta	Glotr1_1	Gloeophyllum trabeum v1.0	670483	670483	Gloeophyllum trabeum ATCC 11539	357
+Gonbut1_GeneCatalog_proteins_20160804.aa.fasta	Gonbut1	Gongronella butleri v1.0	101105	101105	Gongronella butleri	307
+Gorhay1_GeneCatalog_proteins_20180601.aa.fasta	Gorhay1	Gorgonomyces haynaldii MP57 v1.0	382530	382530	Gorgonomyces haynaldii	210
+Grocl1_GeneCatalog_proteins_20131017.aa.fasta	Grocl1	Grosmannia clavigera kw1407	655863	655863	Grosmannia clavigera kw1407	289
+Guyne1_GeneCatalog_proteins_20140406.aa.fasta	Guyne1	Guyanagaster necrorhizus MCA 3950 v1.0	856835	856835	Guyanagaster necrorhizus	504
+Gyman1_GeneCatalog_proteins_20140729.aa.fasta	Gyman1	Gymnopus androsaceus JB14 v1.0	1447940	1447940	Gymnopus androsaceus	791
+Gymjun1_GeneCatalog_proteins_20160705.aa.fasta	Gymjun1	Gymnopilus junonius AH 44721 v1.0	109634	109634	Gymnopilus junonius	475
+Gymlu1_GeneCatalog_proteins_20110803.aa.fasta	Gymlu1	Gymnopus luxurians v1.0	944289	944289	Collybiopsis luxurians FD-317 M1	692
+Gyresc1_GeneCatalog_proteins_20160326.aa.fasta	Gyresc1	Gyromitra esculenta CBS101906 v1.0	33161	33161	Gyromitra esculenta	364
+Gyrinf1_GeneCatalog_proteins_20200207.aa.fasta	Gyrinf1	Gyromitra infula GyrinfSpk-SM18 v1.0	273506	273506	Paragyromitra infula	384
+Gyrli1_GeneCatalog_proteins_20140325.aa.fasta	Gyrli1	Gyrodon lividus BX v1.0	85971	85971	Gyrodon lividus	259
+Halrad1_GeneCatalog_proteins_20180330.aa.fasta	Halrad1	Halteromyces radiatus CBS 162.75 v1.0	101107	101107	Halteromyces radiatus	267
+Hanpo2_GeneCatalog_proteins_20100927.aa.fasta	Hanpo2	Ogataea polymorpha NCYC 495 leu1.1 v2.0	638633	638633	Ogataea polymorpha NCYC 495 leu1.1	143
+Helpul1_GeneCatalog_proteins_20180613.aa.fasta	Helpul1	Helicostylum pulchrum RSA 2064 v1.0	562976	562976	Helicostylum pulchrum	326
+Helsul1_GeneCatalog_proteins_20150720.aa.fasta	Helsul1	Heliocybe sulcata OMC1185 v1.0	5364	5364	Heliocybe sulcata	373
+Hexnit1_GeneCatalog_proteins_20170619.aa.fasta	Hexnit1	Hexagonia nitida CIRM-BRFM 1802 v1.0	1140402	1140402	Daedaleopsis nitida	517
+Hisca1_GeneCatalog_proteins_20130826.aa.fasta	Hisca1	Histoplasma capsulatum NAm1	339724	2059318	Histoplasma mississippiense	179
+Hompol1_GeneCatalog_proteins_20160803.aa.fasta	Hompol1	Homolaphlyctis polyrhiza JEL142 v1.0	1142505	1142505	Homolaphlyctis polyrhiza	153
+Horac1_GeneCatalog_proteins_20160326.aa.fasta	Horac1	Hortaea acidophila CBS 113389 v1.0	245834	245834	Neohortaea acidophila	248
+Horwer1_GeneCatalog_proteins_20160803.aa.fasta	Horwer1	Hortaea werneckii EXF-2000 M0 v1.0	91943	91943	Hortaea werneckii	883
+Humgr1_GeneCatalog_proteins_20210716.aa.fasta	Humgr1	Trichocladium griseum var. thermoidea UFV	2567926	2567926	Trichocladium griseum	334
+Humhy1_GeneCatalog_proteins_20220626.aa.fasta	Humhy1	Humicola hyalothermophila CBS 45480	1486343	1486343	Humicola hyalothermophila	348
+HyFL0543_1_GeneCatalog_proteins_20190325.aa.fasta	HyFL0543_1	Hypoxylon sp. FL0543 v1.0	2614586	2614586	Hypoxylon sp. FL0543	470
+HyFL0890_1_GeneCatalog_proteins_20190325.aa.fasta	HyFL0890_1	Hypoxylon sp. FL0890 v1.0	2614585	2614585	Hypoxylon sp. FL0890	491
+HyFL1150_1_GeneCatalog_proteins_20190715.aa.fasta	HyFL1150_1	Hypoxylon sp. FL1150 v1.0	2663364	2663364	Hypoxylon sp. FL1150	473
+HyFL1284_2_GeneCatalog_proteins_20191111.aa.fasta	HyFL1284_2	Hypoxylon sp. FL1284 v2.0	2663365	2663365	Hypoxylon sp. FL1284	472
+HyFL1857_1_GeneCatalog_proteins_20190501.aa.fasta	HyFL1857_1	Hypoxylon sp. FL1857 v1.0	2614582	2614582	Hypoxylon sp. FL1857	508
+HyNC0597_1_GeneCatalog_proteins_20190326.aa.fasta	HyNC0597_1	Hypoxylon sp. NC0597 v1.0	2614607	2614607	Hypoxylon sp. NC0597	490
+HyNC1633_2_GeneCatalog_proteins_20191103.aa.fasta	HyNC1633_2	Hypoxylon sp. NC1633 v2.0	2663366	2663366	Hypoxylon sp. NC1633	453
+Hyacur1_GeneCatalog_proteins_20180420.aa.fasta	Hyacur1	Hyaloraphidium curvatum SAG235-1 v1.0	82268	82268	Hyaloraphidium curvatum	419
+Hydfim1_GeneCatalog_proteins_20160510.aa.fasta	Hydfim1	Hydnopolyporus fimbriatus CBS384.51 v1.0	378272	378272	Irpex rosettiformis	383
+Hydru2_GeneCatalog_proteins_20150110.aa.fasta	Hydru2	Hydnum rufescens UP504 v2.0	139363	139363	Hydnum rufescens	300
+Hygaur1_GeneCatalog_proteins_20180505.aa.fasta	Hygaur1	Hygrophoropsis aurantiaca ATCC 28755 v1.0	72124	72124	Hygrophoropsis aurantiaca	381
+Hymrad1_GeneCatalog_proteins_20151222.aa.fasta	Hymrad1	Hymenopellis radicata IJFM A160 v1.0	937743	937743	Hymenopellis radicata	785
+HypEC38_3_GeneCatalog_proteins_20130613.aa.fasta	HypEC38_3	Hypoxylon sp. EC38 v3.0	1001937	1001937	Hypoxylon sp. EC38	514
+Hyparg1_GeneCatalog_proteins_20190711.aa.fasta	Hyparg1	Hypoxylon argillaceum CBS 527.63 v1.0	1799007	1799007	Hypoxylon argillaceum	518
+Hypbu1_GeneCatalog_proteins_20120125.aa.fasta	Hypbu1	Hyphopichia burtonii NRRL Y-1933 v1.0	717740	717740	Hyphopichia burtonii	163
+Hypcer1_GeneCatalog_proteins_20190613.aa.fasta	Hypcer1	Hypoxylon cercidicola CBS 119009 v1.0	326656	326656	Hypoxylon cercidicola	507
+Hypcro1_GeneCatalog_proteins_20190611.aa.fasta	Hypcro1	Hypoxylon crocopeplum CBS 119004 v1.0	326657	326657	Hypoxylon crocopeplum	556
+Hypfra2_GeneCatalog_proteins_20191031.aa.fasta	Hypfra2	Hypoxylon fragiforme CBS 206.31 v2.0	63214	63214	Hypoxylon fragiforme	413
+Hypfus1_GeneCatalog_proteins_20190612.aa.fasta	Hypfus1	Hypoxylon fuscum CBS 119018 v1.0	109372	109372	Hypoxylon fuscum	534
+Hypma1_GeneCatalog_proteins_20210308.aa.fasta	Hypma1	Hypsizygus marmoreus 51987-8	39966	39966	Hypsizygus marmoreus	485
+Hypmon1_GeneCatalog_proteins_20190301.aa.fasta	Hypmon1	Hypoxylon monticulosum FL0542 v1.0	2487000	2487000	Hypomontagnella monticulosa	529
+Hypros1_GeneCatalog_proteins_20210912.aa.fasta	Hypros1	Hypomyces rosellus CCMJ2808	5132	5132	Hypomyces rosellus	370
+Hyprub1_GeneCatalog_proteins_20190611.aa.fasta	Hyprub1	Hypoxylon rubiginosum CBS 119005 v1.0	110542	110542	Hypoxylon rubiginosum	531
+HyprubER1909_1_GeneCatalog_proteins_20190612.aa.fasta	HyprubER1909_1	Hypoxylon rubiginosum ER1909 v1.0	110542	110542	Hypoxylon rubiginosum	571
+Hypsub2_GeneCatalog_proteins_20191111.aa.fasta	Hypsub2	Hypoxylon submonticulosum NC0708 v2.0	152308	152308	Hypomontagnella submonticulosa	516
+Hyptru1_GeneCatalog_proteins_20190611.aa.fasta	Hyptru1	Hypoxylon trugodes CBS 135444 v1.0	326681	326681	Hypoxylon trugodes	507
+Hyssto1_GeneCatalog_proteins_20180831.aa.fasta	Hyssto1	Hysterangium stoloniferum HS.BST v1.0	150792	150792	Hysterangium stoloniferum	364
+Ilyeu1_GeneCatalog_proteins_20170627.aa.fasta	Ilyeu1	Ilyonectria sp. MPI-CAGE-AT-0026 v1.0	1079114	1079114	Ilyonectria europaea	807
+Ilysp1_GeneCatalog_proteins_20121116.aa.fasta	Ilysp1	Ilyonectria europaea PMI82 v1.0	1079114	1079114	Ilyonectria europaea	815
+Irplac1_GeneCatalog_proteins_20170103.aa.fasta	Irplac1	Irpex lacteus CCBAS Fr. 238 617/93 v1.0	5319	5319	Irpex lacteus	404
+Jaaar1_GeneCatalog_proteins_20110803.aa.fasta	Jaaar1	Jaapia argillacea v1.0	202697	202697	Jaapia argillacea	376
+Jamsp1_GeneCatalog_proteins_20141226.aa.fasta	Jamsp1	Jaminaea sp. MCA 5214 v1.0	1569628	1569628	Jaminaea rosea	180
+Jimfl_AD_1_GeneCatalog_proteins_20180815.aa.fasta	Jimfl_AD_1	Jimgerdemannia flammicorona AD002	994334	994334	Jimgerdemannia flammicorona	319
+Jimfl_GMNB39_1_GeneCatalog_proteins_20180904.aa.fasta	Jimfl_GMNB39_1	Jimgerdemannia flammicorona GMNB39	994334	994334	Jimgerdemannia flammicorona	320
+Jimlac1_GeneCatalog_proteins_20180910.aa.fasta	Jimlac1	Jimgerdemannia lactiflua OSC166217	324621	324621	Jimgerdemannia lactiflua	344
+Kalpfe1_GeneCatalog_proteins_20151214.aa.fasta	Kalpfe1	Kalaharituber pfeilii F3 v1.0	139406	139406	Kalaharituber pfeilii	266
+Karrh1_GeneCatalog_proteins_20140225.aa.fasta	Karrh1	Karstenula rhodostoma CBS 690.94 v1.0	1392251	1392251	Karstenula rhodostoma CBS 690.94	640
+Kazaf1_GeneCatalog_proteins_20150111.aa.fasta	Kazaf1	Kazachstania africana CBS 2517	1071382	1071382	Kazachstania africana CBS 2517	136
+KdCBS826_1_GeneCatalog_proteins_20190615.aa.fasta	KdCBS826_1	Kretzschmaria deusta CBS 826.72 v1.0	110526	110526	Ustulina deusta	530
+Kicala1_GeneCatalog_proteins_20170410.aa.fasta	Kicala1	Kickxella alabastrina RSA 675 v1.0	61397	61397	Kickxella alabastrina	190
+Klula1_GeneCatalog_proteins_20130227.aa.fasta	Klula1	Kluyveromyces lactis	284590	284590	Kluyveromyces lactis NRRL Y-1140	121
+Kocim1_GeneCatalog_proteins_20160906.aa.fasta	Kocim1	Kockovaella imperatae NRRL Y-17943 v1.0	4999	4999	Kockovaella imperatae	294
+Kredeu1_GeneCatalog_proteins_20190325.aa.fasta	Kredeu1	Kretzschmaria deusta IL1129 v1.0	110526	110526	Ustulina deusta	529
+Krezon1_GeneCatalog_proteins_20220127.aa.fasta	Krezon1	Kretzschmaria zonata GFP132 v1.0	2070401	2070401	Kretzschmaria zonata	525
+Kurca1_GeneCatalog_proteins_20160603.aa.fasta	Kurca1	Kuraishia capsulata CBS 1993	1382522	1382522	Kuraishia capsulata CBS 1993	166
+LacJLM2183_1_GeneCatalog_proteins_20210203.aa.fasta	LacJLM2183_1	Lentinula aciculospora JLM2183 v1.0	153920	153920	Lentinula aciculospora	499
+Lacaka1_GeneCatalog_proteins_20180802.aa.fasta	Lacaka1	Lactarius akahatsu QP v1.0	416441	416441	Lactarius akahatsu	297
+Lacam2_GeneCatalog_proteins_20150823.aa.fasta	Lacam2	Laccaria amethystina LaAM-08-1 v2.0	89243	89243	Laccaria amethystina	361
+Lacbi2_GeneCatalog_proteins_20110203.aa.fasta	Lacbi2	Laccaria bicolor v2.0	980499	980499	Laccaria bicolor N203	399
+Lacdel1_GeneCatalog_proteins_20180731.aa.fasta	Lacdel1	Lactarius deliciosus 48 v1.0	55514	55514	Lactarius deliciosus	379
+Lachat1_GeneCatalog_proteins_20180807.aa.fasta	Lachat1	Lactarius hatsudake 109 v1.0	416442	416442	Lactarius hatsudake	361
+Lachen1_GeneCatalog_proteins_20180719.aa.fasta	Lachen1	Lactarius hengduanensis 84 v1.0	1932122	1932122	Lactarius hengduanensis	324
+Lacind1_GeneCatalog_proteins_20200318.aa.fasta	Lacind1	Lactarius indigo 2018DUKE089 v1.0	222702	222702	Lactarius indigo	363
+Lacpsa1_GeneCatalog_proteins_20180531.aa.fasta	Lacpsa1	Lactarius psammicola BPL869 v1.0	1907521	1907521	Lactarius psammicola	320
+Lacpse1_GeneCatalog_proteins_20180617.aa.fasta	Lacpse1	Lactarius pseudohatsudake 88 v1.0	1932123	1932123	Lactarius pseudohatsudake	402
+Lacqui1_GeneCatalog_proteins_20160525.aa.fasta	Lacqui1	Lactarius quietus S23C v1.0	111141	111141	Lactarius quietus	417
+Lacsan1_GeneCatalog_proteins_20180729.aa.fasta	Lacsan1	Lactarius sanguifluus B21 v1.0	111137	111137	Lactarius sanguifluus	354
+Lacsub1_GeneCatalog_proteins_20170114.aa.fasta	Lacsub1	Lactifluus cf. subvellereus BPL653 v1.0	1837270	1837270	Lactifluus subvellereus	258
+Lacviv1_GeneCatalog_proteins_20180627.aa.fasta	Lacviv1	Lactarius vividus 141 v1.0	1740625	1740625	Lactarius vividus	288
+Lacvol1_GeneCatalog_proteins_20161025.aa.fasta	Lacvol1	Lactifluus cf. volemus BPL652 v1.0	71967	71967	Lactifluus volemus	269
+Laesu1_GeneCatalog_proteins_20130128.aa.fasta	Laesu1	Laetiporus sulphureus var. sulphureus v1.0	5630	5630	Laetiporus sulphureus	302
+Lashi1_GeneCatalog_proteins_20180511.aa.fasta	Lashi1	Lasiosphaeris hispida CBS 955.72 v1.0	260671	260671	Lasiosphaeria hispida	574
+Lashir1_GeneCatalog_proteins_20170729.aa.fasta	Lashir1	Lasiosphaeris hirsuta SMH4607-1 v1.0	260670	260670	Lasiosphaeris hirsuta	563
+Lasmin1_GeneCatalog_proteins_20170616.aa.fasta	Lasmin1	Lasiosphaeria miniovina SMH2392-1A v1.0	1954250	1954250	Lasiosphaeria miniovina	549
+Lasov1_GeneCatalog_proteins_20171021.aa.fasta	Lasov1	Lasiosphaeria ovina CBS 958.72 v1.0	92902	92902	Lasiosphaeria ovina	574
+LboET3784_1_GeneCatalog_proteins_20190624.aa.fasta	LboET3784_1	Lentinula guzmanii ET3784 v1.0	40481	40481	Lentinula boryana	472
+LboTFB10292_1_GeneCatalog_proteins_20200513.aa.fasta	LboTFB10292_1	Lentinula aff. detonsa TFB10292 v1.0	40481	40481	Lentinula boryana	481
+LboTFB7810_1_GeneCatalog_proteins_20191105.aa.fasta	LboTFB7810_1	Lentinula detonsa TFB7810 v1.0	40481	40481	Lentinula boryana	482
+LboTFB7829_1_GeneCatalog_proteins_20190713.aa.fasta	LboTFB7829_1	Lentinula detonsa TFB7829 v1.0	2614576	2614576	Lentinula aff. boryana	470
+Lbo_TFB10291_1_GeneCatalog_proteins_20190621.aa.fasta	Lbo_TFB10291_1	Lentinula aff. detonsa TFB10291 v1.0	40481	40481	Lentinula boryana	478
+Lbo_TFB10827_1_GeneCatalog_proteins_20190529.aa.fasta	Lbo_TFB10827_1	Lentinula boryana TFB10827 v1.0	40481	40481	Lentinula boryana	469
+Ldo8726_1_FilteredModels1_proteins_2023-09-09.fasta	Ldo8726_1	Lipomyces doorenjongii CBS 8726 v1.0	383834	383834	Lipomyces doorenjongii	232
+LedB17_3_GeneCatalog_proteins_20201027.aa.fasta	LedB17_3	Lentinula edodes B17 v1.3	5353	5353	Lentinula edodes	496
+LedTMI1148_1_GeneCatalog_proteins_20190716.aa.fasta	LedTMI1148_1	Lentinula edodes TMI1148 v1.0	5353	5353	Lentinula edodes	469
+LedTMI1633_1_GeneCatalog_proteins_20190915.aa.fasta	LedTMI1633_1	Lentinula edodes TMI1633 v1.0	5353	5353	Lentinula edodes	470
+LedVB361_1_GeneCatalog_proteins_20190713.aa.fasta	LedVB361_1	Lentinula edodes VB361 v1.0	5353	5353	Lentinula edodes	487
+Led_CS584_1_GeneCatalog_proteins_20190518.aa.fasta	Led_CS584_1	Lentinula edodes CS-584 v1.0	5353	5353	Lentinula edodes	477
+Leisp1_GeneCatalog_proteins_20141127.aa.fasta	Leisp1	Leiotrametes sp. CIRM-BRFM 1775 v1.0	1513325	1513325	Cubamyces sp. BRFM 1775	441
+Lenafn1_GeneCatalog_proteins_20170906.aa.fasta	Lenafn1	Lentinula edodes sp2 HRB7682 ss15 v1.0	40482	40482	Lentinula lateritia	482
+Lenafn_TMI1502_1_GeneCatalog_proteins_20180804.aa.fasta	Lenafn_TMI1502_1	Lentinula afn. lateritia sp 3 TMI1502 v1.0	40482	40482	Lentinula lateritia	464
+Lened1_GeneCatalog_proteins_20170819.aa.fasta	Lened1	Lentinula edodes NBRC 111202	5353	5353	Lentinula edodes	489
+Lenedo1_GeneCatalog_proteins_20170719.aa.fasta	Lenedo1	Lentinula edodes Le(Bin) 0899 ss11 v1.0	5353	5353	Lentinula edodes	485
+Lenlat1_GeneCatalog_proteins_20170901.aa.fasta	Lenlat1	Lentinula lateritia RHP3577 ss4 v1.0	40482	40482	Lentinula lateritia	479
+Lennov1_GeneCatalog_proteins_20180802.aa.fasta	Lennov1	Lentinula novae-zelandiae TMI-1172 v1.0	42442	42442	Lentinula novae-zelandiae	467
+Lenra_T_1_GeneCatalog_proteins_20181105.aa.fasta	Lenra_T_1	Lentinula raphanica TFB8682 v1.0	153919	153919	Lentinula raphanica	464
+Lenrap1_GeneCatalog_proteins_20170901.aa.fasta	Lenrap1	Lentinula raphanica INPA1701G ss19 v1.0	153919	153919	Lentinula raphanica	491
+Lenrap1_155_GeneCatalog_proteins_20180804.aa.fasta	Lenrap1_155	Lentinula raphanica TFB9929 ss4 v1.0	153919	153919	Lentinula raphanica	481
+Lenti6_1_GeneCatalog_proteins_20130903.aa.fasta	Lenti6_1	Lentinus tigrinus ALCF2SS1-6 v1.0	1328759	1328759	Lentinus tigrinus ALCF2SS1-6	477
+Lenti7_1_GeneCatalog_proteins_20130905.aa.fasta	Lenti7_1	Lentinus tigrinus ALCF2SS1-7 v1.0	1328758	1328758	Lentinus tigrinus ALCF2SS1-7	478
+Lentinedodes1_GeneCatalog_proteins_20190125.aa.fasta	Lentinedodes1	Lentinula edodes W1-26 v1.0	5353	5353	Lentinula edodes	470
+Lepnud1_GeneCatalog_proteins_20151208.aa.fasta	Lepnud1	Lepista nuda CBS 247.69 v1.0	64659	64659	Collybia nuda	635
+Lepor2_GeneCatalog_proteins_20171210.aa.fasta	Lepor2	Leptodontidium sp. MPI-SDFR-AT-0119 v2.0	75374	75374	Leptodontidium	977
+Leppa1_GeneCatalog_proteins_20130322.aa.fasta	Leppa1	Lepidopterella palustris v1.0	741139	741139	Lepidopterella palustris	372
+Leucr1_GeneCatalog_proteins_20160201.aa.fasta	Leucr1	Leucosporidiella creatinivora UCDFST 62-1032 v1.0	5278	5278	Leucosporidium scottii	309
+Leugo1_1_GeneCatalog_proteins_20141030.aa.fasta	Leugo1_1	Leucoagaricus gongylophorus Ac12	1258663	79220	Leucocoprinus gongylophorus	262
+Leumo1_GeneCatalog_proteins_20131220.aa.fasta	Leumo1	Leucogyrophana mollusca KUC20120723A-06 v1.0	85980	85980	Leucogyrophana mollusca	368
+Liccor1_GeneCatalog_proteins_20160306.aa.fasta	Liccor1	Lichtheimia corymbifera JMRC:FSU:9682	1263082	1263082	Lichtheimia corymbifera JMRC:FSU:9682	333
+Lichy1_GeneCatalog_proteins_20130506.aa.fasta	Lichy1	Lichtheimia hyalospora v1.0	420593	420593	Lichtheimia hyalospora	339
+Linin1_GeneCatalog_proteins_20141206.aa.fasta	Linin1	Lindgomyces ingoldianus ATCC 200398 v1.0	673940	673940	Lindgomyces ingoldianus	613
+Linpe1_GeneCatalog_proteins_20150915.aa.fasta	Linpe1	Linderina pennispora ATCC 12442 v1.0	61395	61395	Linderina pennispora	276
+Linrh1_GeneCatalog_proteins_20160326.aa.fasta	Linrh1	Lineolata rhizophorae ATCC 16933 v1.0	578093	578093	Lineolata rhizophorae	298
+Liparx1_FilteredModels1_proteins_2023-09-10.fasta	Liparx1	Lipomyces arxii Phaff 12-163 v1.0	56418	56418	Lipomyces arxii	155
+Lipchi1_FilteredModels1_proteins_2023-09-10.fasta	Lipchi1	Lipomyces chichibuensis CBS 12929 v1.0	1546026	1546026	Lipomyces chichibuensis	176
+Lipdoo1_GeneCatalog_proteins_20220516.aa.fasta	Lipdoo1	Lipomyces doorenjongii Phaff 78-26 v1.0	383834	383834	Lipomyces doorenjongii	219
+Lipjap1_FilteredModels1_proteins_2023-09-07.fasta	Lipjap1	Lipomyces japonicus CBS 7319 v1.0	56871	56871	Lipomyces japonicus	142
+Lipkon1_GeneCatalog_proteins_20220516.aa.fasta	Lipkon1	Lipomyces kononenkoae NRRL Y-11553 v1.0	34357	34357	Lipomyces kononenkoae	208
+Lipmes1_FilteredModels1_proteins_2023-09-10.fasta	Lipmes1	Lipomyces mesembrius CBS 7600 v1.0	56874	56874	Lipomyces mesembrius	185
+Lipodoor1_FilteredModels1_proteins_2023-09-10.fasta	Lipodoor1	Lipomyces doorenjongii NRRL Y-27504 v1.0	383834	383834	Lipomyces doorenjongii	232
+Lipokono1_FilteredModels1_proteins_2023-09-10.fasta	Lipokono1	Lipomyces kononenkoae CBS 7786 v1.0	34357	34357	Lipomyces kononenkoae	224
+Lipoli1_FilteredModels1_proteins_2023-09-09.fasta	Lipoli1	Lipomyces oligophaga CBS 7107 v1.0	45792	45792	[Lipomyces] oligophaga	146
+Lipori1_1_GeneCatalog_proteins_20220515.aa.fasta	Lipori1_1	Lipomyces orientalis CBS 10300 v1.0	1233043	1233043	Lipomyces orientalis	219
+Lipotetr1_FilteredModels1_proteins_2023-09-10.fasta	Lipotetr1	Lipomyces tetrasporus Phaff 51-55 v1.0	54092	54092	Lipomyces tetrasporus	216
+Lipsmi1_GeneCatalog_proteins_20220515.aa.fasta	Lipsmi1	Lipomyces smithiae NRRL Y-17922 v1.0	1125753	1125753	Limtongia smithiae	136
+Lipst1_1_GeneCatalog_proteins_20110609.aa.fasta	Lipst1_1	Lipomyces starkeyi NRRL Y-11557 v1.0	675824	675824	Lipomyces starkeyi NRRL Y-11557	247
+Lipsta1_1_GeneCatalog_proteins_20220515.aa.fasta	Lipsta1_1	Lipomyces starkeyi Phaff 78-25 v1.0	29829	29829	Lipomyces starkeyi	243
+Lipstar1_1_GeneCatalog_proteins_20220515.aa.fasta	Lipstar1_1	Lipomyces starkeyi Phaff 78-24 v1.0	29829	29829	Lipomyces starkeyi	240
+Lipstark1_1_GeneCatalog_proteins_20220411.aa.fasta	Lipstark1_1	Lipomyces starkeyi Phaff 55-103 v1.0	29829	29829	Lipomyces starkeyi	243
+Lipsuo1_GeneCatalog_proteins_20220516.aa.fasta	Lipsuo1	Lipomyces suomiensis NRRL Y-17356 v1.0	1337062	1337062	Kockiozyma suomiensis	165
+Liptet1_GeneCatalog_proteins_20220117.aa.fasta	Liptet1	Lipomyces tetrasporus NRRL Y-64009 v1.0	54092	54092	Lipomyces tetrasporus	223
+Liptetr1_GeneCatalog_proteins_20220517.aa.fasta	Liptetr1	Lipomyces tetrasporus NRRL Y-11562 v1.0	54092	54092	Lipomyces tetrasporus	232
+Liptetra1_GeneCatalog_proteins_20220515.aa.fasta	Liptetra1	Lipomyces tetrasporus NRRL Y-8875 v1.0	54092	54092	Lipomyces tetrasporus	222
+Lizem1_GeneCatalog_proteins_20150430.aa.fasta	Lizem1	Lizonia empirigonia CBS 542.76 v1.0	1496277	1496277	Lizonia empirigonia	513
+LlaRV95_379_1_GeneCatalog_proteins_20200517.aa.fasta	LlaRV95_379_1	Lentinula lateritia RV95-379 v1.0	40482	40482	Lentinula lateritia	480
+LlaTMI1499_1_GeneCatalog_proteins_20190712.aa.fasta	LlaTMI1499_1	Lentinula aff. lateritia TMI1499 v1.0	40482	40482	Lentinula lateritia	469
+LnoICMP18003A_1_GeneCatalog_proteins_20201014.aa.fasta	LnoICMP18003A_1	Lentinula novae-zelandiae ICMP 18003 v1.0	42442	42442	Lentinula novae-zelandiae	474
+Lobtra1_GeneCatalog_proteins_20160303.aa.fasta	Lobtra1	Lobosporangium transversale NRRL 3116 v1.0	64571	64571	Lobosporangium transversale	240
+Lodelo1_GeneCatalog_proteins_20161026.aa.fasta	Lodelo1	Lodderomyces elongisporus NRRL YB-4239	379508	379508	Lodderomyces elongisporus NRRL YB-4239	135
+Lopma1_GeneCatalog_proteins_20130805.aa.fasta	Lopma1	Lophiostoma macrostomum v1.0	1314788	1314788	Lophiostoma macrostomum CBS 122681	605
+Lopmy1_GeneCatalog_proteins_20140604.aa.fasta	Lopmy1	Lophium mytilinum CBS 269.34 v1.0	390894	390894	Lophium mytilinum	408
+Lopnu1_GeneCatalog_proteins_20160906.aa.fasta	Lopnu1	Lophiotrema nucula CBS 627.86 v1.0	690887	690887	Lophiotrema nucula	691
+LraINPA1820_1_GeneCatalog_proteins_20190216.aa.fasta	LraINPA1820_1	Lentinula raphanica INPA1820 v1.0	153919	153919	Lentinula raphanica	493
+LraJLM1587_1_GeneCatalog_proteins_20190401.aa.fasta	LraJLM1587_1	Lentinula raphanica JLM1587 v1.0	153919	153919	Lentinula raphanica	477
+LraTFB9207_1_GeneCatalog_proteins_20190328.aa.fasta	LraTFB9207_1	Lentinula raphanica TFB9207 v1.0	153919	153919	Lentinula raphanica	482
+Lst7536_1_FilteredModels1_proteins_2023-09-10.fasta	Lst7536_1	Lipomyces starkeyi CBS 7536 v1.0	29829	29829	Lipomyces starkeyi	255
+Lst7851_1_FilteredModels1_proteins_2023-09-10.fasta	Lst7851_1	Lipomyces starkeyi CBS 7851 v1.0	29829	29829	Lipomyces starkeyi	234
+Lst8064_1_FilteredModels1_proteins_2023-09-10.fasta	Lst8064_1	Lipomyces starkeyi CBS 8064 v1.0	29829	29829	Lipomyces starkeyi	191
+Lyoat1_GeneCatalog_proteins_20181208.aa.fasta	Lyoat1	Lyophyllum atratum CBS 144462 v1.0	117065	117065	Lyophyllum atratum	611
+Macan1_GeneCatalog_proteins_20140424.aa.fasta	Macan1	Macroventuria anomochaeta CBS 525.71 v1.0	301207	301207	Macroventuria anomochaeta	538
+Macfu1_GeneCatalog_proteins_20130625.aa.fasta	Macfu1	Macrolepiota fuliginosa MF-IS2 v1.0	1400762	1400762	Macrolepiota fuliginosa MF-IS2	579
+Macpha1_GeneCatalog_proteins_20180322.aa.fasta	Macpha1	Macrophomina phaseolina MPI-SDFR-AT-0080 v1.0	35725	35725	Macrophomina phaseolina	633
+Magor1_GeneCatalog_proteins_20190828.aa.fasta	Magor1	Pyricularia oryzae 70-15 v3.0	242507	242507	Pyricularia oryzae 70-15	536
+Magpo1_GeneCatalog_proteins_20150720.aa.fasta	Magpo1	Magnaporthiopsis poae ATCC 64411	644358	644358	Magnaporthiopsis poae ATCC 64411	506
+Malci1_GeneCatalog_proteins_20220628.aa.fasta	Malci1	Malbranchea cinnamomea CBS 34355	5041	5041	Malbranchea cinnamomea	246
+Malsy1_1_GeneCatalog_proteins_20140109.aa.fasta	Malsy1_1	Malassezia sympodialis ATCC 42132	1230383	1230383	Malassezia sympodialis ATCC 42132	86
+Marbr1_GeneCatalog_proteins_20141203.aa.fasta	Marbr1	Marssonina brunnea f. sp. multigermtubi MB_m1	1072389	1072389	Drepanopeziza brunnea f. sp. 'multigermtubi' MB_m1	415
+Marfi1_GeneCatalog_proteins_20141220.aa.fasta	Marfi1	Marasmius fiardii PR-910 v1.0	1328755	1328755	Marasmius fiardii	639
+Marpt1_GeneCatalog_proteins_20140919.aa.fasta	Marpt1	Martensiomyces pterosporus CBS 209.56 v1.0	61414	61414	Martensiomyces pterosporus	251
+Maseb1_GeneCatalog_proteins_20141122.aa.fasta	Maseb1	Massarina eburnea CBS 473.64 v1.0	1395130	1395130	Massarina eburnea CBS 473.64	570
+Masph1_GeneCatalog_proteins_20160922.aa.fasta	Masph1	Massariosphaeria phaeospora CBS 611.86 v1.0	100035	100035	Massariosphaeria phaeospora	484
+Meimi1_GeneCatalog_proteins_20150112.aa.fasta	Meimi1	Meira miltonrushii MCA 3882 v1.0	1280837	1280837	Meira miltonrushii	248
+Melame1_GeneCatalog_proteins_20180827.aa.fasta	Melame1	Melampsora americana R15-033-03 v1.0	2182807	2182807	Melampsora americana	388
+Melbi2_GeneCatalog_proteins_20130225.aa.fasta	Melbi2	Meliniomyces bicolor E v2.0	2482752	2482752	Hyaloscypha bicolor	665
+Melbro1_GeneCatalog_proteins_20180829.aa.fasta	Melbro1	Melanogaster broomeianus MBLB.BST v1.0	2655010	2655010	Melanogaster broomeanus	315
+Melpu1_GeneCatalog_proteins_20130415.aa.fasta	Melpu1	Melanomma pulvis-pyrius v1.0	100047	100047	Melanomma pulvis-pyrius	632
+Metac1_GeneCatalog_proteins_20131003.aa.fasta	Metac1	Metarhizium acridum CQMa 102	655827	655827	Metarhizium acridum CQMa 102	364
+Metani1_GeneCatalog_proteins_20210224.aa.fasta	Metani1	Metarhizium anisopliae ARSEF 549	1276135	3151832	Metarhizium hybridum	410
+Metbi1_GeneCatalog_proteins_20120327.aa.fasta	Metbi1	Metschnikowia bicuspidata NRRL YB-4993 v1.0	27322	27322	Metschnikowia bicuspidata	129
+Metbi_SCcomb_GeneCatalog_proteins_20140820.aa.fasta	Metbi_SCcomb	Metschnikowia bicuspidata single-cell v1.0	27322	27322	Metschnikowia bicuspidata	114
+Metro1_GeneCatalog_proteins_20160603.aa.fasta	Metro1	Metarhizium robertsii ARSEF 23	655844	655844	Metarhizium robertsii ARSEF 23	424
+Meygui1_GeneCatalog_proteins_20160903.aa.fasta	Meygui1	Meyerozyma guilliermondii ATCC 6260	294746	294746	Meyerozyma guilliermondii ATCC 6260	160
+MicG_I_3_GeneCatalog_proteins_20230417.aa.fasta	MicG_I_3	Ordospora pajunii v1.0	3039483	3039483	Ordospora pajunii	11
+Micbo1_GeneCatalog_proteins_20151118.aa.fasta	Micbo1	Microdochium bolleyi J235TASD1 v1.0	196109	196109	Microdochium bolleyi	546
+Micca1_GeneCatalog_proteins_20130828.aa.fasta	Micca1	Microsporum canis CBS 113480	554155	554155	Microsporum canis CBS 113480	215
+Micld1_GeneCatalog_proteins_20161101.aa.fasta	Micld1	Microbotryum lychnidis-dioicae p1A1 Lamole	683840	683840	Microbotryum lychnidis-dioicae p1A1 Lamole	240
+Micmi1_GeneCatalog_proteins_20150625.aa.fasta	Micmi1	Microthyrium microscopicum CBS 115976 v1.0	703497	703497	Microthyrium microscopicum	511
+Mictri1_GeneCatalog_proteins_20170510.aa.fasta	Mictri1	Microdochium trichocladiopsis MPI-CAGE-CH-0230 v1.0	1682393	1682393	Microdochium trichocladiopsis	650
+Mixos1_GeneCatalog_proteins_20120207.aa.fasta	Mixos1	Mixia osmundae IAM 14324 v1.0	34349	34349	Mixia osmundae	223
+MoalAD071_1_GeneCatalog_proteins_20210416.aa.fasta	MoalAD071_1	Mortierella alpina AD071	64518	64518	Mortierella alpina	272
+MoalAD072_1_GeneCatalog_proteins_20210424.aa.fasta	MoalAD072_1	Mortierella alpina AD072	64518	64518	Mortierella alpina	276
+MoalCK1249_1_GeneCatalog_proteins_20210510.aa.fasta	MoalCK1249_1	Mortierella alpina CK1249	64518	64518	Mortierella alpina	271
+MoeNVP64_1_GeneCatalog_proteins_20190403.aa.fasta	MoeNVP64_1	Mortierella elongata NVP64 v1.0	310910	310910	Linnemannia elongata	277
+Moeaph1_GeneCatalog_proteins_20170701.aa.fasta	Moeaph1	Moesziomyces aphidis DSM 70725	84754	84754	Moesziomyces aphidis	209
+Moeli1_GeneCatalog_proteins_20210312.aa.fasta	Moeli1	Moelleriella libera RCEF2490	324773	324773	Moelleriella libera	277
+Monha1_GeneCatalog_proteins_20131210.aa.fasta	Monha1	Monacrosporium haptotylum CBS 200.50	1284197	1284197	Dactylellina haptotyla CBS 200.50	492
+Monpe1_1_GeneCatalog_proteins_20131213.aa.fasta	Monpe1_1	Moniliophthora perniciosa FA553	554373	554373	Moniliophthora perniciosa FA553	688
+MorGBAus27b_1_GeneCatalog_proteins_20170422.aa.fasta	MorGBAus27b_1	Mortierella sp. GBAus27b v1.0	1954212	1954212	Mortierella sp. GBAus27b	238
+Morco1_GeneCatalog_proteins_20140113.aa.fasta	Morco1	Morchella importuna CCBAS932 v1.0	1174673	1174673	Morchella importuna	357
+Morel2_GeneCatalog_proteins_20151120.aa.fasta	Morel2	Mortierella elongata AG-77 v2.0	310910	310910	Linnemannia elongata	279
+Morel_U14_1_GeneCatalog_proteins_20180326.aa.fasta	Morel_U14_1	Mortierella elongata MPI-CAGE-AA-0104 v1.0	310910	310910	Linnemannia elongata	287
+Morhum1_GeneCatalog_proteins_20170607.aa.fasta	Morhum1	Mortierella humilis PMI_1414 v1.0	64523	64523	Podila humilis	257
+Morimp1_GeneCatalog_proteins_20150807.aa.fasta	Morimp1	Morchella importuna SCYDJ1-A1 v1.0	1174673	1174673	Morchella importuna	361
+Mormul1_GeneCatalog_proteins_20160906.aa.fasta	Mormul1	Mortierella multidivaricata RSA 2152 T v1.0	101098	101098	Gamsiella multidivaricata	241
+Morsny1_GeneCatalog_proteins_20180419.aa.fasta	Morsny1	Morchella snyderi CBS 144464 v1.0	1174678	1174678	Morchella snyderi	357
+MospAD094_1_GeneCatalog_proteins_20210510.aa.fasta	MospAD094_1	Mortierella sp. AD094	1896185	1896185	Mortierella sp. AD094	280
+MospKOD1030_1_GeneCatalog_proteins_20210506.aa.fasta	MospKOD1030_1	Mortierella sp. KOD 1030	1715235	1715235	Mortierella sp.	273
+MospNVP41_1_GeneCatalog_proteins_20210426.aa.fasta	MospNVP41_1	Mortierella sp. NVP41	1896192	1896192	Mortierella sp. NVP41	265
+Mrafri1_GeneCatalog_proteins_20160413.aa.fasta	Mrafri1	Mrakia frigida ATCC 22029 v1.0	29902	29902	Mrakia frigida	294
+MroMCA2997_1_GeneCatalog_proteins_20201126.aa.fasta	MroMCA2997_1	Moniliophthora roreri MCA 2997	1381753	1381753	Moniliophthora roreri MCA 2997	675
+Mucci3_GeneCatalog_proteins_20220410.aa.fasta	Mucci3	Mucor lusitanicus CBS277.49 v3.0	36080	36080	Mucor circinelloides	337
+Muccir1_3_GeneCatalog_proteins_20181206.aa.fasta	Muccir1_3	Mucor lusitanicus (circinelloides) MU402 v1.0	29924	29924	Mucor lusitanicus	338
+Mucmuc1_GeneCatalog_proteins_20181129.aa.fasta	Mucmuc1	Mucor mucedo NRRL 3635 v1.0	29922	29922	Mucor mucedo	331
+Muloch1_GeneCatalog_proteins_20170119.aa.fasta	Muloch1	Multifurca ochricompacta BPL690 v1.0	376703	376703	Multifurca ochricompacta	247
+Myc59_1_GeneCatalog_proteins_20170610.aa.fasta	Myc59_1	Mycena sp. CBHHK59/15 v1.0	1940295	1940295	Mycena sp. CBHHK59/15	995
+Mycafr1_GeneCatalog_proteins_20160506.aa.fasta	Mycafr1	Mycotypha africana NRRL 2978 v1.0	64632	64632	Mycotypha africana	258
+Mycalb1_GeneCatalog_proteins_20180325.aa.fasta	Mycalb1	Mycena albidolilacea CBHHK002 v1.0	1033008	1033008	Mycena albidolilacea	1195
+Mycale1_GeneCatalog_proteins_20171027.aa.fasta	Mycale1	Mycena alexandri CBHHK200 v1.0	1745969	1745969	Mycena alexandri	934
+Mycami1_GeneCatalog_proteins_20171027.aa.fasta	Mycami1	Mycena amicta BAPX v1.0	380012	380012	Mycena amicta	766
+Mycbel1_GeneCatalog_proteins_20171013.aa.fasta	Mycbel1	Mycena belliae CBHHK173m v1.0	1033014	1033014	Mycena belliarum	615
+Myccro1_GeneCatalog_proteins_20171013.aa.fasta	Myccro1	Mycena crocata CBHHK184 v1.0	220801	220801	Mycena crocata	847
+Mycden1_GeneCatalog_proteins_20210907.aa.fasta	Mycden1	Mycocalia denudata CBS 494.85 v1.0	404356	404356	Mycocalia denudata	511
+Mycepi1_GeneCatalog_proteins_20171002.aa.fasta	Mycepi1	Mycena epipterygia CBHHK145m v1.0	230806	230806	Mycena epipterygia	1133
+Mycfil1_GeneCatalog_proteins_20171109.aa.fasta	Mycfil1	Mycena filopes CBHHK001 v1.0	858877	858877	Mycena filopes	982
+Mycflo1_GeneCatalog_proteins_20171028.aa.fasta	Mycflo1	Mycena floridula CBHHK072 v1.0	1033242	1033242	Mycena floridula	880
+Mycgal1_GeneCatalog_proteins_20160823.aa.fasta	Mycgal1	Mycena galopus ATCC-62051 v1.0	1314675	1314675	Mycena galopus ATCC 62051	1336
+Mycgale1_GeneCatalog_proteins_20180506.aa.fasta	Mycgale1	Mycena galericulata CBHHK162m v1.0	71905	71905	Mycena galericulata	1257
+Mychae1_GeneCatalog_proteins_20170323.aa.fasta	Mychae1	Mycena haematopus CBHHK189 v1.0	230807	230807	Mycena haematopus	635
+Myche1_GeneCatalog_proteins_20150518.aa.fasta	Myche1	Myceliophthora heterothallica CBS 203.75 v1.0	1149786	1149786	Thermothelomyces heterothallicus	392
+Mychet1_GeneCatalog_proteins_20170418.aa.fasta	Mychet1	Myceliophthora heterothallica CBS 202.75 v1.0	1149848	1149786	Thermothelomyces heterothallicus	389
+Myclat1_GeneCatalog_proteins_20190110.aa.fasta	Myclat1	Mycena latifolia 10383 v1.0	1033247	1033247	Mycena latifolia	1125
+Myclep1_GeneCatalog_proteins_20180625.aa.fasta	Myclep1	Mycena leptocephala CBHHK5/15 v1.0	230808	230808	Mycena leptocephala	1986
+Mycmac1_GeneCatalog_proteins_20180503.aa.fasta	Mycmac1	Mycena maculata CBHHK188m v1.0	230809	230809	Mycena maculata	717
+Mycmet1_GeneCatalog_proteins_20180505.aa.fasta	Mycmet1	Mycena metata CBHHK182m v1.0	1033252	1033252	Mycena metata	1156
+Mycoli1_GeneCatalog_proteins_20171218.aa.fasta	Mycoli1	Mycena olivaceomarginata CBHHK47/15 v1.0	230810	230810	Mycena olivaceomarginata	2339
+Mycpol1_GeneCatalog_proteins_20180505.aa.fasta	Mycpol1	Mycena polygramma CBHHK137 v1.0	230801	230801	Mycena polygramma	1134
+Mycpur1_GeneCatalog_proteins_20190304.aa.fasta	Mycpur1	Mycena pura 9144 v1.0	153505	153505	Mycena pura	798
+Mycreb1_GeneCatalog_proteins_20171023.aa.fasta	Mycreb1	Mycena rebaudengoi CBHHK068 v1.0	1045383	1045383	Mycena rebaudengoi	1678
+Mycros1_GeneCatalog_proteins_20170424.aa.fasta	Mycros1	Mycena rosella CBHHK067 v1.0	1033263	1033263	Mycena rosella	960
+Mycrub1_GeneCatalog_proteins_20170201.aa.fasta	Mycrub1	Mycena capillaripes Frankland 9286 v1.0	230804	230804	Mycena capillaripes	1174
+Mycsan1_GeneCatalog_proteins_20171021.aa.fasta	Mycsan1	Mycena sanguinolenta CBHHK176m v1.0	230812	230812	Mycena sanguinolenta	1111
+Mycth1_GeneCatalog_proteins_20220630.aa.fasta	Mycth1	Mycothermus thermophilus CBS 62091	85995	85995	Mycothermus thermophilus	314
+Mycthe1_GeneCatalog_proteins_20220709.aa.fasta	Mycthe1	Mycothermus thermophilus CBS 62591	85995	85995	Mycothermus thermophilus	343
+Mycvit1_GeneCatalog_proteins_20171013.aa.fasta	Mycvit1	Mycena vitilis CBHHK169m v1.0	1033281	1033281	Mycena vitilis	850
+Mycvul1_GeneCatalog_proteins_20180504.aa.fasta	Mycvul1	Mycena vulgaris CBHHK164 v1.0	1033282	1033282	Mycena vulgaris	1370
+Mytre1_GeneCatalog_proteins_20150115.aa.fasta	Mytre1	Mytilinidion resinicola CBS 304.34 v1.0	574789	574789	Mytilinidion resinicola	394
+Myxme1_GeneCatalog_proteins_20180510.aa.fasta	Myxme1	Myxozyma melibiosi Phaff 52-87 v1.0	54550	54550	Myxozyma melibiosi	174
+Nadfu1_GeneCatalog_proteins_20110909.aa.fasta	Nadfu1	Nadsonia fulvescens var. elongata DSM 6958 v1.0	45786	45786	Nadsonia fulvescens	124
+Nagfr2_GeneCatalog_proteins_20220613.aa.fasta	Nagfr2	Naganishia friedmannii 6030m v2.0	89922	89922	Naganishia friedmannii	256
+Nagvi1_GeneCatalog_proteins_20200411.aa.fasta	Nagvi1	Naganishia vishniacii ANT03-052 v1.1	89929	89929	Naganishia vishniacii	228
+Nakbac1_GeneCatalog_proteins_20160804.aa.fasta	Nakbac1	Nakaseomyces bacillisporus CBS 7720	51660	51660	Cylindricascospora bacillispora	140
+Nakdel1_GeneCatalog_proteins_20160805.aa.fasta	Nakdel1	Nakaseomyces delphensis CBS 2170	51657	51657	Nakaseomyces delphensis	137
+NeFL0031_2_GeneCatalog_proteins_20191109.aa.fasta	NeFL0031_2	Nemania sp. FL0031 v2.0	2663370	2663370	Nemania sp. FL0031	563
+NeFL0916_1_GeneCatalog_proteins_20190612.aa.fasta	NeFL0916_1	Nemania sp. FL0916 v1.0	2614608	2614608	Nemania sp. FL0916	489
+Nemabo1_GeneCatalog_proteins_20190325.aa.fasta	Nemabo1	Nemania abortiva FL1152 v1.0	561989	561989	Nemania abortiva	586
+Nemani1_GeneCatalog_proteins_20190515.aa.fasta	Nemani1	Nemania sp. NC0429 v1.0	2614580	2614580	Nemania sp. NC0429	484
+Nemdif1_GeneCatalog_proteins_20190614.aa.fasta	Nemdif1	Nemania diffusa NC0034 v1.0	389665	389665	Nemania diffusa	516
+Nempa1_GeneCatalog_proteins_20130904.aa.fasta	Nempa1	Nematocida parisii ERTm1	881290	881290	Nematocida parisii ERTm1	19
+Neocon1_GeneCatalog_proteins_20220615.aa.fasta	Neocon1	Neocallimastix cameroonii var. constans G3 v1.0	2316399	2316399	Neocallimastix sp. G3	1579
+Neodi1_GeneCatalog_proteins_20170711.aa.fasta	Neodi1	Neonectria ditissima R09/05	78410	78410	Neonectria ditissima	567
+Neofi1_GeneCatalog_proteins_20120815.aa.fasta	Neofi1	Neosartorya fischeri NRRL 181	331117	331117	Aspergillus fischeri NRRL 181	521
+Neoirr1_GeneCatalog_proteins_20160803.aa.fasta	Neoirr1	Neolecta irregularis DAH-1 v1.0	48691	48691	Neolecta irregularis	164
+Neolan1_GeneCatalog_proteins_20200610.aa.fasta	Neolan1	Neocallimastix lanati v1.0	2767002	2767002	Neocallimastix lanati (nom. inval.)	1543
+Neole1_GeneCatalog_proteins_20130125.aa.fasta	Neole1	Neolentinus lepideus v1.0	1314782	1314782	Neolentinus lepideus HHB14362 ss-1	334
+Neopa1_GeneCatalog_proteins_20130909.aa.fasta	Neopa1	Neofusicoccum parvum UCRNP2	1287680	1287680	Neofusicoccum parvum UCRNP2	581
+Neora1_GeneCatalog_proteins_20180718.aa.fasta	Neora1	Ilyonectria sp. MPI-CAGE-AT-0134 v1.0	1755430	1755430	Ilyonectria sp.	898
+Neosp1_GeneCatalog_proteins_20170918.aa.fasta	Neosp1	Neocallimastix californiae G1 v1.0	1754190	1754190	Neocallimastix californiae	1233
+Neucr2_GeneCatalog_proteins_20130412.aa.fasta	Neucr2	Neurospora crassa OR74A v2.0	367110	367110	Neurospora crassa OR74A	384
+Neucr4830_1_GeneCatalog_proteins_20180402.aa.fasta	Neucr4830_1	Neurospora crassa clade B FGSC 4830 v1.0	5141	5141	Neurospora crassa	367
+Neucr_trp3_1_GeneCatalog_proteins_20140324.aa.fasta	Neucr_trp3_1	Neurospora crassa FGSC 73 trp-3 v1.0	5141	5141	Neurospora crassa	357
+Neuhi1_GeneCatalog_proteins_20171014.aa.fasta	Neuhi1	Neurospora hispaniola FGSC 10403 v1.0	588809	588809	Neurospora hispaniola	351
+Nosce1_GeneCatalog_proteins_20140109.aa.fasta	Nosce1	Nosema ceranae BRL01	578460	578460	Vairimorpha ceranae BRL01	10
+NsAK0226_1_GeneCatalog_proteins_20190612.aa.fasta	NsAK0226_1	Nemania serpens AK0226 v1.0	109381	109381	Nemania serpens	454
+NsAZ0576_1_GeneCatalog_proteins_20190611.aa.fasta	NsAZ0576_1	Nemania serpens AZ0576 v1.0	109381	109381	Nemania serpens	481
+NsCB679_1_GeneCatalog_proteins_20190612.aa.fasta	NsCB679_1	Nemania serpens CBS 679.86 v1.0	109381	109381	Nemania serpens	491
+Obbri1_GeneCatalog_proteins_20140615.aa.fasta	Obbri1	Obba rivulosa 3A-2 v1.0	1052685	1052685	Obba rivulosa	364
+Obemuc1_GeneCatalog_proteins_20171120.aa.fasta	Obemuc1	Obelidium mucronatum JEL802 v1.0	110081	110081	Obelidium mucronatum	499
+Ocuya1_GeneCatalog_proteins_20220708.aa.fasta	Ocuya1	Oculimacula yallundae CBS 49480	86028	86028	Oculimacula yallundae	633
+Ogapa1_GeneCatalog_proteins_20161024.aa.fasta	Ogapa1	Ogataea parapolymorpha DL-1	871575	871575	Ogataea parapolymorpha DL-1	145
+Oidma1_GeneCatalog_proteins_20110606.aa.fasta	Oidma1	Oidiodendron maius Zn v1.0	913774	913774	Oidiodendron maius Zn	796
+Olipa1_GeneCatalog_proteins_20171127.aa.fasta	Olipa1	Oliveonia pauxilla MPI-PUGE-AT-0066 v1.0	1026881	1026881	Oliveonia pauxilla	735
+Olpbor1_GeneCatalog_proteins_20191203.aa.fasta	Olpbor1	Olpidium bornovanus UBC F19785	278681	278681	Olpidium bornovanus	103
+Ompol1_GeneCatalog_proteins_20130516.aa.fasta	Ompol1	Omphalotus olearius	1128401	1128401	Omphalotus olearius VT 653.13	406
+Ophdi1_GeneCatalog_proteins_20140614.aa.fasta	Ophdi1	Ophiobolus disseminans CBS 113818 v1.0	1469910	1469910	Ophiobolus disseminans	605
+Ophnu1_GeneCatalog_proteins_20170425.aa.fasta	Ophnu1	Ophiostoma novo-ulmi subsp. novo-ulmi H327	1224258	1224258	Ophiostoma novo-ulmi subsp. novo-ulmi H327	315
+Orpsp1_1_GeneCatalog_proteins_20140826.aa.fasta	Orpsp1_1	Pecoramyces ruminantium C1A	1987568	1987568	Pecoramyces ruminantium	878
+Oudmuc1_GeneCatalog_proteins_20160525.aa.fasta	Oudmuc1	Oudemansiella mucida CBS 558.79 v1.0	139077	139077	Mucidula mucida	615
+Pacta1_2_GeneCatalog_proteins_20110630.aa.fasta	Pacta1_2	Pachysolen tannophilus NRRL Y-2460 v1.2	669874	669874	Pachysolen tannophilus NRRL Y-2460	143
+Paevar1_GeneCatalog_proteins_20171103.aa.fasta	Paevar1	Paecilomyces variotii CBS 101075 v1.0	264951	264951	Paecilomyces variotii	293
+Paevar_HGY_1_GeneCatalog_proteins_20180620.aa.fasta	Paevar_HGY_1	Paecilomyces variotii CBS144490 HYG1 v1.0	264951	264951	Paecilomyces variotii	294
+Panpap1_GeneCatalog_proteins_20170130.aa.fasta	Panpap1	Panaeolus papilionaceus CIRM-BRFM 715 v1.0	330517	330517	Panaeolus papilionaceus	615
+Panru1_GeneCatalog_proteins_20141214.aa.fasta	Panru1	Panus rudis PR-1116 ss-1 v1.0	48022	48022	Panus rudis	392
+Papla1_GeneCatalog_proteins_20180704.aa.fasta	Papla1	Papiliotrema laurentii 5307AH v1.0	5418	5418	Papiliotrema laurentii	244
+Parbr1_GeneCatalog_proteins_20131018.aa.fasta	Parbr1	Paracoccidioides brasiliensis Pb03	482561	121759	Paracoccidioides brasiliensis	159
+Parbra1_GeneCatalog_proteins_20161024.aa.fasta	Parbra1	Paracoccidioides brasiliensis Pb18	502780	121759	Paracoccidioides brasiliensis	175
+Parch1_GeneCatalog_proteins_20171014.aa.fasta	Parch1	Paraphoma chrysanthemicola MPI-GEGE-AT-0034 v1.0	798071	798071	Paraphoma chrysanthemicola	678
+Parchr1_GeneCatalog_proteins_20190213.aa.fasta	Parchr1	Paraphoma chrysanthemicola MPI-SDFR-AT-0120 v1.0	798071	798071	Paraphoma chrysanthemicola	670
+Parpar1_GeneCatalog_proteins_20160126.aa.fasta	Parpar1	Parasitella parasitica v1.0	35722	35722	Parasitella parasitica	292
+Parsed1_GeneCatalog_proteins_20170905.aa.fasta	Parsed1	Paraphysoderma sedebokerense JEL821 v1.0	1500003	1500003	Paraphysoderma sedebokerense	217
+Parsp1_GeneCatalog_proteins_20141011.aa.fasta	Parsp1	Paraconiothyrium sporulosum AP3s5-JAC2a v1.0	1460663	1460663	Paraphaeosphaeria sporulosa	705
+Patat1_GeneCatalog_proteins_20130514.aa.fasta	Patat1	Patellaria atrata v1.0	1346257	1346257	Patellaria atrata CBS 101060	374
+Paxam1_GeneCatalog_proteins_20150425.aa.fasta	Paxam1	Paxillus ammoniavirescens Pou09.2 v1.0	1132860	1132860	Paxillus ammoniavirescens	255
+Paxru2_GeneCatalog_proteins_20151118.aa.fasta	Paxru2	Paxillus adelphus Ve08.2h10 v2.0	463315	463315	Paxillus rubicundulus	253
+Pbre18316_1_GeneCatalog_proteins_20220613.aa.fasta	Pbre18316_1	Penicillium brevicompactum ITEM 18316 v1.0	5074	5074	Penicillium brevicompactum	469
+Pcapi1_GeneCatalog_proteins_20191125.aa.fasta	Pcapi1	Phyllosticta capitalensis CBS 123374 v1.0	121624	121624	Phyllosticta capitalensis	365
+Pcas15300_1_GeneCatalog_proteins_20220601.aa.fasta	Pcas15300_1	Penicillium biforme ITEM 15300 v1.0	707954	707954	Penicillium biforme	492
+Pcit11120_GeneCatalog_proteins_20200613.aa.fasta	Pcit11120	Phyllosticta citricarpa CBS 111.20 v1.0	55181	55181	Phyllosticta citricarpa	359
+Pcit120373_GeneCatalog_proteins_20200613.aa.fasta	Pcit120373	Phyllosticta citricarpa CBS 102373 v1.0	55181	55181	Phyllosticta citricarpa	361
+Pcit122482_GeneCatalog_proteins_20200613.aa.fasta	Pcit122482	Phyllosticta citricarpa CBS 122482 v1.0	55181	55181	Phyllosticta citricarpa	357
+Pcit122670_GeneCatalog_proteins_20200613.aa.fasta	Pcit122670	Phyllosticta citricarpa CBS 122670 v1.0	55181	55181	Phyllosticta citricarpa	357
+Pcit129764_GeneCatalog_proteins_20200914.aa.fasta	Pcit129764	Phyllosticta citrichinaensis CBS 129764 v1.0	1130410	1130410	Phyllosticta citrichinensis	359
+Pcit131864_GeneCatalog_proteins_20200629.aa.fasta	Pcit131864	Phyllosticta citricarpa CBS 131864 v1.0	55181	55181	Phyllosticta citricarpa	354
+Pcit141352_GeneCatalog_proteins_20200614.aa.fasta	Pcit141352	Phyllosticta citricarpa CBS 141352 v1.0	55181	55181	Phyllosticta citricarpa	361
+Pcit16586_GeneCatalog_proteins_20200613.aa.fasta	Pcit16586	Phyllosticta citricarpa CPC 16586 v1.0	55181	55181	Phyllosticta citricarpa	356
+Pcit17464_GeneCatalog_proteins_20210129.aa.fasta	Pcit17464	Phyllosticta citribraziliensis CPC 17464 v1.0	989973	989973	Phyllosticta citribraziliensis	360
+Pcvj18317_1_GeneCatalog_proteins_20220527.aa.fasta	Pcvj18317_1	Penicillium cvjetkovicii ITEM 18317 v1.0	1465813	1465813	Penicillium cvjetkovicii	286
+Penant1_GeneCatalog_proteins_20170601.aa.fasta	Penant1	Penicillium antarcticum IBT 31811	416450	416450	Penicillium antarcticum	459
+Pench1_GeneCatalog_proteins_20120123.aa.fasta	Pench1	Penicillium chrysogenum v1.0	1353254	1353254	Penicillium chrysogenum 4088766	443
+Pendig1_GeneCatalog_proteins_20170530.aa.fasta	Pendig1	Penicillium digitatum Pd1	1170230	1170230	Penicillium digitatum Pd1	331
+Penfla1_GeneCatalog_proteins_20170601.aa.fasta	Penfla1	Penicillium flavigenum IBT 14082	254877	254877	Penicillium flavigenum	447
+Pensub1_GeneCatalog_proteins_20160929.aa.fasta	Pensub1	Penicillium subrubescens FBCC1632 / CBS132785	1316194	1316194	Penicillium subrubescens	644
+Penth1_GeneCatalog_proteins_20150617.aa.fasta	Penth1	Penicillium thymicola DAOMC 180753 v1.0	293382	293382	Penicillium thymicola	460
+Penvul1_GeneCatalog_proteins_20170601.aa.fasta	Penvul1	Penicillium vulpinum IBT 29486	29845	29845	Penicillium vulpinum	422
+Perma1_GeneCatalog_proteins_20141217.aa.fasta	Perma1	Periconia macrospinosa DSE2036 v1.0	97972	97972	Periconia macrospinosa	691
+Pesfi1_GeneCatalog_proteins_20210226.aa.fasta	Pesfi1	Pestalotiopsis fici W106-1	1229662	1229662	Pestalotiopsis fici W106-1	846
+Pestal1_GeneCatalog_proteins_20180925.aa.fasta	Pestal1	Pestalotiopsis sp. NC0098 v1.0	1907218	1907218	Pestalotiopsis sp. NC0098	773
+Pezech1_GeneCatalog_proteins_20180326.aa.fasta	Pezech1	Peziza echinospora CBS 144458 v1.0	61495	61495	Peziza echinospora	277
+Pgt_201_A1_GeneCatalog_proteins_20191017.aa.fasta	Pgt_201_A1	Puccinia graminis f. sp. tritici 21-0 haplotype A	626357	626357	Puccinia graminis f. sp. tritici 21-0	410
+Pgt_201_B1_GeneCatalog_proteins_20191015.aa.fasta	Pgt_201_B1	Puccinia graminis f. sp. tritici 21-0 haplotype B	626357	626357	Puccinia graminis f. sp. tritici 21-0	402
+Pgt_Ug99_A1_GeneCatalog_proteins_20191003.aa.fasta	Pgt_Ug99_A1	Puccinia graminis f. sp. tritici Ug99 haplotype A	56615	56615	Puccinia graminis f. sp. tritici	414
+Pgt_Ug99_C1_GeneCatalog_proteins_20191003.aa.fasta	Pgt_Ug99_C1	Puccinia graminis f. sp. tritici Ug99 haplotype C	56615	56615	Puccinia graminis f. sp. tritici	400
+Phaal1_GeneCatalog_proteins_20130924.aa.fasta	Phaal1	Phaeoacremonium aleophilum UCRPA7	1286976	1286976	Phaeoacremonium minimum UCRPA7	469
+Phaart1_GeneCatalog_proteins_20160822.aa.fasta	Phaart1	Phascolomyces articulosus v1.0	60185	60185	Phascolomyces articulosus	340
+Phach1_GeneCatalog_proteins_20150930.aa.fasta	Phach1	Phaeomoniella chlamydospora UCRPC4	158046	158046	Phaeomoniella chlamydospora	356
+Phapa1_GeneCatalog_proteins_20210123.aa.fasta	Phapa1	Phakopsora pachyrhizi MT2006 v1.0	170000	170000	Phakopsora pachyrhizi	448
+PhapaK8108_GeneCatalog_proteins_20210126.aa.fasta	PhapaK8108	Phakopsora pachyrhizi K8108 v2.0	170000	170000	Phakopsora pachyrhizi	431
+Phapo1_GeneCatalog_proteins_20180321.aa.fasta	Phapo1	Phaeosphaeria poagena MPI-PUGE-AT-0046c v1.0	1715242	1715242	Phaeosphaeria sp.	579
+Phcap1_GeneCatalog_proteins_20191125.aa.fasta	Phcap1	Phyllosticta capitalensis CBS 117118 v1.0	121624	121624	Phyllosticta capitalensis	374
+Phcapi1_GeneCatalog_proteins_20200116.aa.fasta	Phcapi1	Phyllosticta capitalensis CBS 356.52 v1.0	121624	121624	Phyllosticta capitalensis	365
+Phchr2_GeneCatalog_proteins_20131210.aa.fasta	Phchr2	Phanerochaete chrysosporium RP-78 v2.2	5306	2822231	Phanerodontia chrysosporium	411
+Phcit1_GeneCatalog_proteins_20161221.aa.fasta	Phcit1	Phyllosticta citribraziliensis CBS 100098 v1.0	989973	989973	Phyllosticta citribraziliensis	356
+Phcitr1_GeneCatalog_proteins_20170113.aa.fasta	Phcitr1	Phyllosticta citrichinaensis CBS 130529 v1.0	1130410	1130410	Phyllosticta citrichinensis	354
+Pheni1_GeneCatalog_proteins_20180304.aa.fasta	Pheni1	Phellopilus nigrolimitatus SigPhenig9 v1.0	127956	127956	Phellopilus nigrolimitatus	395
+Phiatr1_GeneCatalog_proteins_20220225.aa.fasta	Phiatr1	Phialemonium atrogriseum 8032-3 v1.0	1093897	1093897	Phialemonium atrogriseum	502
+Phimu1_GeneCatalog_proteins_20171129.aa.fasta	Phimu1	Leotiomycetes sp. MPI-SDFR-AT-0126 v1.0	1709938	1709938	Leotiomycetes sp.	860
+Phisc1_GeneCatalog_proteins_20150213.aa.fasta	Phisc1	Phialocephala scopiformis 5WS22E1 v1.0	149040	149040	Mollisia scopiformis	750
+PhlFC14_2_GeneCatalog_proteins_20191216.aa.fasta	PhlFC14_2	Phlebopus sp. FC_14 v2.0	2060792	2060792	Phlebopus sp.	231
+Phlbr1_GeneCatalog_proteins_20110325.aa.fasta	Phlbr1	Phlebia brevispora HHB-7030 SS6 v1.0	194682	194682	Phlebicolorata brevispora	505
+Phlgi1_GeneCatalog_proteins_20110614.aa.fasta	Phlgi1	Phlebiopsis gigantea v1.0	82310	82310	Phlebiopsis gigantea	372
+Phoaln1_GeneCatalog_proteins_20160826.aa.fasta	Phoaln1	Pholiota alnicola AH 47727 v1.0	109635	109635	Flammula alnicola	518
+Phocon1_GeneCatalog_proteins_20151025.aa.fasta	Phocon1	Pholiota conissans CIRM-BRFM 674 v1.0	109636	109636	Pholiota conissans	484
+Phohig1_GeneCatalog_proteins_20171206.aa.fasta	Phohig1	Pholiota molesta CBS 144467 v1.0	2066989	2066989	Pholiota molesta	551
+Photr1_GeneCatalog_proteins_20140424.aa.fasta	Photr1	Phoma tracheiphila IPT5 v1.0	1408161	1408161	Plenodomus tracheiphilus IPT5	582
+Phy27169_GeneCatalog_proteins_20170510.aa.fasta	Phy27169	Phyllosticta paracitricarpa CBS 141357 v1.0	1907483	1907483	Phyllosticta sp. CPC 27169	351
+PhyblU21_2_GeneCatalog_proteins_20191204.aa.fasta	PhyblU21_2	Phycomyces blakesleeanus UBC21 v2.0	4837	4837	Phycomyces blakesleeanus	277
+Phybl_L51_1_GeneCatalog_proteins_20200205.aa.fasta	Phybl_L51_1	Phycomyces blakesleeanus L51 v1.0	4837	4837	Phycomyces blakesleeanus	279
+Phycap1_GeneCatalog_proteins_20170217.aa.fasta	Phycap1	Phyllosticta capitalensis CBS 128856 v1.0	121624	121624	Phyllosticta capitalensis	360
+Phycit1_GeneCatalog_proteins_20140925.aa.fasta	Phycit1	Phyllosticta citriasiana CBS 120486 v1.0	595635	595635	Phyllosticta citriasiana	356
+Phycitr1_GeneCatalog_proteins_20170406.aa.fasta	Phycitr1	Phyllosticta citricarpa CBS 127454 v1.0	55181	55181	Phyllosticta citricarpa	353
+Phycpc1_GeneCatalog_proteins_20170406.aa.fasta	Phycpc1	Phyllosticta sp. CPC 27913 v1.0	1882840	1882840	Phyllosticta sp. CPC 27913	358
+Phypa1_GeneCatalog_proteins_20201203.aa.fasta	Phypa1	Phyllosticta paracitricarpa CBS 141358 v1.0	2016321	2016321	Phyllosticta paracitricarpa	360
+Pickud1_GeneCatalog_proteins_20181128.aa.fasta	Pickud1	Pichia kudriavzevii CBS573	4909	4909	Pichia kudriavzevii	139
+Picme2_GeneCatalog_proteins_20111110.aa.fasta	Picme2	Pichia membranifaciens v2.0	4926	4926	Pichia membranifaciens	139
+Picpa1_GeneCatalog_proteins_20130227.aa.fasta	Picpa1	Pichia pastoris	644223	644223	Komagataella phaffii GS115	115
+Pieho1_1_GeneCatalog_proteins_20130807.aa.fasta	Pieho1_1	Piedraia hortae CBS 480.64 v1.1	147573	147573	Piedraia hortae	196
+Pilano1_GeneCatalog_proteins_20161117.aa.fasta	Pilano1	Pilaira anomala RSA1997 v1.0	64641	64641	Pilaira anomala	307
+Pilumb1_GeneCatalog_proteins_20170307.aa.fasta	Pilumb1	Pilobolus umbonatus NRRL 6349 v1.0	101123	101123	Pilobolus umbonatus	244
+Pincor1_1_GeneCatalog_proteins_20210506.aa.fasta	Pincor1_1	Pinnaticoemansia coranantispora CBS 131509 T v1.0	417175	417175	Pinnaticoemansia coronantispora	192
+Pipbet1_1_GeneCatalog_proteins_20171124.aa.fasta	Pipbet1_1	Fomitopsis betulina CIRM-BRFM 1772 v1.1	40450	40450	Fomitopsis betulina	334
+Pipcy3_1_GeneCatalog_proteins_20160615.aa.fasta	Pipcy3_1	Piptocephalis cylindrospora RSA 2659 single-cell v3.0	1907219	1907219	Piptocephalis cylindrospora	78
+Piptie1_GeneCatalog_proteins_20180621.aa.fasta	Piptie1	Piptocephalis tieghemiana RSA 1565 v1.0	1286916	1286916	Piptocephalis tieghemiana	111
+PirE2_1_GeneCatalog_proteins_20110421.aa.fasta	PirE2_1	Piromyces sp. E2 v1.0	73868	73868	Piromyces sp. E2	1052
+Pirfi3_GeneCatalog_proteins_20160330.aa.fasta	Pirfi3	Piromyces finnis v3.0	1754191	1754191	Piromyces finnis	621
+Pirin1_GeneCatalog_proteins_20111203.aa.fasta	Pirin1	Piriformospora indica DSM 11827 from MPI	1109443	1109443	Serendipita indica DSM 11827	433
+Pisalb1_GeneCatalog_proteins_20180801.aa.fasta	Pisalb1	Pisolithus albus SI12 v1.0	178870	178870	Pisolithus albus	252
+Piscro1_GeneCatalog_proteins_20180803.aa.fasta	Piscro1	Pisolithus croceorrhizus subspA 74A v1.0	2060934	2060934	Pisolithus croceorrhizus	265
+Pismar1_GeneCatalog_proteins_20180803.aa.fasta	Pismar1	Pisolithus marmoratus ssp. 2 16A v1.0	178871	178871	Pisolithus marmoratus	293
+Pismi2_GeneCatalog_proteins_20200523.aa.fasta	Pismi2	Pisolithus microcarpus 441 v2.0	178872	178872	Pisolithus microcarpus	245
+Pismi_AB1_1_GeneCatalog_proteins_20190524.aa.fasta	Pismi_AB1_1	Pisolithus sp. B1 v1.0	2614595	2614595	Pisolithus sp. B1	231
+Pisori2_GeneCatalog_proteins_20191204.aa.fasta	Pisori2	Pisolithus orientalis OTSU v2.0	936130	936130	Pisolithus orientalis	217
+Pisthe1_GeneCatalog_proteins_20180803.aa.fasta	Pisthe1	Pisolithus thermaeus 11 v1.0	2136032	2136032	Pisolithus thermaeus	272
+Pisthe227_1_GeneCatalog_proteins_20181005.aa.fasta	Pisthe227_1	Pisolithus croceorrhizus ssp. 2 72 v1.0	2060934	2060934	Pisolithus croceorrhizus	271
+Pisti2_GeneCatalog_proteins_20200523.aa.fasta	Pisti2	Pisolithus tinctorius Marx 270 v2.0	37468	37468	Pisolithus tinctorius	241
+Plecto1_GeneCatalog_proteins_20180925.aa.fasta	Plecto1	Xylariales sp. AK1849 v1.0	1907220	1907220	Xylariales sp. AK1849	555
+Plecuc1_GeneCatalog_proteins_20171208.aa.fasta	Plecuc1	Plectosphaerella cucumerina RP01 v1.0	40658	40658	Plectosphaerella cucumerina	664
+Pleery1_GeneCatalog_proteins_20150629.aa.fasta	Pleery1	Pleurotus eryngii ATCC 90797 v1.0	5323	5323	Pleurotus eryngii	525
+Plesi1_GeneCatalog_proteins_20130603.aa.fasta	Plesi1	Pleomassaria siparia v1.0	100044	100044	Pleomassaria siparia	542
+Pneji1_GeneCatalog_proteins_20130607.aa.fasta	Pneji1	Pneumocystis jirovecii	42068	42068	Pneumocystis jirovecii	55
+PnitS608_1_GeneCatalog_proteins_20170410.aa.fasta	PnitS608_1	Phycomyces nitens S608 v1.0	269771	269771	Phycomyces nitens	264
+Pocchl1_GeneCatalog_proteins_20170916.aa.fasta	Pocchl1	Pochonia chlamydosporia 170	1380566	1380566	Pochonia chlamydosporia 170	513
+Podan3_GeneCatalog_proteins_20171013.aa.fasta	Podan3	Podospora anserina S mat+	515849	515849	Podospora anserina S mat+	487
+Podap1_GeneCatalog_proteins_20180511.aa.fasta	Podap1	Podospora appendiculata CBS 314.62 v1.0	314037	314037	Podospora appendiculata	516
+Podaus1_GeneCatalog_proteins_20220226.aa.fasta	Podaus1	Podospora australis PSN309 v1.0	1536484	1536484	Podospora australis	523
+Podbra1_GeneCatalog_proteins_20220222.aa.fasta	Podbra1	Podospora setosa CBS 892.96 v1.0	2587417	2587417	Triangularia setosa	507
+Podcom1_GeneCatalog_proteins_20220226.aa.fasta	Podcom1	Podospora aff. communis PSN243 v1.0	5144	5144	Podospora	648
+Poddec1_GeneCatalog_proteins_20220226.aa.fasta	Poddec1	Podospora decipiens PSN293 v1.0	261697	261697	Rhypophila decipiens	634
+Poddi1_GeneCatalog_proteins_20171014.aa.fasta	Poddi1	Podospora didyma CBS 232.78 v1.0	330526	330526	Podospora didyma	649
+Podfim1_GeneCatalog_proteins_20220226.aa.fasta	Podfim1	Podospora fimiseda CBS 990.96 v1.0	252190	252190	Podospora fimiseda	483
+Podtet1_GeneCatalog_proteins_20220523.aa.fasta	Podtet1	Podospora tetraspora CBS 815.71 v1.0	343501	343501	Podospora tetraspora	464
+Polagg1_1_GeneCatalog_proteins_20190522.aa.fasta	Polagg1_1	Polychytrium aggregatum JEL109 v1.0	110093	110093	Polychytrium aggregatum	295
+Polar1_GeneCatalog_proteins_20130201.aa.fasta	Polar1	Polyporus arcularius v1.0	1314778	1314778	Polyporus arcularius HHB13444	493
+Polbr1_GeneCatalog_proteins_20150501.aa.fasta	Polbr1	Polyporus brumalis CIRM-BRFM 1820 v1.0	139420	2498619	Lentinus brumalis	488
+Polci1_GeneCatalog_proteins_20130311.aa.fasta	Polci1	Polychaeton citri v1.0	705562	705562	Polychaeton citri	316
+Polfu1_GeneCatalog_proteins_20140813.aa.fasta	Polfu1	Polyplosphaeria fusca CBS 125425 v1.0	682080	682080	Polyplosphaeria fusca	605
+Polsqu1_GeneCatalog_proteins_20170821.aa.fasta	Polsqu1	Polyporus squamosus CCBS 676 v1.0	2829415	2829415	Cerioporus squamosus	485
+Porpun1_GeneCatalog_proteins_20190712.aa.fasta	Porpun1	Poronia punctata CBS 180.79 v1.0	101475	101475	Poronia punctata	458
+Porspa1_GeneCatalog_proteins_20220228.aa.fasta	Porspa1	Porosterum spadiceum BS34 v1.0	103378	103378	Porostereum spadiceum	475
+PosplRSB12_1_GeneCatalog_proteins_20111103.aa.fasta	PosplRSB12_1	Postia placenta MAD-698-R-SB12 v1.0	670580	670580	Postia placenta MAD-698-R-SB12	305
+Powhir1_GeneCatalog_proteins_20180423.aa.fasta	Powhir1	Powellomyces hirtus BR81 v1.0	109895	109895	Powellomyces hirtus	219
+PpacPPUFV02_GeneCatalog_proteins_20210128.aa.fasta	PpacPPUFV02	Phakopsora pachyrhizi UFV02 v2.1	170000	170000	Phakopsora pachyrhizi	463
+Prola1_GeneCatalog_proteins_20160129.aa.fasta	Prola1	Protomyces lactucaedebilis 12-1054 v1.0	2754530	2754530	Protomyces lactucae-debilis	213
+Psean1_1_GeneCatalog_proteins_20140109.aa.fasta	Psean1_1	Pseudozyma antarctica T-34	1151754	1151754	Moesziomyces antarcticus T-34	234
+Psehu1_GeneCatalog_proteins_20130926.aa.fasta	Psehu1	Pseudozyma hubeiensis SY62	1305764	1305764	Pseudozyma hubeiensis SY62	232
+Psehy1_GeneCatalog_proteins_20140829.aa.fasta	Psehy1	Pseudovirgaria hyperparasitica CBS 121739 v1.0	470096	470096	Pseudovirgaria hyperparasitica	413
+Pseudest1_GeneCatalog_proteins_20170919.aa.fasta	Pseudest1	Pseudogymnoascus destructans 20631-21	658429	658429	Pseudogymnoascus destructans 20631-21	287
+Pseve2_GeneCatalog_proteins_20160326.aa.fasta	Pseve2	Pseudomassariella vexata CBS 129021 v1.0	1141098	1141098	Pseudomassariella vexata	629
+Psicub1_1_GeneCatalog_proteins_20180416.aa.fasta	Psicub1_1	Psilocybe cubensis v1.0	181762	181762	Psilocybe cubensis	546
+Psiser1_GeneCatalog_proteins_20180612.aa.fasta	Psiser1	Psilocybe serbica v1.0	797126	797126	Psilocybe serbica	563
+Psol18327_1_GeneCatalog_proteins_20220503.aa.fasta	Psol18327_1	Penicillium solitum ITEM 18327 v1.0	60172	60172	Penicillium solitum	486
+Ptegra1_GeneCatalog_proteins_20151205.aa.fasta	Ptegra1	Pterula gracilis CBS309.79 v1.0	1884261	1884261	Pterulicium gracile	565
+PuccoNC29_1_GeneCatalog_proteins_20170808.aa.fasta	PuccoNC29_1	Puccinia coronata avenae 12NC29	860303	860303	Puccinia coronata var. avenae	554
+PuccoSD80_1_GeneCatalog_proteins_20170808.aa.fasta	PuccoSD80_1	Puccinia coronata avenae 12SD80	860303	860303	Puccinia coronata var. avenae	514
+Pucgr2_GeneCatalog_proteins_20150718.aa.fasta	Pucgr2	Puccinia graminis f. sp. tritici v2.0	56615	56615	Puccinia graminis f. sp. tritici	367
+Pucst1_GeneCatalog_proteins_20130920.aa.fasta	Pucst1	Puccinia striiformis f. sp. tritici PST-130	875184	875184	Puccinia striiformis f. sp. tritici PST-130	425
+Pucstr1_GeneCatalog_proteins_20170922.aa.fasta	Pucstr1	Puccinia striiformis f. sp. tritici 104 E137 A-	1238467	1238467	Puccinia striiformis f. sp. tritici 104E137A	746
+Puctr1_GeneCatalog_proteins_20131203.aa.fasta	Puctr1	Puccinia triticina 1-1 BBBD Race 1	630390	630390	Puccinia triticina 1-1 BBBD Race 1	383
+Purli1_GeneCatalog_proteins_20210311.aa.fasta	Purli1	Purpureocillium lilacinum PLFJ-1	33203	33203	Purpureocillium lilacinum	436
+Pycco1_GeneCatalog_proteins_20140114.aa.fasta	Pycco1	Pycnoporus coccineus CIRM-BRFM 310 v1.0	158605	158605	Trametes coccinea	413
+Pycpun1_GeneCatalog_proteins_20160226.aa.fasta	Pycpun1	Pycnoporus puniceus CIRM-BRFM 1868 v1.0	571087	571087	Trametes punicea	385
+Pycsa1_GeneCatalog_proteins_20140123.aa.fasta	Pycsa1	Pycnoporus sanguineus CIRM-BRFM 1264 v1.0	158606	158606	Trametes sanguinea	417
+Pyrco1_GeneCatalog_proteins_20131110.aa.fasta	Pyrco1	Pyronema confluens CBS100304	1076935	1076935	Pyronema omphalodes CBS 100304	297
+Pyrdom1_GeneCatalog_proteins_20181004.aa.fasta	Pyrdom1	Pyronema domesticum CBS 144463 v1.0	47205	47205	Pyronema domesticum	303
+Pyrly1_GeneCatalog_proteins_20170623.aa.fasta	Pyrly1	Pyrenochaeta lycopersici MPI-SDFR-AT-0127 v1.0	285811	285811	Pseudopyrenochaeta lycopersici	651
+Pyrom1_GeneCatalog_proteins_20181022.aa.fasta	Pyrom1	Pyronema omphalodes CBS 144459 v1.0	337075	337075	Pyronema omphalodes	284
+Pyrsp1_GeneCatalog_proteins_20141006.aa.fasta	Pyrsp1	Pyrenochaeta sp. DS3sAY3a v1.0	765867	765867	Pyrenochaeta sp. DS3sAY3a	673
+Pyrtt1_GeneCatalog_proteins_20110408.aa.fasta	Pyrtt1	Pyrenophora teres f. teres	861557	861557	Pyrenophora teres f. teres 0-1	496
+Radspe1_GeneCatalog_proteins_20161011.aa.fasta	Radspe1	Radiomyces spectabilis NRRL 2753 v1.0	64574	64574	Radiomyces spectabilis	270
+Ramac1_GeneCatalog_proteins_20140310.aa.fasta	Ramac1	Ramaria rubella (R. acris) UT-36052-T v1.0	1314676	1314676	Ramaria acris UT-36052-T	496
+Rambr1_GeneCatalog_proteins_20140929.aa.fasta	Rambr1	Ramicandelaber brevisporus CBS 109374 v1.0	304332	304332	Ramicandelaber brevisporus	140
+Rasby1_GeneCatalog_proteins_20220708.aa.fasta	Rasby1	Rasamsonia byssochlamydoides NRRL 3658	89139	89139	Rasamsonia byssochlamydoides	375
+Remth1_GeneCatalog_proteins_20220708.aa.fasta	Remth1	Remersonia thermophila ATCC 22073	72144	72144	Remersonia thermophila	313
+Rhesp1_GeneCatalog_proteins_20171207.aa.fasta	Rhesp1	Rhexocercosporidium sp. MPI-PUGE-AT-0058 v1.0	2042821	2042821	Rhexocercosporidium sp. MPI-PUGE-AT-0058	741
+Rhice1_1_GeneCatalog_proteins_20160727.aa.fasta	Rhice1_1	Rhizophagus cerebriforme DAOM 227022 v1.0	658196	658196	Glomus cerebriforme	195
+Rhich1_GeneCatalog_proteins_20131210.aa.fasta	Rhich1	Rhizopus microsporus var. chinensis CCTCC M201021	1271458	1271458	Rhizopus microsporus var. chinensis CCTCC M201021	499
+Rhidi1_GeneCatalog_proteins_20160421.aa.fasta	Rhidi1	Rhizophagus diaphanus v1.0	1348878	1348878	Oehlia diaphanum MUCL 43196	189
+Rhier1_GeneCatalog_proteins_20141012.aa.fasta	Rhier1	Rhizoscyphus ericae UAMH 7357 v1.0	1745343	2082293	Hyaloscypha hepaticicola	518
+RhiirA1_2_FilteredModels1_proteins_2024-03-09.fasta	RhiirA1_2	Rhizophagus irregularis A1 v2.0	588596	588596	Rhizophagus irregularis	1
+RhiirA4_GeneCatalog_proteins_20150505.aa.fasta	RhiirA4	Rhizophagus irregularis A4 v1.0	588596	588596	Rhizophagus irregularis	211
+RhiirA5_GeneCatalog_proteins_20150706.aa.fasta	RhiirA5	Rhizophagus irregularis A5 v1.0	588596	588596	Rhizophagus irregularis	217
+Rhili1_GeneCatalog_proteins_20150422.aa.fasta	Rhili1	Rhizodiscina lignyota CBS 133067 v1.0	1504668	1504668	Rhizodiscina lignyota	478
+Rhimi1_1_GeneCatalog_proteins_20130624.aa.fasta	Rhimi1_1	Rhizopus microsporus var. microsporus ATCC52813 v1.0	1340429	1340429	Rhizopus microsporus ATCC 52813	281
+Rhimi59_2_GeneCatalog_proteins_20220409.aa.fasta	Rhimi59_2	Rhizopus microsporus ATCC11559 v2.0	58291	58291	Rhizopus microsporus	279
+Rhimi_ATCC52814_1_GeneCatalog_proteins_20150309.aa.fasta	Rhimi_ATCC52814_1	Rhizopus microsporus var. microsporus ATCC52814 v1.0	58291	58291	Rhizopus microsporus	281
+Rhipu1_GeneCatalog_proteins_20220726.aa.fasta	Rhipu1	Rhizomucor pusillus CBS 18367	4840	4840	Rhizomucor pusillus	286
+Rhiso1_GeneCatalog_proteins_20131028.aa.fasta	Rhiso1	Rhizoctonia solani AG-1 IB	1108050	1108050	Rhizoctonia solani AG-1 IB	792
+Rhisol1_GeneCatalog_proteins_20210223.aa.fasta	Rhisol1	Rhizoctonia solani AG-3 Rhs1AP	1086054	1086054	Rhizoctonia solani AG-3 Rhs1AP	724
+Rhisola1_GeneCatalog_proteins_20210226.aa.fasta	Rhisola1	Rhizoctonia solani AG-8 WAC10335	1287689	1287689	Rhizoctonia solani AG-8 WAC10335	527
+Rhives1_GeneCatalog_proteins_20170403.aa.fasta	Rhives1	Rhizopogon vesiculosus Smith	180088	180088	Rhizopogon vesiculosus	316
+Rhivi1_GeneCatalog_proteins_20140605.aa.fasta	Rhivi1	Rhizopogon vinicolor AM-OR11-026 v1.0	1314800	1314800	Rhizopogon vinicolor AM-OR11-026	306
+Rhoba1_1_GeneCatalog_proteins_20100913.aa.fasta	Rhoba1_1	Rhodotorula graminis strain WP1 v1.1	578459	578459	Rhodotorula graminis WP1	221
+Rhobut1_1_GeneCatalog_proteins_20160415.aa.fasta	Rhobut1_1	Rhodocollybia butyracea AH 40177 v1.0	206335	206335	Rhodocollybia butyracea	557
+Rhodsp1_GeneCatalog_proteins_20150111.aa.fasta	Rhodsp1	Pseudomicrostroma glucosiphilum gen et sp. nov. MCA 4718 v1.0	1684307	1684307	Microstroma glucosiphilum	153
+Rhoglu91_1_GeneCatalog_proteins_20190605.aa.fasta	Rhoglu91_1	Rhodosporidium glutinis ATCC 204091 v1.0	5535	5535	Rhodotorula glutinis	220
+Rhomi1_GeneCatalog_proteins_20140320.aa.fasta	Rhomi1	Cystobasidium minutum MCA 4210 v1.0	1397322	1397322	Cystobasidium minutum MCA 4210	226
+Rhosp1_GeneCatalog_proteins_20140409.aa.fasta	Rhosp1	Rhodotorula sp. JG-1b	1305733	1305733	Rhodotorula sp. JG-1b	198
+Rhoto1_GeneCatalog_proteins_20141208.aa.fasta	Rhoto1	Rhodosporidium toruloides NP11	1130832	1130832	Rhodotorula toruloides NP11	218
+Rhoto_ATCC26217_1_GeneCatalog_proteins_20160520.aa.fasta	Rhoto_ATCC26217_1	Rhodosporidium toruloides ATCC26217 v1.0	5286	5286	Rhodotorula toruloides	219
+Rhoto_IFO0559_1_GeneCatalog_proteins_20151023.aa.fasta	Rhoto_IFO0559_1	Rhodosporidium toruloides IFO0559_1	5286	5286	Rhodotorula toruloides	228
+Rhoto_IFO0880_4_GeneCatalog_proteins_20170509.aa.fasta	Rhoto_IFO0880_4	Rhodosporidium toruloides IFO0880 v4.0	5286	5286	Rhodotorula toruloides	226
+Ricfib1_GeneCatalog_proteins_20160317.aa.fasta	Ricfib1	Rickenella fibula HBK330-10 v1.0	264144	264144	Rickenella fibula	513
+Ricme1_GeneCatalog_proteins_20130412.aa.fasta	Ricme1	Peniophora sp. v1.0	40463	40463	Peniophora	559
+Rigmic1_GeneCatalog_proteins_20170307.aa.fasta	Rigmic1	Rigidoporus microporus ED310 v1.0	219653	219653	Rigidoporus microporus	373
+Rorror1_GeneCatalog_proteins_20190202.aa.fasta	Rorror1	Roridomyces roridus 9284 v1.0	1738132	1738132	Roridomyces roridus	891
+Roster1_GeneCatalog_proteins_20190716.aa.fasta	Roster1	Rostrohypoxylon terebratum CBS 119137 v1.0	392036	392036	Rostrohypoxylon terebratum	470
+Rozal1_1_GeneCatalog_proteins_20140111.aa.fasta	Rozal1_1	Rozella allomycis CSF55	988480	988480	Rozella allomycis CSF55	96
+Rozal_SC1_GeneCatalog_proteins_20141014.aa.fasta	Rozal_SC1	Rozella allomycis CSF55 single-cell v1.0	281847	281847	Rozella allomycis	97
+Rusbre1_GeneCatalog_proteins_20161010.aa.fasta	Rusbre1	Russula brevipes BPL707 v1.0	98861	98861	Russula brevipes	267
+Ruscom1_GeneCatalog_proteins_20170112.aa.fasta	Ruscom1	Russula compacta BPL669 v1.0	40490	40490	Russula compacta	212
+Rusdis1_GeneCatalog_proteins_20160910.aa.fasta	Rusdis1	Russula dissimulans BPL704 v1.0	258981	258981	Russula dissimulans	214
+Rusear1_GeneCatalog_proteins_20190529.aa.fasta	Rusear1	Russula earlei BPL698 v1.0	71964	71964	Russula earlei	280
+Ruseme1_GeneCatalog_proteins_20190225.aa.fasta	Ruseme1	Russula emetica P?ilba v1.0	152958	152958	Russula emetica	254
+Rusoch1_GeneCatalog_proteins_20180325.aa.fasta	Rusoch1	Russula ochroleuca P?ilba v1.0	152965	152965	Russula ochroleuca	236
+Rusrug1_GeneCatalog_proteins_20161111.aa.fasta	Rusrug1	Russula rugulosa BPL654 v1.0	1897646	1897646	Russula aff. rugulosa BPL654	258
+Rusvin1_GeneCatalog_proteins_20170417.aa.fasta	Rusvin1	Russula vinacea BPL710 v1.0	517384	517384	Russula vinacea	259
+Sacce1_GeneCatalog_proteins_20101210.aa.fasta	Sacce1	Saccharomyces cerevisiae S288C	559292	559292	Saccharomyces cerevisiae S288C	142
+SacceM3707_1_GeneCatalog_proteins_20120712.aa.fasta	SacceM3707_1	Saccharomyces cerevisiae M3707 Dikaryon	1149757	1149757	Saccharomyces cerevisiae M3707	142
+SacceM3836_1_GeneCatalog_proteins_20120712.aa.fasta	SacceM3836_1	Saccharomyces cerevisiae M3836 v1.0	1162671	1162671	Saccharomyces cerevisiae M3836	142
+SacceM3837_1_GeneCatalog_proteins_20120713.aa.fasta	SacceM3837_1	Saccharomyces cerevisiae M3837 v1.0	1162672	1162672	Saccharomyces cerevisiae M3837	140
+SacceM3838_1_GeneCatalog_proteins_20120714.aa.fasta	SacceM3838_1	Saccharomyces cerevisiae M3838 v1.0	1162673	1162673	Saccharomyces cerevisiae M3838	142
+SacceM3839_1_GeneCatalog_proteins_20120714.aa.fasta	SacceM3839_1	Saccharomyces cerevisiae M3839 v1.0	1162674	1162674	Saccharomyces cerevisiae M3839	144
+Sacpr1_GeneCatalog_proteins_20140222.aa.fasta	Sacpr1	Saccharata proteae CBS 121410 v1.0	131308	131308	Saccharata proteae	364
+Saico1_GeneCatalog_proteins_20110913.aa.fasta	Saico1	Saitoella complicata NRRL Y-17804 v1.0	5606	5606	Saitoella complicata	188
+Sakvas1_GeneCatalog_proteins_20160730.aa.fasta	Sakvas1	Saksenaea vasiformis B4078	90258	90258	Saksenaea vasiformis	232
+Schama1_GeneCatalog_proteins_20210720.aa.fasta	Schama1	Scheffersomyces amazonensis UFMG-HMD-26.3 v1.0	1078765	1078765	Scheffersomyces amazonensis	169
+Schco2071_1_GeneCatalog_proteins_20181109.aa.fasta	Schco2071_1	Schizophyllum commune 207.1 v1.0	5334	5334	Schizophyllum commune	486
+Schco2231_1_GeneCatalog_proteins_20181109.aa.fasta	Schco2231_1	Schizophyllum commune 223.1 v1.0	5334	5334	Schizophyllum commune	488
+Schco2251_1_GeneCatalog_proteins_20181109.aa.fasta	Schco2251_1	Schizophyllum commune 225.1 v1.0	5334	5334	Schizophyllum commune	487
+Schco2271_1_GeneCatalog_proteins_20181109.aa.fasta	Schco2271_1	Schizophyllum commune 227.1 v1.0	5334	5334	Schizophyllum commune	487
+Schco2272_1_GeneCatalog_proteins_20181109.aa.fasta	Schco2272_1	Schizophyllum commune 227.2 v1.0	5334	5334	Schizophyllum commune	489
+Schco3_GeneCatalog_proteins_20130812.aa.fasta	Schco3	Schizophyllum commune H4-8 v3.0	5334	5334	Schizophyllum commune	494
+SchcoZB1_GeneCatalog_proteins_20200226.aa.fasta	SchcoZB1	Schizophyllum commune ZB1 v1.0	5334	5334	Schizophyllum commune	491
+SchcoZB2_GeneCatalog_proteins_20200225.aa.fasta	SchcoZB2	Schizophyllum commune ZB2 v1.0	5334	5334	Schizophyllum commune	489
+Schco_LoeD_1_GeneCatalog_proteins_20130531.aa.fasta	Schco_LoeD_1	Schizophyllum commune Loenen D v1.0	1314666	1314666	Schizophyllum commune Loenen D	479
+Schco_TatD_1_GeneCatalog_proteins_20130515.aa.fasta	Schco_TatD_1	Schizophyllum commune Tattone D v1.0	1314663	1314663	Schizophyllum commune Tattone D	477
+Schcoi1_GeneCatalog_proteins_20180319.aa.fasta	Schcoi1	Scheffersomyces coipomoensis NRRL Y-17651T v1.0	1788519	1788519	Scheffersomyces coipomensis	168
+Schcon1_GeneCatalog_proteins_20220223.aa.fasta	Schcon1	Schizothecium conicum SC1-Ups v1.0	261694	261694	Podospora conica	460
+Schcy1_GeneCatalog_proteins_20131210.aa.fasta	Schcy1	Schizosaccharomyces cryophilus OY26	653667	653667	Schizosaccharomyces cryophilus OY26	115
+Schfas1_GeneCatalog_proteins_20210625.aa.fasta	Schfas1	Schizophyllum fasciatum CBS 267.60 v1.0	160053	160053	Schizophyllum fasciatum	507
+Schja1_GeneCatalog_proteins_20131031.aa.fasta	Schja1	Schizosaccharomyces japonicus yFS275	402676	402676	Schizosaccharomyces japonicus yFS275	112
+Schoc1_GeneCatalog_proteins_20131210.aa.fasta	Schoc1	Schizosaccharomyces octosporus yFS286	483514	483514	Schizosaccharomyces octosporus yFS286	113
+Schpa1_GeneCatalog_proteins_20131225.aa.fasta	Schpa1	Schizopora paradoxa KUC8140 v1.0	27342	27342	Schizopora paradoxa	367
+Schpo1_GeneCatalog_proteins_20130111.aa.fasta	Schpo1	Schizosaccharomyces pombe	4896	4896	Schizosaccharomyces pombe	117
+Schves1_GeneCatalog_proteins_20170615.aa.fasta	Schves1	Schizothecium vesticola SMH3187-1 v1.0	314040	314040	Schizothecium vesticola	525
+Schxyl1_GeneCatalog_proteins_20210824.aa.fasta	Schxyl1	Scheffersomyces xylosifermentans CBS12540T v1.0	1304137	1304137	Scheffersomyces xylosifermentans	178
+Sclci1_GeneCatalog_proteins_20120626.aa.fasta	Sclci1	Scleroderma citrinum Foug A v1.0	68788	68788	Scleroderma citrinum	250
+Sclcihr1_GeneCatalog_proteins_20201201.aa.fasta	Sclcihr1	Scleroderma citrinum hr. v1.0	68788	68788	Scleroderma citrinum	227
+Sclsc1_GeneCatalog_proteins_20110903.aa.fasta	Sclsc1	Sclerotinia sclerotiorum v1.0	665079	665079	Sclerotinia sclerotiorum 1980 UF-70	438
+Sclyun1_GeneCatalog_proteins_20220315.aa.fasta	Sclyun1	Scleroderma yunnanense jo. v1.0	1163567	1163567	Scleroderma yunnanense	227
+Sebve1_GeneCatalog_proteins_20120626.aa.fasta	Sebve1	Sebacina vermifera MAFF 305830 v1.0	109899	109899	Serendipita vermifera	467
+Sepmu1_GeneCatalog_proteins_20100915.aa.fasta	Sepmu1	Septoria musiva SO2202 v1.0	692275	692275	Sphaerulina musiva SO2202	352
+SerlaS7_9_2_GeneCatalog_proteins_20120319.aa.fasta	SerlaS7_9_2	Serpula lacrymans S7.9 v2.0	578457	578457	Serpula lacrymans var. lacrymans S7.9	322
+Serla_varsha1_GeneCatalog_proteins_20110916.aa.fasta	Serla_varsha1	Serpula himantioides (S.lacrymans var shastensis) MUCL38935 v1.0	690234	690234	Serpula lacrymans var. shastensis SHA21-2	362
+Setho1_GeneCatalog_proteins_20150424.aa.fasta	Setho1	Setomelanomma holmii CBS 110217 v1.0	210430	210430	Setomelanomma holmii	599
+Settu3_GeneCatalog_proteins_20170818.aa.fasta	Settu3	Setosphaeria turcica Et28A v2.0	93612	93612	Exserohilum turcicum	504
+Sisni1_GeneCatalog_proteins_20130806.aa.fasta	Sisni1	Sistotremastrum niveocremeum HHB9708 ss-1 1.0	1314777	1314777	Sistotremastrum niveocremeum HHB9708	355
+Sissu1_GeneCatalog_proteins_20130130.aa.fasta	Sissu1	Sistotremastrum suecicum v1.0	467971	467971	Sistotremastrum suecicum	351
+Sodal1_GeneCatalog_proteins_20130716.aa.fasta	Sodal1	Sodiomyces alkalinus v1.0	1302862	1302862	Sodiomyces alkalinus	326
+Sorbr1_GeneCatalog_proteins_20171129.aa.fasta	Sorbr1	Sordaria brevicollis FGSC1904 v1.0	83679	83679	Sordaria brevicollis	388
+Sorhu1_GeneCatalog_proteins_20190603.aa.fasta	Sorhu1	Sordaria humana MPI-SDFR-AT-0083 v1.0	79806	79806	Sordaria humana	427
+Spalat1_GeneCatalog_proteins_20161107.aa.fasta	Spalat1	Sparassis latifolia CCMJ1100 v1.0	1202976	1202976	Sparassis latifolia	247
+Sphbr2_GeneCatalog_proteins_20190828.aa.fasta	Sphbr2	Sphaerosporella brunnea Sb_GMNB300 v2.0	1250544	1250544	Sphaerosporella brunnea	265
+Sphst1_GeneCatalog_proteins_20120430.aa.fasta	Sphst1	Sphaerobolus stellatus v1.0	68786	68786	Sphaerobolus stellatus	1043
+Spifus1_GeneCatalog_proteins_20161021.aa.fasta	Spifus1	Spinellus fusiger NRRL 22323 v1.0	101115	101115	Spinellus fusiger	221
+Spipu1_GeneCatalog_proteins_20131203.aa.fasta	Spipu1	Spizellomyces punctatus DAOM BR117	645134	645134	Spizellomyces punctatus DAOM BR117	196
+Spofi1_GeneCatalog_proteins_20130818.aa.fasta	Spofi1	Sporormia fimetaria v1.0	1340428	1340428	Sporormia fimetaria CBS 119925	383
+Spore1_GeneCatalog_proteins_20131031.aa.fasta	Spore1	Sporisorium reilianum SRZ2	999809	999809	Sporisorium reilianum SRZ2	214
+Spoth2_GeneCatalog_proteins_20101221.aa.fasta	Spoth2	Myceliophthora thermophila (Sporotrichum thermophile) v2.0	573729	573729	Thermothelomyces thermophilus ATCC 42464	391
+Spoumb1_GeneCatalog_proteins_20170626.aa.fasta	Spoumb1	Sporodiniella umbellata MES 1446 v1.0	101117	101117	Sporodiniella umbellata	285
+Stach1_GeneCatalog_proteins_20210226.aa.fasta	Stach1	Stachybotrys chartarum IBT 40288	1283842	1283842	Stachybotrys chartarum IBT 40288	568
+Stachl1_GeneCatalog_proteins_20210223.aa.fasta	Stachl1	Stachybotrys chlorohalonata IBT 40285	1283841	1283841	Stachybotrys chlorohalonatus IBT 40285	540
+Stael1_GeneCatalog_proteins_20170424.aa.fasta	Stael1	Stachybotrys elegans MPI-CAGE-CH-0235 v1.0	80388	80388	Stachybotrys elegans	715
+Stalo1_GeneCatalog_proteins_20220406.aa.fasta	Stalo1	Staphylotrichum tortipilum CBS 103.79 v1.0	669026	669026	Staphylotrichum longicolle	574
+Stasp1_GeneCatalog_proteins_20141004.aa.fasta	Stasp1	Stagonospora sp. SRC1lsM3a v1.0	765868	765868	Phaeosphaeriaceae sp. SRC1lsM3a	640
+Stely1_GeneCatalog_proteins_20170711.aa.fasta	Stely1	Stemphylium lycopersici CIDEFI-216	183478	183478	Stemphylium lycopersici	539
+Suiame1_GeneCatalog_proteins_20151214.aa.fasta	Suiame1	Suillus americanus EM31 v1.0	48561	48561	Suillus americanus	315
+Suiamp1_GeneCatalog_proteins_20180421.aa.fasta	Suiamp1	Suillus ampliporus FC55 v1.0	1912932	1912932	Suillus ampliporus	308
+Suibov1_GeneCatalog_proteins_20180813.aa.fasta	Suibov1	Suillus bovinus UH-Sbo-P2 v1.0	48563	48563	Suillus bovinus	286
+Suibr2_GeneCatalog_proteins_20150912.aa.fasta	Suibr2	Suillus brevipes Sb2 v2.0	1400700	1400700	Suillus brevipes Sb2	335
+Suicli1_GeneCatalog_proteins_20180420.aa.fasta	Suicli1	Suillus clintonianus FC179 v1.0	1904413	1904413	Suillus clintonianus	319
+Suicot1_GeneCatalog_proteins_20171209.aa.fasta	Suicot1	Suillus cothurnatus VC 1858 v1.0	48568	48568	Suillus cothurnatus	349
+Suidec1_GeneCatalog_proteins_20150904.aa.fasta	Suidec1	Suillus decipiens EM49 v1.0	48569	48569	Suillus decipiens	329
+Suidis1_GeneCatalog_proteins_20190615.aa.fasta	Suidis1	Suillus discolor FC423 v1.0	1912936	1912936	Suillus discolor	325
+Suifus1_GeneCatalog_proteins_20190304.aa.fasta	Suifus1	Suillus fuscotomentosus FC203 v1.0	1912939	1912939	Suillus fuscotomentosus	331
+Suigr1_GeneCatalog_proteins_20150504.aa.fasta	Suigr1	Suillus weaverae EM37 v1.0	48593	48593	Suillus weaverae	280
+Suihi1_GeneCatalog_proteins_20150416.aa.fasta	Suihi1	Suillus hirtellus EM16 v1.0	279518	279518	Suillus hirtellus	316
+Suilak1_GeneCatalog_proteins_20180814.aa.fasta	Suilak1	Suillus lakei FC43 v1.0	48574	48574	Suillus lakei	379
+Suilu4_GeneCatalog_proteins_20170628.aa.fasta	Suilu4	Suillus luteus UH-Slu-Lm8-n1 v3.0	5384	5384	Suillus luteus	302
+Suiocc1_GeneCatalog_proteins_20180813.aa.fasta	Suiocc1	Suillus occidentalis FC124 v1.0	756607	756607	Suillus occidentalis	318
+Suipal1_GeneCatalog_proteins_20180813.aa.fasta	Suipal1	Suillus paluster FC165 v1.0	48578	48578	Suillus paluster	329
+Suipic1_GeneCatalog_proteins_20160216.aa.fasta	Suipic1	Suillus spraguei EM44 v1.0	5383	5383	Suillus spraguei	346
+Suipla1_GeneCatalog_proteins_20181128.aa.fasta	Suipla1	Suillus placidus DOB743 v1.0	48579	48579	Suillus placidus	288
+Suiplo1_GeneCatalog_proteins_20191203.aa.fasta	Suiplo1	Suillus plorans S12 v1.0	116603	116603	Suillus plorans	335
+Suisu1_GeneCatalog_proteins_20180325.aa.fasta	Suisu1	Suillus subalutaceus FC151 v1.0	48586	48586	Suillus subalutaceus	320
+Suisub1_GeneCatalog_proteins_20170827.aa.fasta	Suisub1	Suillus subaureus MN1 v1.0	48587	48587	Suillus subaureus	304
+Suisubl1_GeneCatalog_proteins_20190617.aa.fasta	Suisubl1	Suillus cf. subluteus FC464 v1.0	48588	48588	Suillus subluteus	376
+Suitom1_GeneCatalog_proteins_20170729.aa.fasta	Suitom1	Suillus tomentosus FC115 v1.0	48589	48589	Suillus tomentosus	334
+Suivar1_GeneCatalog_proteins_20180923.aa.fasta	Suivar1	Suillus variegatus UH-Sva-Z1 v1.0	48592	48592	Suillus variegatus	339
+Synfus1_GeneCatalog_proteins_20170105.aa.fasta	Synfus1	Syncephalis fuscata S228 v1.0	1851187	1851187	Syncephalis fuscata	181
+Synplu1_GeneCatalog_proteins_20160902.aa.fasta	Synplu1	Syncephalis plumigaleata NRRL S24 v1.0	1851185	1851185	Syncephalis plumigaleata	162
+Synps1_GeneCatalog_proteins_20160128.aa.fasta	Synps1	Syncephalis pseudoplumigaleata Benny S71-1 single-cell v1.0	1712513	1712513	Syncephalis pseudoplumigaleata	106
+Synrac1_GeneCatalog_proteins_20160125.aa.fasta	Synrac1	Syncephalastrum racemosum NRRL 2496 v1.0	13706	13706	Syncephalastrum racemosum	292
+Talabor1_GeneCatalog_proteins_20170517.aa.fasta	Talabor1	Talaromyces borbonicus CBS 141340	5094	5094	Talaromyces	399
+Talem1_GeneCatalog_proteins_20220719.aa.fasta	Talem1	Rasamsonia emersonii NRRL 3221	68825	68825	Rasamsonia emersonii	356
+Talst1_2_GeneCatalog_proteins_20140114.aa.fasta	Talst1_2	Talaromyces stipitatus ATCC 10500	441959	441959	Talaromyces stipitatus ATCC 10500	463
+Talth1_GeneCatalog_proteins_20220718.aa.fasta	Talth1	Thermomyces dupontii NRRL 2155	28565	28565	Thermomyces dupontii	198
+Tapde1_1_GeneCatalog_proteins_20130601.aa.fasta	Tapde1_1	Taphrina deformans	1097556	1097556	Taphrina deformans PYCC 5710	137
+TerJ132_1_GeneCatalog_proteins_20210308.aa.fasta	TerJ132_1	Termitomyces sp. J132	1306850	1306850	Termitomyces sp. J132	410
+Terbo2_GeneCatalog_proteins_20141124.aa.fasta	Terbo2	Terfezia boudieri ATCC MYA-4762 v1.1	82571	82571	Terfezia boudieri	208
+Tercla1_GeneCatalog_proteins_20170113.aa.fasta	Tercla1	Terfezia claveryi T7 v1.0	139407	139407	Terfezia claveryi	219
+Ternu1_GeneCatalog_proteins_20140925.aa.fasta	Ternu1	Teratosphaeria nubilosa CBS 116005 v1.0	161662	161662	Teratosphaeria nubilosa	384
+Tescy1_GeneCatalog_proteins_20150113.aa.fasta	Tescy1	Testicularia cyperi MCA 3645 v1.0	1882483	1882483	Testicularia cyperi	174
+Thacu1_GeneCatalog_proteins_20170424.aa.fasta	Thacu1	Thanatephorus cucumeris MPI-SDFR-AT-0096 v1.0	107832	107832	Thanatephorus cucumeris	725
+Thaele1_GeneCatalog_proteins_20160208.aa.fasta	Thaele1	Thamnidium elegans v1.0	101142	101142	Thamnidium elegans	318
+Thasp1_GeneCatalog_proteins_20160203.aa.fasta	Thasp1	Thamnocephalis sphaerospora RSA 1356 single-cell v1.0	78915	78915	Thamnocephalis sphaerospora	134
+Theau2_GeneCatalog_proteins_20190613.aa.fasta	Theau2	Thermoascus aurantiacus ATCC26904 v2.0	1133049	1133049	Thermoascus aurantiacus ATCC 26904	292
+Thecr1_GeneCatalog_proteins_20220725.aa.fasta	Thecr1	Thermoascus crustaceus CBS 18167	5088	5088	Thermoascus crustaceus	308
+Thefe1_GeneCatalog_proteins_20220626.aa.fasta	Thefe1	Thermothelomyces fergusii CBS 405.69	2588716	2588716	Thermothelomyces fergusii	325
+Thega1_GeneCatalog_proteins_20150318.aa.fasta	Thega1	Thelephora ganbajun P2 v1.0	370292	370292	Thelephora ganbajun	242
+Thehi1_GeneCatalog_proteins_20220626.aa.fasta	Thehi1	Thermothelomyces hinnuleus ATCC 52474	225406	225406	Thermothelomyces hinnuleus	306
+Thela1_GeneCatalog_proteins_20220709.aa.fasta	Thela1	Thermomyces lanuginosus ATCC 200065	5541	5541	Thermomyces lanuginosus	203
+Thelan1_GeneCatalog_proteins_20160730.aa.fasta	Thelan1	Thermomyces lanuginosus SSBP	5541	5541	Thermomyces lanuginosus	188
+Themy1_GeneCatalog_proteins_20220708.aa.fasta	Themy1	Thermothelomyces myriococcoides CBS 39893	2588717	2588717	Thermothelomyces myriococcoides	383
+Theste1_GeneCatalog_proteins_20220718.aa.fasta	Theste1	Microascus stellatus CBS 214.64	5594	5594	Microascus	438
+Theter1_GeneCatalog_proteins_20181017.aa.fasta	Theter1	Thelephora terrestris UH-Tt-Lm1  v1.0	56493	56493	Thelephora terrestris	252
+Theth1_GeneCatalog_proteins_20220626.aa.fasta	Theth1	Thermoascus thermophilus ATCC 26413	1131473	1131473	Thermoascus thermophilus	157
+Thian1_GeneCatalog_proteins_20140328.aa.fasta	Thian1	Trichocladium antarcticum CBS 123565 v1.0	1450529	1450529	Trichocladium antarcticum	227
+Thiap1_GeneCatalog_proteins_20140116.aa.fasta	Thiap1	Parathielavia appendiculata CBS 731.68 v1.0	1384585	1384585	Parathielavia appendiculata CBS 731.68	526
+Thiar1_GeneCatalog_proteins_20131210.aa.fasta	Thiar1	Canariomyces arenarius CBS 508.74 v1.0	1384583	1384583	Canariomyces arenarius CBS 508.74	462
+Thiau1_GeneCatalog_proteins_20220718.aa.fasta	Thiau1	Thermocarpiscus australiensis ATCC 28236	113626	113626	Thermocarpiscus australiensis	338
+Thihy1_GeneCatalog_proteins_20140109.aa.fasta	Thihy1	Parathielavia hyrcaniae CBS 757.83 v1.0	1384584	1384584	Parathielavia hyrcaniae CBS 757.83	409
+Thite2_GeneCatalog_proteins_20101221.aa.fasta	Thite2	Thielavia terrestris v2.0	35720	2587410	Thermothielavioides terrestris	409
+Tilan2_GeneCatalog_proteins_20140224.aa.fasta	Tilan2	Tilletiaria anomala UBC 951 v1.0	1037660	1037660	Tilletiaria anomala UBC 951	171
+Tilwa1_GeneCatalog_proteins_20141225.aa.fasta	Tilwa1	Tilletiopsis washingtonensis MCA 4186 v1.0	58919	58919	Tilletiopsis washingtonensis	187
+Tirniv1_GeneCatalog_proteins_20181106.aa.fasta	Tirniv1	Tirmania nivea G3 v1.0	160517	160517	Tirmania nivea	233
+Tolca1_GeneCatalog_proteins_20210310.aa.fasta	Tolca1	Tolypocladium capitatum CBS 113982	45235	45235	Tolypocladium capitatum	259
+Tolinf1_GeneCatalog_proteins_20160803.aa.fasta	Tolinf1	Tolypocladium inflatum NRRL 8044	29910	29910	Tolypocladium inflatum	307
+Tolop1_GeneCatalog_proteins_20210318.aa.fasta	Tolop1	Tolypocladium ophioglossoides CBS100239	71617	71617	Tolypocladium ophioglossoides	283
+Tolpa1_GeneCatalog_proteins_20210310.aa.fasta	Tolpa1	Tolypocladium paradoxum NRBC 100945	94208	94208	Tolypocladium paradoxum	294
+Torde1_GeneCatalog_proteins_20150128.aa.fasta	Torde1	Torulaspora delbrueckii CBS 1146	4950	4950	Torulaspora delbrueckii	121
+Totfu1_GeneCatalog_proteins_20140831.aa.fasta	Totfu1	Tothia fuscella CBS 130266 v1.0	1048955	1048955	Tothia fuscella	502
+Trabet1_GeneCatalog_proteins_20170925.aa.fasta	Trabet1	Trametes betulina CIRM-BRFM 1801 v1.0	5632	5632	Lenzites betulinus	413
+Trace1_GeneCatalog_proteins_20150503.aa.fasta	Trace1	Trametopsis cervina CIRM-BRFM 1824 v1.0	1111950	1111950	Trametopsis cervina	357
+Traci1_GeneCatalog_proteins_20150209.aa.fasta	Traci1	Trametes cingulata CIRM-BRFM 1805 v1.0	575983	575983	Trametes cingulata	419
+Tragib1_GeneCatalog_proteins_20161031.aa.fasta	Tragib1	Trametes gibbosa CIRM-BRFM 1770 v1.0	160864	160864	Trametes gibbosa	397
+Tralac1_GeneCatalog_proteins_20170620.aa.fasta	Tralac1	Leiotrametes lactinea CIRM-BRFM 1664 v1.0	1391043	1391043	Cubamyces lactineus	432
+Tralj1_GeneCatalog_proteins_20140625.aa.fasta	Tralj1	Trametes ljubarskyi CIRM-BRFM 1659 v1.0	2735509	2735509	Pilatotrama ljubarskyi	399
+Tramax1_GeneCatalog_proteins_20170721.aa.fasta	Tramax1	Trametes maxima CIRM-BRFM 1813 v1.0	259368	259368	Trametes maxima	439
+Tramen1_GeneCatalog_proteins_20170906.aa.fasta	Tramen1	Leiotrametes menziesii CIRM-BRFM 1781 v1.0	2136021	2136021	Cubamyces menziesii	427
+Tramey1_GeneCatalog_proteins_20170620.aa.fasta	Tramey1	Trametes meyenii CIRM-BRFM 1810 v1.0	526243	526243	Trametes meyenii	445
+Trapol1_GeneCatalog_proteins_20170925.aa.fasta	Trapol1	Trametes polyzona CIRM-BRFM 1798 v1.0	239206	239206	Trametes polyzona	421
+Trave1_GeneCatalog_proteins_20101111.aa.fasta	Trave1	Trametes versicolor v1.0	717944	717944	Trametes versicolor FP-101664 SS1	464
+Traver1_GeneCatalog_proteins_20220719.aa.fasta	Traver1	Trametes versicolor ATCC 20869	5325	5325	Trametes versicolor	469
+Treen1_GeneCatalog_proteins_20160201.aa.fasta	Treen1	Naematelia encephela UCDFST 68-887.2 v1.0	71784	71784	Naematelia encephala	267
+Trepe1_GeneCatalog_proteins_20140415.aa.fasta	Trepe1	Trematosphaeria pertusa CBS 122368 v1.0	390896	390896	Trematosphaeria pertusa	643
+Triarc1_GeneCatalog_proteins_20180427.aa.fasta	Triarc1	Triparticalcar arcticum BR59 v1.0	1117335	1117335	Phlyctochytrium arcticum	191
+Triaru1_GeneCatalog_proteins_20181221.aa.fasta	Triaru1	Trichoderma arundinaceum IBT 40837	490622	490622	Trichoderma arundinaceum	415
+Trias2479_GeneCatalog_proteins_20170710.aa.fasta	Trias2479	Trichosporon asahii var. asahii CBS 2479	1186058	1186058	Trichosporon asahii var. asahii CBS 2479	228
+Trias8904_GeneCatalog_proteins_20170712.aa.fasta	Trias8904	Trichosporon asahii var. asahii CBS 8904	1220162	1220162	Trichosporon asahii var. asahii CBS 8904	234
+Triasp1_GeneCatalog_proteins_20150522.aa.fasta	Triasp1	Trichoderma asperelloides BRM 29576 v1.0	702382	702382	Trichoderma asperelloides	456
+Triasper1_GeneCatalog_proteins_20210904.aa.fasta	Triasper1	Trichoderma asperelloides T203 v1.0	101201	101201	Trichoderma asperellum	450
+Triatrob1_GeneCatalog_proteins_20181004.aa.fasta	Triatrob1	Trichoderma atrobrunneum ITEM 908	1491457	1491457	Trichoderma atrobrunneum	395
+Tribi1_GeneCatalog_proteins_20141117.aa.fasta	Tribi1	Trichodelitschia bisporula CBS 262.69 v1.0	703511	703511	Trichodelitschia bisporula	341
+Tribre1_GeneCatalog_proteins_20190327.aa.fasta	Tribre1	Trichoderma brevicompactum IBT40841	247546	247546	Trichoderma brevicompactum	424
+Trici4_GeneCatalog_proteins_20131015.aa.fasta	Trici4	Trichoderma citrinoviride TUCIM 6016 v4.0	58853	58853	Trichoderma citrinoviride	372
+Trigam1_GeneCatalog_proteins_20170914.aa.fasta	Trigam1	Trichoderma gamsii T6085	398673	398673	Trichoderma gamsii	446
+Trigui1_GeneCatalog_proteins_20180905.aa.fasta	Trigui1	Trichoderma guizhouense NJAU 4742	1491466	1491466	Trichoderma guizhouense	454
+Triha1_GeneCatalog_proteins_20120306.aa.fasta	Triha1	Trichoderma harzianum CBS 226.95 v1.0	5544	5544	Trichoderma harzianum	463
+Trihar1_GeneCatalog_proteins_20141017.aa.fasta	Trihar1	Trichoderma harzianum TR274 v1.0	5544	5544	Trichoderma harzianum	477
+Trihyb1_GeneCatalog_proteins_20161123.aa.fasta	Trihyb1	Trichophaea hybrida UTF0779 v1.0	47213	47213	Trichophaea hybrida	241
+Trilo3_GeneCatalog_proteins_20130918.aa.fasta	Trilo3	Trichoderma longibrachiatum ATCC 18648 v3.0	5548	5548	Trichoderma longibrachiatum	360
+Trima3_GeneCatalog_proteins_20130329.aa.fasta	Trima3	Tricholoma matsutake 945 v3.0	40145	40145	Tricholoma matsutake	313
+Triol1_GeneCatalog_proteins_20140430.aa.fasta	Triol1	Trichosporon oleaginosus IBC0246 v1.0	879819	879819	Cutaneotrichosporon oleaginosum	216
+Tripar1_GeneCatalog_proteins_20180920.aa.fasta	Tripar1	Trichoderma parareesei CBS 125925	858221	858221	Trichoderma parareesei	368
+Triple1_GeneCatalog_proteins_20181221.aa.fasta	Triple1	Trichoderma pleuroti TPhu1	500994	500994	Trichoderma pleuroti	428
+Tripra1_GeneCatalog_proteins_20180307.aa.fasta	Tripra1	Tricharina praecox CBS 144465 v1.0	43433	43433	Tricharina praecox	305
+TrireMAT11_1_GeneCatalog_proteins_20210405.aa.fasta	TrireMAT11_1	Trichoderma reesei CBS999.97 MAT1-1	51453	51453	Trichoderma reesei	411
+TrireMAT12_1_GeneCatalog_proteins_20210401.aa.fasta	TrireMAT12_1	Trichoderma reesei CBS999.97 MAT1-2	51453	51453	Trichoderma reesei	410
+TrireRUTC30_1_GeneCatalog_proteins_20110526.aa.fasta	TrireRUTC30_1	Trichoderma reesei RUT C-30 v1.0	51453	51453	Trichoderma reesei	367
+Trire_Chr_GeneCatalog_proteins_20190325.aa.fasta	Trire_Chr	Trichoderma reesei QM6a	431241	431241	Trichoderma reesei QM6a	364
+Triru1_GeneCatalog_proteins_20130826.aa.fasta	Triru1	Trichophyton rubrum CBS 118892	559305	559305	Trichophyton rubrum CBS 118892	194
+Truan1_GeneCatalog_proteins_20170627.aa.fasta	Truan1	Truncatella angustata MPI-SDFR-AT-0073 v1.0	152316	152316	Truncatella angustata	759
+Tubbor1_GeneCatalog_proteins_20160610.aa.fasta	Tubbor1	Tuber borchii Tbo3840 v1.0	42251	42251	Tuber borchii	239
+Tubbr1_1_GeneCatalog_proteins_20190716.aa.fasta	Tubbr1_1	Tuber brumale v1.0	60458	60458	Tuber brumale	280
+Tubin1_1_GeneCatalog_proteins_20190713.aa.fasta	Tubin1_1	Tuber indicum v1.0	55307	55307	Tuber indicum	285
+Tubme1v2_GeneCatalog_proteins_20160215.aa.fasta	Tubme1v2	Tuber melanosporum Mel28 v1.2	656061	656061	Tuber melanosporum Mel28	219
+Umbra1_GeneCatalog_proteins_20121109.aa.fasta	Umbra1	Umbelopsis ramanniana AG v1.0	41833	41833	Umbelopsis ramanniana	371
+Umbsp_AD052_1_GeneCatalog_proteins_20160912.aa.fasta	Umbsp_AD052_1	Umbelopsis sp. nov. AD052 v1.0	1883073	1883073	Umbelopsis sp. AD052	362
+Uncre1_GeneCatalog_proteins_20131024.aa.fasta	Uncre1	Uncinocarpus reesii UAMH 1704	336963	336963	Uncinocarpus reesii 1704	176
+Usnflo1_GeneCatalog_proteins_20160419.aa.fasta	Usnflo1	Usnea florida ATCC18376 v1.0	111620	111620	Usnea florida	325
+Ustma2_2_GeneCatalog_proteins_20171205.aa.fasta	Ustma2_2	Ustilago maydis 521 v2.0	237631	5270	Mycosarcoma maydis	223
+Ustsp1_GeneCatalog_proteins_20150106.aa.fasta	Ustsp1	Violaceomyces palustris SA 807 v1.0	1673888	1673888	Violaceomyces palustris	214
+Ustvir1_GeneCatalog_proteins_20170701.aa.fasta	Ustvir1	Ustilaginoidea virens	1159556	1159556	Ustilaginoidea virens	214
+Varmin1_GeneCatalog_proteins_20160225.aa.fasta	Varmin1	Vararia minispora EC-137 v1.0	1314806	1314806	Vararia minispora EC-137	418
+Venin1_GeneCatalog_proteins_20141010.aa.fasta	Venin1	Venturia inaequalis	5025	5025	Venturia inaequalis	476
+Venpi1_GeneCatalog_proteins_20150407.aa.fasta	Venpi1	Venturia pirina	415593	415593	Venturia pyrina	476
+Veral1_GeneCatalog_proteins_20131030.aa.fasta	Veral1	Verticillium alfalfae VaMs.102	27335	27335	Verticillium albo-atrum	557
+Verda1_GeneCatalog_proteins_20110524.aa.fasta	Verda1	Verticillium dahliae VdLs.17	27337	27337	Verticillium dahliae	555
+Verdah1_GeneCatalog_proteins_20181206.aa.fasta	Verdah1	Verticillium dahliae MPI-CAGE-AT-0001 v1.0	27337	27337	Verticillium dahliae	604
+Veren1_GeneCatalog_proteins_20140626.aa.fasta	Veren1	Verruculina enalia CBS 304.66 v1.0	85948	147567	Lojkania enalia	535
+Verga1_GeneCatalog_proteins_20160827.aa.fasta	Verga1	Verruconis gallopava	253628	253628	Verruconis gallopava	308
+Volvo1_GeneCatalog_proteins_20130703.aa.fasta	Volvo1	Volvariella volvacea V23	706473	706473	Volvariella volvacea V23	471
+Walic1_GeneCatalog_proteins_20131017.aa.fasta	Walic1	Wallemia ichthyophaga EXF-994	1299270	1299270	Wallemia ichthyophaga EXF-994	119
+Walse1_GeneCatalog_proteins_20100910.aa.fasta	Walse1	Wallemia mellicola v1.0	671144	671144	Wallemia mellicola CBS 633.66	116
+Wesor1_GeneCatalog_proteins_20140626.aa.fasta	Wesor1	Westerdykella ornata CBS 379.55 v1.0	318751	318751	Westerdykella ornata	419
+Whamic1_GeneCatalog_proteins_20190712.aa.fasta	Whamic1	Whalleya microplaca YMJ1829 v1.0	110547	110547	Whalleya microplaca	551
+Wilmi1_GeneCatalog_proteins_20130716.aa.fasta	Wilmi1	Wilcoxina mikolae CBS 423.85 v1.0	43439	43439	Wilcoxina mikolae	250
+Wolco1_GeneCatalog_proteins_20100915.aa.fasta	Wolco1	Wolfiporia cocos MD-104 SS10 v1.0	81056	81056	Wolfiporia cocos	278
+Xerba1_GeneCatalog_proteins_20150320.aa.fasta	Xerba1	Xerocomus badius 84.06 v1.0	36058	36058	Imleria badia	325
+Xy124048_1_GeneCatalog_proteins_20190702.aa.fasta	Xy124048_1	Xylaria sp. CBS 124048 v1.0	2663373	2663373	Xylaria sp. CBS 124048	337
+XyAK1471_1_GeneCatalog_proteins_20191118.aa.fasta	XyAK1471_1	Xylariaceae sp. AK1471 v1.0	2723393	2723393	Xylariaceae sp. AK1471	620
+XyFL0064_1_GeneCatalog_proteins_20191108.aa.fasta	XyFL0064_1	Xylaria sp. FL0064 v1.0	2663374	2663374	Xylaria sp. FL0064	559
+XyFL0641_1_GeneCatalog_proteins_20190530.aa.fasta	XyFL0641_1	Xylariomycetidae sp. FL0641 v1.0	2614611	2614611	Xylariomycetidae sp. FL0641	543
+XyFL0804_2_GeneCatalog_proteins_20191111.aa.fasta	XyFL0804_2	Xylariaceae sp. FL0804 v2.0	2663375	2663375	Xylariaceae sp. FL0804	468
+XyFL1272_2_GeneCatalog_proteins_20191031.aa.fasta	XyFL1272_2	Xylariaceae sp. FL1272 v2.0	2663376	2663376	Xylariaceae sp. FL1272	576
+XyFL1777_1_GeneCatalog_proteins_20190501.aa.fasta	XyFL1777_1	Xylaria sp. FL1777 v1.0	2614573	2614573	Xylaria sp. FL1777	494
+XylFL0016_GeneCatalog_proteins_20190320.aa.fasta	XylFL0016	Xylariaceae sp. FL0016 v1.0	2614588	2614588	Xylariaceae sp. FL0016	587
+XylFL0043_GeneCatalog_proteins_20190321.aa.fasta	XylFL0043	Xylaria sp. FL0043 v1.0	2614587	2614587	Xylaria sp. FL0043	547
+XylFL0255_GeneCatalog_proteins_20190320.aa.fasta	XylFL0255	Xylariaceae sp. FL0255 v1.0	2614589	2614589	Xylariaceae sp. FL0255	512
+XylFL0594_GeneCatalog_proteins_20190320.aa.fasta	XylFL0594	Xylariaceae sp. FL0594 v1.0	2614590	2614590	Xylariaceae sp. FL0594	444
+XylFL0662B_GeneCatalog_proteins_20190320.aa.fasta	XylFL0662B	Xylariaceae sp. FL0662B v1.0	2614610	2614610	Xylariaceae sp. FL0662B	510
+XylFL0933_GeneCatalog_proteins_20190320.aa.fasta	XylFL0933	Xylaria sp. FL0933 v1.0	2614584	2614584	Xylaria sp. FL0933	547
+XylFL1019_GeneCatalog_proteins_20190320.aa.fasta	XylFL1019	Xylariaceae sp. FL1019 v1.0	2614591	2614591	Xylariaceae sp. FL1019	525
+XylFL1042_GeneCatalog_proteins_20190320.aa.fasta	XylFL1042	Xylaria sp. FL1042 v1.0	2614583	2614583	Xylaria sp. FL1042	542
+XylFL1651_GeneCatalog_proteins_20190321.aa.fasta	XylFL1651	Xylariaceae sp. FL1651 v1.0	2614592	2614592	Xylariaceae sp. FL1651	595
+XylFL2044_GeneCatalog_proteins_20190325.aa.fasta	XylFL2044	Xylariomycetidae sp. FL2044 v1.0	2614609	2614609	Xylariomycetidae sp. FL2044	625
+Xylacu1_GeneCatalog_proteins_20190613.aa.fasta	Xylacu1	Xylaria acuta CBS 122032 v1.0	114808	114808	Xylaria acuta	550
+Xylarb124340_1_GeneCatalog_proteins_20190612.aa.fasta	Xylarb124340_1	Xylaria arbuscula CBS 124340 v1.0	114810	114810	Xylaria arbuscula	547
+XylarbFL1030_GeneCatalog_proteins_20190320.aa.fasta	XylarbFL1030	Xylaria arbuscula FL1030 v1.0	114810	114810	Xylaria arbuscula	588
+Xylbam139988_1_GeneCatalog_proteins_20190612.aa.fasta	Xylbam139988_1	Xylaria bambusicola CBS 139988 v1.0	326684	326684	Xylaria bambusicola	525
+Xylcas124033_1_GeneCatalog_proteins_20190614.aa.fasta	Xylcas124033_1	Xylaria cf. castorea CBS 124033 v1.0	114812	114812	Xylaria castorea	535
+Xylcub1_GeneCatalog_proteins_20181030.aa.fasta	Xylcub1	Xylaria flabelliformis NC1011 v1.0	2512241	2512241	Xylaria flabelliformis	540
+Xylcube1_GeneCatalog_proteins_20190615.aa.fasta	Xylcube1	Xylaria cubensis CBS 116.85 v1.0	114814	114814	Xylaria cubensis	554
+Xylcur114988_1_GeneCatalog_proteins_20190615.aa.fasta	Xylcur114988_1	Xylaria curta CBS 114988 v1.0	42375	42375	Xylaria curta	572
+Xyldig1_GeneCatalog_proteins_20190718.aa.fasta	Xyldig1	Xylaria digitata CBS 161.22 v1.0	323540	323540	Xylaria digitata	541
+Xylgra1_GeneCatalog_proteins_20190320.aa.fasta	Xylgra1	Xylaria grammica CBS 120713 v1.0	363999	363999	Xylaria grammica	550
+Xylhe1_GeneCatalog_proteins_20130827.aa.fasta	Xylhe1	Xylona heveae TC161 v1.0	1328760	1328760	Xylona heveae TC161	205
+Xylhel2_GeneCatalog_proteins_20191119.aa.fasta	Xylhel2	Xylaria cf. heliscus FL0509 v2.0	1803070	1803070	Xylaria cf. heliscus	566
+Xylint1_GeneCatalog_proteins_20190612.aa.fasta	Xylint1	Xylaria intraflava YMJ 725 v1.0	492091	492091	Xylaria intraflava	383
+Xyllon1_GeneCatalog_proteins_20190612.aa.fasta	Xyllon1	Xylaria longipes CBS 148.73 v1.0	114818	114818	Xylaria longipes	535
+Xylni1_GeneCatalog_proteins_20190518.aa.fasta	Xylni1	Xylaria nigripes YMJ 653 v1.0	490159	490159	Xylaria nigripes	362
+Xylpal124036_1_GeneCatalog_proteins_20190613.aa.fasta	Xylpal124036_1	Xylaria palmicola CBS 124036 v1.0	665665	665665	Xylaria palmicola	506
+Xylscr1_GeneCatalog_proteins_20190612.aa.fasta	Xylscr1	Xylaria scruposa CBS 123580 v1.0	743287	743287	Xylaria scruposa	574
+Xyltel121673_1_GeneCatalog_proteins_20190615.aa.fasta	Xyltel121673_1	Xylaria telfairii CBS 121673 v1.0	477509	477509	Xylaria telfairii	576
+Xylven1_GeneCatalog_proteins_20190325.aa.fasta	Xylven1	Xylaria venustula FL0490 v1.0	743302	743302	Xylaria venustula	536
+Yarli1_GeneCatalog_proteins_20130122.aa.fasta	Yarli1	Yarrowia lipolytica (strain CLIB122)	284591	284591	Yarrowia lipolytica CLIB122	131
+YarliW29_GeneCatalog_proteins_20190612.aa.fasta	YarliW29	Yarrowia lipolytica PO1f v1.0	4952	4952	Yarrowia lipolytica	135
+YarliW29_1_GeneCatalog_proteins_20190319.aa.fasta	YarliW29_1	Yarrowia lipolytica CLIB89(W29)	755266	755266	Yarrowia lipolytica CLIB 89	136
+YarliY64008_1_GeneCatalog_proteins_20210729.aa.fasta	YarliY64008_1	Yarrowia lipolytica NRRL Y-64008 v1.0	4952	4952	Yarrowia lipolytica	136
+YarliYB392_GeneCatalog_proteins_20180306.aa.fasta	YarliYB392	Yarrowia lipolytica YB392 v1.0	4952	4952	Yarrowia lipolytica	132
+YarliYB419_GeneCatalog_proteins_20180504.aa.fasta	YarliYB419	Yarrowia lipolytica YB419 v1.0	4952	4952	Yarrowia lipolytica	132
+YarliYB420_GeneCatalog_proteins_20180505.aa.fasta	YarliYB420	Yarrowia lipolytica YB420 v1.0	4952	4952	Yarrowia lipolytica	133
+YarliYB566_GeneCatalog_proteins_20180505.aa.fasta	YarliYB566	Yarrowia lipolytica YB566 v1.0	4952	4952	Yarrowia lipolytica	132
+YarliYB567_GeneCatalog_proteins_20180504.aa.fasta	YarliYB567	Yarrowia lipolytica YB567 v1.0	4952	4952	Yarrowia lipolytica	132
+YarliYlCW001_GeneCatalog_proteins_20190611.aa.fasta	YarliYlCW001	Yarrowia lipolytica YlCW001 v1.0	4952	4952	Yarrowia lipolytica	123
+Yarlip1_GeneCatalog_proteins_20160930.aa.fasta	Yarlip1	Yarrowia lipolytica FKP355 v1.0	4952	4952	Yarrowia lipolytica	134
+Zalva1_GeneCatalog_proteins_20190111.aa.fasta	Zalva1	Zalerion varium MPI-CAGE-AT-0135 v1.0	394676	394676	Halenospora varia	759
+Zoorad1_GeneCatalog_proteins_20180427.aa.fasta	Zoorad1	Zoophthora radicans ATCC 208865 v1.0	42210	42210	Zoophthora radicans	436
+Zoprh1_GeneCatalog_proteins_20130606.aa.fasta	Zoprh1	Zopfia rhizophila v1.0	160035	160035	Zopfia rhizophila	718
+Zycmex1_GeneCatalog_proteins_20160711.aa.fasta	Zycmex1	Zychaea mexicana RSA 1403 v1.0	64656	64656	Zychaea mexicana	346
+Zygro1_GeneCatalog_proteins_20150128.aa.fasta	Zygro1	Zygosaccharomyces rouxii CBS732	4956	4956	Zygosaccharomyces rouxii	114
+Zygrou1_GeneCatalog_proteins_20210728.aa.fasta	Zygrou1	Zygosaccharomyces rouxii NRRL Y-64007 v1.0	4956	4956	Zygosaccharomyces rouxii	118
+Zymar1_GeneCatalog_proteins_20141012.aa.fasta	Zymar1	Zymoseptoria ardabiliae STIR04_1.1.1	985147	985147	Zymoseptoria ardabiliae STIR04_1.1.1	383
+Zymbr1_GeneCatalog_proteins_20170711.aa.fasta	Zymbr1	Zymoseptoria brevis Zb18110	1047168	1047168	Zymoseptoria brevis	381
+Zymps1_GeneCatalog_proteins_20141012.aa.fasta	Zymps1	Zymoseptoria pseudotritici STIR04_2.2.1	985140	985140	Zymoseptoria pseudotritici STIR04_2.2.1	382

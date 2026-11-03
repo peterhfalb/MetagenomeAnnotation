@@ -30,7 +30,6 @@ OUT_DIR="${1:-${HOME}/cazy_db_check}"
 TAXONMAP="${DB_DIR}/cazy_taxonmap.tsv"
 NODES="${NODES:-${DB_DIR}/nodes_patched.dmp}"
 NAMES="${NAMES:-${DB_DIR}/../taxonomy/names.dmp}"
-PARSER_PHYLA="Ascomycota,Basidiomycota,Chytridiomycota,Mucoromycota,Glomeromycota,Blastocladiomycota,Neocallimastigomycota,Zoopagomycota,Mortierellomycota,Microsporidia"
 LABEL_RE='^(GH|GT|PL|CE|AA|CBM)[0-9]+(_[0-9]+)?$'
 
 mkdir -p "${OUT_DIR}"
@@ -138,11 +137,10 @@ if [[ -s "${TAXONMAP}" && -s "${NODES}" && -s "${NAMES}" ]]; then
         awk -F'\t' 'NR > 1 { n[$2] += $4 } END { for (k in n) print n[k] "\t" k }' \
             "${OUT_DIR}/taxid_lineages.tsv" | sort -nr
 
-        echo; echo "=== Fungal accessions by phylum (* = missing from FUNGAL_PHYLA in 08_integrate.R) ==="
-        awk -F'\t' -v known="${PARSER_PHYLA}" '
-            BEGIN { split(known, a, ","); for (i in a) k[a[i]] = 1 }
+        echo; echo "=== Fungal accessions by phylum ==="
+        awk -F'\t' '
             NR > 1 && $2 == "Fungi" { n[$3] += $4 }
-            END { for (p in n) print n[p] "\t" p ((p in k) ? "" : " *") }' \
+            END { for (p in n) print n[p] "\t" p }' \
             "${OUT_DIR}/taxid_lineages.tsv" | sort -nr
     } >> "${OUT_DIR}/summary.txt"
 else
