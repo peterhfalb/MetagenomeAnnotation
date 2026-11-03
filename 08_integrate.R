@@ -1038,6 +1038,10 @@ if (!dir.exists(cazy_readmap_dir) ||
     }]
     dt[, c("field1", "is_genbank") := NULL]
 
+    # Collapse subfamilies to family (GH5_7 -> GH5). Must run before the pair
+    # dedup below: otherwise R1 on GH5 and R2 on GH5_7 count as two read pairs.
+    dt[, family := sub("_[0-9]+$", "", family)]
+
     # Deduplicate paired reads: R1 and R2 from the same insert can both hit
     # the same family. Strip direction suffixes (/1 /2 .1 .2) to get a shared
     # read-pair ID, then keep only the best-bitscore hit per (pair, family).

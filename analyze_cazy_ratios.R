@@ -2,6 +2,8 @@
 # analyze_cazy_ratios.R
 # Compute fungal:bacterial CAZyme log-ratios from cazy_readmap matrices at four
 # levels: overall (per sample), per family, per substrate, and per origin.
+# All levels use CAZy families: subfamilies (GH5_7) are merged into their parent
+# (GH5) in both the matrices and the lookup table.
 #
 # Inputs:
 #   cazy_readmap_fungi_matrix.tsv   }
@@ -65,6 +67,8 @@ cat("============================================================\n\n")
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
+
+SUBFAMILY_PAT <- "_[0-9]+$"
 
 write_tsv <- function(dt, path) {
   fwrite(dt, path, sep = "\t", quote = FALSE, na = "NA")
@@ -135,6 +139,18 @@ bact_long <- melt(bact, id.vars = "family", variable.name = "sample",
 hits <- merge(fung_long, bact_long, by = c("family", "sample"), all = TRUE)
 hits[is.na(n_fungi),    n_fungi    := 0L]
 hits[is.na(n_bacteria), n_bacteria := 0L]
+
+# 08_integrate.R now writes family-level matrices. Matrices from older runs still
+# have subfamily rows, so sum those here; their paired-read double counts can't be
+# removed at this stage, only by re-running 08_integrate.R.
+has_subfamilies <- any(grepl(SUBFAMILY_PAT, hits$family))
+if (has_subfamilies) {
+  cat("  WARNING: matrices contain subfamily rows (pre-merge 08_integrate.R output).\n")
+  cat("  Summing to family; re-run 08_integrate.R to remove paired-read double counts.\n")
+  hits[, family := sub(SUBFAMILY_PAT, "", family)]
+  hits <- hits[, .(n_fungi = sum(n_fungi), n_bacteria = sum(n_bacteria)),
+               by = .(family, sample)]
+}
 hits[, log_ratio := log((n_fungi + pseudocount) / (n_bacteria + pseudocount))]
 
 cat("  Combined hits :", nrow(hits), "family × sample rows\n\n")
@@ -183,12 +199,25 @@ cat("  Stand types    :", paste(sort(unique(hits$stand_type)), collapse = ", "),
 # Load lookup table
 cat("--- Loading lookup table ---\n")
 lookup_raw <- fread(lookup_file)
+lookup_cols <- c("family", "compound", "origin", "decay_type_signal")
+if (!all(lookup_cols %in% names(lookup_raw))) {
+  stop("lookup table must have columns: ", paste(lookup_cols, collapse = ", "), call. = FALSE)
+}
 lookup <- lookup_raw[, .(
-  family       = as.character(Family),
-  substrate    = as.character(Substrate),
-  origin       = as.character(Origin),
-  decay_signal = as.character(Decay_type_signal)
+  family       = sub(SUBFAMILY_PAT, "", as.character(family)),
+  substrate    = as.character(compound),
+  origin       = as.character(origin),
+  decay_signal = as.character(decay_type_signal)
 )]
+
+# ANALYSIS DECISION: the lookup annotates these two families only at subfamily
+# level. At family level, all of AA3 counts as Lignin and all of GH5 as Cellulose
+# (the lookup's GH5_7 row would otherwise also place GH5 in Hemicellulose).
+lookup[family == "AA3", substrate := "Lignin"]
+lookup[family == "GH5", substrate := "Cellulose"]
+
+# One row per (family, substrate), so duplicate lookup rows can't double count
+lookup <- unique(lookup, by = c("family", "substrate"))
 cat("  Lookup entries :", nrow(lookup), "rows (", uniqueN(lookup$family), "unique families)\n")
 cat("  Substrates     :", paste(sort(unique(lookup$substrate)), collapse = ", "), "\n")
 cat("  Origins        :", paste(sort(unique(lookup$origin)),    collapse = ", "), "\n\n")
@@ -273,7 +302,10 @@ cat("\n")
 
 cat("--- Level 4: per origin ---\n")
 
-hits_ori <- lookup[hits, on = "family", allow.cartesian = TRUE, nomatch = 0]
+# One row per (family, origin): a family with several substrates under one origin
+# (e.g. GH3 in Plant Biomass) must count once in that origin.
+hits_ori <- unique(lookup[, .(family, origin)])[hits, on = "family",
+                                                allow.cartesian = TRUE, nomatch = 0]
 by_origin <- hits_ori[, .(
   n_fungi    = sum(n_fungi),
   n_bacteria = sum(n_bacteria),

@@ -80,6 +80,7 @@ dt[is_genbank == FALSE, taxid := {
 }]
 dt[, c("field1", "is_genbank") := NULL]
 
+dt[, family := sub("_[0-9]+$", "", family)]
 dt[, pair_id := sub("[/. ][12]$", "", qseqid)]
 dt <- dt[dt[, .I[which.max(bitscore)], by = .(pair_id, family)]$V1]
 cat("  After paired-read dedup   :", formatC(nrow(dt), format = "d", big.mark = ","), "\n\n")
