@@ -56,6 +56,7 @@ out_dir        <- if (is.null(opt[["out-dir"]])) file.path(integrated_dir, "cazy
 pseudocount    <- opt[["pseudocount"]]
 
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+if (!dir.exists(out_dir)) stop("Could not create output directory: ", out_dir, call. = FALSE)
 
 cat("============================================================\n")
 cat("CAZy fungi:bacteria ratio analysis\n")
@@ -103,13 +104,14 @@ summarize_ratio <- function(dt, group_col) {
 
     row <- data.table(group = g)
     for (st in stand_types) {
-      row[[paste0("n_",      st)]] <- grp_stats[[st]]$n
-      row[[paste0("median_", st)]] <- grp_stats[[st]]$median
+      set(row, j = paste0("n_",      st), value = grp_stats[[st]]$n)
+      set(row, j = paste0("median_", st), value = grp_stats[[st]]$median)
     }
     if (length(stand_types) == 2) {
-      row[, delta_median := grp_stats[[stand_types[2]]]$median - grp_stats[[stand_types[1]]]$median]
+      set(row, j = "delta_median",
+          value = grp_stats[[stand_types[2]]]$median - grp_stats[[stand_types[1]]]$median)
     }
-    row[, wilcox_p := if (!is.null(w)) w$p.value else NA_real_]
+    set(row, j = "wilcox_p", value = if (!is.null(w)) w$p.value else NA_real_)
     row
   }))
 }
