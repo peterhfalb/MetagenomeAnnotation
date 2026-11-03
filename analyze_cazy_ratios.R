@@ -3,7 +3,8 @@
 # Compute fungal:bacterial CAZyme log-ratios from cazy_readmap matrices at four
 # levels: overall (per sample), per family, per substrate, and per origin.
 # All levels use CAZy families: subfamilies (GH5_7) are merged into their parent
-# (GH5) in both the matrices and the lookup table.
+# (GH5) in both the matrices and the lookup table. Only families listed in the
+# lookup table are used at any level, including the overall ratio.
 #
 # Inputs:
 #   cazy_readmap_fungi_matrix.tsv   }
@@ -210,15 +211,24 @@ lookup <- lookup_raw[, .(
   decay_signal = as.character(decay_type_signal)
 )]
 
-# ANALYSIS DECISION: the lookup annotates these two families only at subfamily
-# level. At family level, all of AA3 counts as Lignin and all of GH5 as Cellulose
-# (the lookup's GH5_7 row would otherwise also place GH5 in Hemicellulose).
-lookup[family == "AA3", substrate := "Lignin"]
-lookup[family == "GH5", substrate := "Cellulose"]
-
 # One row per (family, substrate), so duplicate lookup rows can't double count
 lookup <- unique(lookup, by = c("family", "substrate"))
 cat("  Lookup entries :", nrow(lookup), "rows (", uniqueN(lookup$family), "unique families)\n")
+
+# ANALYSIS DECISION: the lookup table defines which CAZymes are analyzed. Families
+# not listed (GH15, family-0 bins, ...) are removed from every level below.
+n_reads_all <- hits[, .(fungi = sum(n_fungi), bacteria = sum(n_bacteria))]
+n_fam_all   <- uniqueN(hits$family)
+hits <- hits[family %in% lookup$family]
+n_reads_kept <- hits[, .(fungi = sum(n_fungi), bacteria = sum(n_bacteria))]
+cat("  Families kept  :", uniqueN(hits$family), "of", n_fam_all, "in the matrices\n")
+cat(sprintf("  Reads kept     : fungi %.1f%%, bacteria %.1f%%\n",
+            100 * n_reads_kept$fungi / n_reads_all$fungi,
+            100 * n_reads_kept$bacteria / n_reads_all$bacteria))
+absent <- setdiff(lookup$family, hits$family)
+if (length(absent) > 0) {
+  cat("  Lookup families with no reads:", paste(absent, collapse = ", "), "\n")
+}
 cat("  Substrates     :", paste(sort(unique(lookup$substrate)), collapse = ", "), "\n")
 cat("  Origins        :", paste(sort(unique(lookup$origin)),    collapse = ", "), "\n\n")
 
@@ -253,14 +263,14 @@ cat("\n")
 
 cat("--- Level 2: per family ---\n")
 
-# Left join lookup onto hits: families not in lookup get NA substrate/origin
+# Join lookup annotation onto hits (all remaining families are in the lookup)
 by_family <- copy(hits[, .(sample, stand_type, family, n_fungi, n_bacteria, log_ratio)])
 
 # A family can have multiple rows in lookup (multiple substrates) — we want only
 # unique substrate/origin per family for the annotation columns here; use the
 # first-occurring row per family (deterministic given stable file order).
 lookup_primary <- lookup[!duplicated(family)]
-by_family <- lookup_primary[by_family, on = "family"]   # left join, NAs for unmapped
+by_family <- lookup_primary[by_family, on = "family"]
 setorder(by_family, stand_type, sample, family)
 
 n_mapped <- sum(!is.na(by_family$substrate))
@@ -275,7 +285,6 @@ cat("\n")
 
 cat("--- Level 3: per substrate ---\n")
 
-# Inner join: families not in lookup are excluded from substrate analysis.
 # allow.cartesian = TRUE: families with multiple substrate rows are duplicated
 # (each copy contributes to its respective substrate group).
 hits_sub <- lookup[hits, on = "family", allow.cartesian = TRUE, nomatch = 0]
